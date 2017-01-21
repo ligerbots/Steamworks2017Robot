@@ -10,6 +10,7 @@ import org.ligerbots.steamworks.commands.ShiftCommand;
  * and command groups that allow control of the robot.
  */
 public class OperatorInterface {
+  private static final int SHOOTING_BUTTON = 8;
   XboxController xboxController;
   
   /**
@@ -26,7 +27,9 @@ public class OperatorInterface {
   public double getThrottle() {
     return xboxController.getY(Hand.kLeft);
   }
-  
+  public boolean shouldShoot() {
+    return xboxController.getRawButton(SHOOTING_BUTTON);
+  }
   public double getTurn() {
     return xboxController.getX(Hand.kRight);
   }

@@ -20,6 +20,8 @@ public class RobotMap {
   public static final int CT_ID_LEFT_2 = 3;
   public static final int CT_ID_RIGHT_1 = 2;
   public static final int CT_ID_RIGHT_2 = 4;
+  public static final int CT_ID_SHOOTER_1 = 5;
+  public static final int CT_ID_SHOOTER_2 = 6;
   
   public static final int SOLENOID_SHIFT_UP = 1;
   public static final int SOLENOID_SHIFT_DOWN = 0;
