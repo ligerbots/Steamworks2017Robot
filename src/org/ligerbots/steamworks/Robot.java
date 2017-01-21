@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.Vision;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -19,6 +20,8 @@ import org.ligerbots.steamworks.subsystems.DriveTrain;
 public class Robot extends IterativeRobot {
 
   public static final DriveTrain driveTrain = new DriveTrain();
+  public static final Vision vision = new Vision();
+  
   public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
   public static OperatorInterface operatorInterface;
 

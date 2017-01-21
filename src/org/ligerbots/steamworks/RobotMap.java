@@ -1,7 +1,5 @@
 package org.ligerbots.steamworks;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-
 /**
  * The RobotMap is a mapping from the ports sensors and actuators are wired into to a variable name.
  * This provides flexibility changing wiring, makes checking the wiring easier and significantly
@@ -25,5 +23,7 @@ public class RobotMap {
   
   public static final int SOLENOID_SHIFT_UP = 1;
   public static final int SOLENOID_SHIFT_DOWN = 0;
+  
+  public static final int RELAY_LED_RING = 0;
 
 }
