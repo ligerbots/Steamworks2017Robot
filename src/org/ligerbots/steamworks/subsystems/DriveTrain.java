@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import java.util.Arrays;
@@ -19,6 +20,8 @@ public class DriveTrain extends Subsystem {
   CANTalon right1;
   CANTalon right2;
   RobotDrive robotDrive;
+  DoubleSolenoid shiftingSolenoid;
+  
 
   /**
    * Creates a new drive train instance.
@@ -43,6 +46,8 @@ public class DriveTrain extends Subsystem {
         .forEach((CANTalon talon) -> talon.enableBrakeMode(true));
     
     robotDrive = new RobotDrive(left1, right1);
+    
+    shiftingSolenoid = new DoubleSolenoid(RobotMap.SOLENOID_SHIFT_UP, RobotMap.SOLENOID_SHIFT_DOWN);
   }
   
   /**
@@ -60,6 +65,15 @@ public class DriveTrain extends Subsystem {
    */
   public void joystickDrive(double throttle, double turn) {
     robotDrive.arcadeDrive(throttle, turn);
+  }
+  
+  public void shift(boolean shiftUp){
+    if (shiftUp) {
+      shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
+    else {
+      shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+    }
   }
 }
 
