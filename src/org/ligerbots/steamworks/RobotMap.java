@@ -5,27 +5,24 @@ package org.ligerbots.steamworks;
  * This provides flexibility changing wiring, makes checking the wiring easier and significantly
  * reduces the number of magic numbers floating around.
  */
-public class RobotMap {
-  // For example to map the left and right motors, you could define the
-  // following variables to use with your drivetrain subsystem.
-  // public static int leftMotor = 1;
-  // public static int rightMotor = 2;
-
-  // If you are using multiple modules, make sure to define both the port
-  // number and the module. For example you with a rangefinder:
-  // public static int rangefinderPort = 1;
-  // public static int rangefinderModule = 1;
-  
+public class RobotMap {  
   public static final int CT_ID_LEFT_1 = 1;
   public static final int CT_ID_LEFT_2 = 3;
   public static final int CT_ID_RIGHT_1 = 2;
   public static final int CT_ID_RIGHT_2 = 4;
-  public static final int CT_ID_SHOOTER_1 = 5;
-  public static final int CT_ID_SHOOTER_2 = 6;
+  
+  public static final int CT_ID_SHOOTER_MASTER = 5;
+  public static final int CT_ID_SHOOTER_SLAVE = 6;
+  // Data from http://motors.vex.com/775pro
+  public static final int MAX_RPM_775PRO = 18700;
+  public static final int STALL_CURRENT_775PRO = 134; // Amps
+  // give a margin of error
+  public static final int SAFE_CURRENT_775PRO = STALL_CURRENT_775PRO - 20;
+  
+  public static final int SHOOTER_ENCODER_CODES_PER_REVOLUTION = 32;
   
   public static final int SOLENOID_SHIFT_UP = 1;
   public static final int SOLENOID_SHIFT_DOWN = 0;
   
   public static final int RELAY_LED_RING = 0;
-
 }

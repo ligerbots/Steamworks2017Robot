@@ -66,8 +66,9 @@ public class Vision extends Subsystem {
   public void initDefaultCommand() {}
 
   /**
-   * This method runs in a separate thread and recieves data from the phone.
+   * This method runs in a separate thread and receives data from the phone.
    */
+  // yes this will be removed once vision data is used
   @SuppressWarnings({"unused", "localvariablename"})
   public void dataThread() {
     DatagramChannel udpChannel = null;
