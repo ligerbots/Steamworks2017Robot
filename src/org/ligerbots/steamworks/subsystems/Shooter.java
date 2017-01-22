@@ -20,9 +20,8 @@ public class Shooter extends Subsystem {
     // basic setup
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
     shooterMaster.enableBrakeMode(false); // probably bad for 775pros
-    shooterMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    shooterMaster.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
     shooterMaster.reverseSensor(false);
-    shooterMaster.configEncoderCodesPerRev(RobotMap.SHOOTER_ENCODER_CODES_PER_REVOLUTION);
     // the Talon needs peak and nominal output values
     shooterMaster.configNominalOutputVoltage(+0.0f, -0.0f);
     shooterMaster.configPeakOutputVoltage(+12.0f, 0.0f);
