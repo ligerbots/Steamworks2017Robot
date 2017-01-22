@@ -2,6 +2,7 @@ package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 
@@ -33,6 +34,7 @@ public class Shooter extends Subsystem {
     shooterMaster.setD(0);
     // luckily, CANSpeedController does the heavy lifting of dashboard PID configuration for us
     SmartDashboard.putData("Shooter PID", shooterMaster);
+    LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
 
     shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
