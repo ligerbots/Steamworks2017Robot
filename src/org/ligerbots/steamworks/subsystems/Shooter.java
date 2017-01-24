@@ -48,7 +48,10 @@ public class Shooter extends Subsystem {
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
   }
-
+  public double getRpm() {
+    //return shooterMaster.GetPulseWidthVelocity();
+    return 0.0;
+  }
   public void initDefaultCommand() {
     // No default command
   }

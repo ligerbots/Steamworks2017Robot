@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.Vision;
 
@@ -23,6 +24,7 @@ public class Robot extends IterativeRobot {
   public static final DriveTrain driveTrain = new DriveTrain();
   public static final Vision vision = new Vision();
   public static final Shooter shooter = new Shooter();
+  public static final Feeder feeder = new Feeder();
   
   public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
   public static OperatorInterface operatorInterface;

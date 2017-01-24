@@ -13,6 +13,8 @@ public class RobotMap {
   
   public static final int CT_ID_SHOOTER_MASTER = 5;
   public static final int CT_ID_SHOOTER_SLAVE = 6;
+  public static final int CT_ID_FEEDER_MASTER = 7;
+  public static final int CT_ID_FEEDER_SLAVE = 8;
   // Data from http://motors.vex.com/775pro
   public static final int MAX_RPM_775PRO = 18700;
   public static final int STALL_CURRENT_775PRO = 134; // Amps
