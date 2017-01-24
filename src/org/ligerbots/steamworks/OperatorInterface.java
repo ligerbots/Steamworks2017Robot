@@ -3,6 +3,7 @@ package org.ligerbots.steamworks;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 
@@ -22,6 +23,8 @@ public class OperatorInterface {
     leftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
     JoystickButton rightBumper = new JoystickButton(xboxController, 6);
     rightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
+    JoystickButton xxButton = new JoystickButton(xboxController, 3);
+    xxButton.whenPressed(new GearCommand(!Robot.gearManipulator.isOpen())); //Toggle the mechanism open or closed.
   }
 
   public double getThrottle() {

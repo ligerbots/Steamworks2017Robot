@@ -11,6 +11,7 @@ public class ShiftCommand extends Command {
   DriveTrain.ShiftType shiftType;
   
   public ShiftCommand(DriveTrain.ShiftType shiftType) {
+    requires(Robot.driveTrain);
     this.shiftType = shiftType;
   }
 
