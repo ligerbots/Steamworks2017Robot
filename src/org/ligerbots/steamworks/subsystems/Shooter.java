@@ -12,7 +12,8 @@ import org.ligerbots.steamworks.RobotMap;
 public class Shooter extends Subsystem {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
-
+  volatile double rpm = 0;
+  
   /**
    * Create the instance of Shooter.
    */
@@ -47,6 +48,7 @@ public class Shooter extends Subsystem {
     // in the debugger, we'd like to know what this is
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
+    
   }
 
   public void initDefaultCommand() {
@@ -57,6 +59,8 @@ public class Shooter extends Subsystem {
    * Constantly checks 775pro current and kills the shooter if it gets close to stall current.
    */
   private void shooterWatchdogThread() {
+    double prevEncoderPos = shooterMaster.getEncPosition();
+    long prevNano = System.nanoTime();
     while (true) {
       if (shooterMaster.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO
           || shooterSlave.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO) {
@@ -71,10 +75,22 @@ public class Shooter extends Subsystem {
       } catch (InterruptedException ex) {
         ex.printStackTrace();
       }
+      double encoderPos = shooterMaster.getEncPosition();
+      double deltaEncoderPos = encoderPos - prevEncoderPos;
+      long curNano = System.nanoTime();
+      long deltaNano = curNano - prevNano;
+      rpm = RobotMap.NANOS_PER_MINUTE * deltaEncoderPos / RobotMap.MAG_ENCODER_UNITS_PER_REVOLUTION 
+          / deltaNano;
+      prevNano = curNano;
+      prevEncoderPos = encoderPos;
     }
   }
 
   public void setShooterRpm(double rpm) {
     shooterMaster.set(rpm);
+  }
+  
+  public double getShooterRpm() {
+    return rpm;
   }
 }
