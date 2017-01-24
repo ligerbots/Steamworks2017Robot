@@ -23,4 +23,6 @@ public class RobotMap {
   public static final int SOLENOID_SHIFT_DOWN = 0;
   
   public static final int RELAY_LED_RING = 0;
+  
+  public static final int GEAR_SERVO_CHANNEL = 0;
 }
