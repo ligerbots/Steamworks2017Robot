@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class ShooterFeederCommand extends Command {
     double rpm = 0.0;
+    final double SOMENUMBER = 0.0;		// FIX ME!!
     public ShooterFeederCommand(double rpm) {
         requires(Robot.feeder);
         requires(Robot.shooter);
@@ -24,7 +25,7 @@ public class ShooterFeederCommand extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-      double shooterRpm = 
+      double shooterRpm = SOMENUMBER;	// FIX ME !!
     }
 
     // Make this return true when this Command no longer needs to run execute()

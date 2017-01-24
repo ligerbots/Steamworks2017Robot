@@ -9,11 +9,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
-<<<<<<< HEAD
 import org.ligerbots.steamworks.subsystems.Feeder;
-=======
 import org.ligerbots.steamworks.subsystems.GearManipulator;
->>>>>>> branch 'master' of https://github.com/ligerbots/Steamworks2017Robot
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.Vision;
 
@@ -28,13 +25,11 @@ public class Robot extends IterativeRobot {
   public static final DriveTrain driveTrain = new DriveTrain();
   public static final Vision vision = new Vision();
   public static final Shooter shooter = new Shooter();
-<<<<<<< HEAD
   public static final Feeder feeder = new Feeder();
   
-=======
+
   public static final GearManipulator gearManipulator = new GearManipulator();
 
->>>>>>> branch 'master' of https://github.com/ligerbots/Steamworks2017Robot
   public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
   public static OperatorInterface operatorInterface;
   Command autonomousCommand;

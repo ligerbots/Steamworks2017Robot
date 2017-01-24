@@ -2,7 +2,7 @@ package org.ligerbots.steamworks.subsystems;
 
 import org.ligerbots.steamworks.RobotMap;
 
-import edu.wpi.first.wpilibj.CANTalon;
+import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
 /**
