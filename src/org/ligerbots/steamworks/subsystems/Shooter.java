@@ -40,7 +40,7 @@ public class Shooter extends Subsystem {
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
-    
+
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
     // allow JVM to exit
     shooterWatchdog.setDaemon(true);
@@ -48,10 +48,15 @@ public class Shooter extends Subsystem {
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
   }
-  public double getRpm() {
-    //return shooterMaster.GetPulseWidthVelocity();
-    return 0.0;
+  
+  public void setShooterRpm(double rpm) {
+    shooterMaster.set(rpm);
   }
+  
+  public double getShooterRpm() {
+    return shooterMaster.get();
+  }
+
   public void initDefaultCommand() {
     // No default command
   }
@@ -75,9 +80,5 @@ public class Shooter extends Subsystem {
         ex.printStackTrace();
       }
     }
-  }
-
-  public void setShooterRpm(double rpm) {
-    shooterMaster.set(rpm);
   }
 }

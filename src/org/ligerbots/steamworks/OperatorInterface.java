@@ -19,12 +19,13 @@ public class OperatorInterface {
    */
   public OperatorInterface() {
     xboxController = new XboxController(0);
-    JoystickButton leftBumper = new JoystickButton(xboxController, 5);
-    leftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
-    JoystickButton rightBumper = new JoystickButton(xboxController, 6);
-    rightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
-    JoystickButton xxButton = new JoystickButton(xboxController, 3);
-    xxButton.whenPressed(new GearCommand(!Robot.gearManipulator.isOpen())); //Toggle the mechanism open or closed.
+    JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
+    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
+    JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
+    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
+    JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
+    // Toggle the mechanism open or closed.
+    xboxXButton.whenPressed(new GearCommand(!Robot.gearManipulator.isOpen()));
   }
 
   public double getThrottle() {

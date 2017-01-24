@@ -1,39 +1,41 @@
 package org.ligerbots.steamworks.subsystems;
 
-import org.ligerbots.steamworks.RobotMap;
-
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import java.util.Arrays;
+import org.ligerbots.steamworks.RobotMap;
 
 /**
- *
+ * The feeder is the mechanism that delivers fuel consistently to the shooter from the hopper.
  */
 public class Feeder extends Subsystem {
-    public static final int MAX_RPM = 1300; //I don't know what an actual reasonable max RPM is.
-    // Put methods for controlling this subsystem
-    // here. Call these from Commands.
-	CANTalon feederMaster;
-	CANTalon feederSlave;
-	public Feeder() {
-		feederMaster = new CANTalon(RobotMap.CT_ID_FEEDER_MASTER);
-		feederMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
-		feederSlave = new CANTalon(RobotMap.CT_ID_FEEDER_SLAVE);
-		feederSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
-		feederSlave.set(RobotMap.CT_ID_FEEDER_MASTER);
-		
-	}
-	public void setFeederRpm(double rpm) {
-	  if (rpm > MAX_RPM) {
-	    rpm = 0.0;
-	  }
-	  if (rpm < 0.0) {
-        rpm = 0.0;
-      }
-	  feederMaster.set(rpm);
-	}
-    public void initDefaultCommand() {
-        // No default command
-    }
-    
+  CANTalon feederMaster;
+  CANTalon feederSlave;
+
+  /**
+   * Creates the Feeder subsystem.
+   */
+  public Feeder() {
+    feederMaster = new CANTalon(RobotMap.CT_ID_FEEDER_MASTER);
+    feederMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    feederSlave = new CANTalon(RobotMap.CT_ID_FEEDER_SLAVE);
+    feederSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+    feederSlave.set(RobotMap.CT_ID_FEEDER_MASTER);
+
+    // we want the feeder to stop ASAP to avoid shooting extra balls
+    Arrays.asList(feederMaster, feederSlave)
+        .forEach((CANTalon talon) -> talon.enableBrakeMode(true));
+  }
+
+  /**
+   * Sets the feeder motors.
+   * 
+   * @param value A percentvbus value, 0.0 to 1.0
+   */
+  public void setFeeder(double value) {
+    feederMaster.set(value);
+  }
+
+  public void initDefaultCommand() {}
 }
 

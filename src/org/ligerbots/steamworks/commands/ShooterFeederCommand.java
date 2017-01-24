@@ -1,44 +1,58 @@
 package org.ligerbots.steamworks.commands;
 
+import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 
-import edu.wpi.first.wpilibj.command.Command;
-
 /**
- *
+ * This command spins up the shooter, then starts feeding once the shooter is up to speed.
  */
 public class ShooterFeederCommand extends Command {
-    double rpm = 0.0;
-    final double SOMENUMBER = 0.0;		// FIX ME!!
-    public ShooterFeederCommand(double rpm) {
-        requires(Robot.feeder);
-        requires(Robot.shooter);
-        this.rpm = rpm;
+  static final double RPM_PERCENT_TOLERANCE = 0.05;
+
+  double desiredShooterRpm = 0.0;
+  boolean readyToStartFeeder = false;
+
+  /**
+   * Creates a new ShooterFeederCommand.
+   * 
+   * @param desiredShooterRpm The rpm we need the shooter at.
+   */
+  public ShooterFeederCommand(double desiredShooterRpm) {
+    requires(Robot.feeder);
+    requires(Robot.shooter);
+    this.desiredShooterRpm = desiredShooterRpm;
+  }
+
+  protected void initialize() {
+    Robot.feeder.setFeeder(0);
+    Robot.shooter.setShooterRpm(desiredShooterRpm);
+    readyToStartFeeder = false;
+  }
+
+  protected void execute() {
+    double currentShooterRpm = Robot.shooter.getShooterRpm();
+    if (Math.abs(currentShooterRpm - desiredShooterRpm)
+        / desiredShooterRpm < RPM_PERCENT_TOLERANCE) {
+      readyToStartFeeder = true;
     }
 
-    // Called just before this Command runs the first time
-    protected void initialize() {
-        Robot.feeder.setFeederRpm(0.0);
-        Robot.shooter.setShooterRpm(0.0);
-        
+    if (readyToStartFeeder) {
+      Robot.feeder.setFeeder(1.0);
     }
+  }
 
-    // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
-      double shooterRpm = SOMENUMBER;	// FIX ME !!
-    }
+  protected boolean isFinished() {
+    // we probably want to finish by a JoystickButton.isHeld calling cancel()
+    return false;
+  }
 
-    // Make this return true when this Command no longer needs to run execute()
-    protected boolean isFinished() {
-        return false;
-    }
+  protected void end() {
+    Robot.feeder.setFeeder(0);
+    Robot.shooter.setShooterRpm(0);
+  }
 
-    // Called once after isFinished returns true
-    protected void end() {
-    }
-
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
-    protected void interrupted() {
-    }
+  protected void interrupted() {
+    Robot.feeder.setFeeder(0);
+    Robot.shooter.setShooterRpm(0);
+  }
 }

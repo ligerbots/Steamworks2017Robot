@@ -8,37 +8,28 @@ import org.ligerbots.steamworks.Robot;
  */
 public class GearCommand extends Command {
 
-  boolean isOpen;
+  boolean shouldBeOpen;
   
   /**
-   * Update the value of isOpen.
-   * @param isOpen True when the ear mechanism is open
+   * Creates a new GearCommand.
+   * @param shouldBeOpen Whether the gear mechanism should be open or not.
    */
-  public GearCommand(boolean isOpen) {
+  public GearCommand(boolean shouldBeOpen) {
     requires(Robot.gearManipulator);
-    this.isOpen = isOpen;
+    this.shouldBeOpen = shouldBeOpen;
   }
 
-  // Called just before this Command runs the first time
   protected void initialize() {}
 
   protected void execute() {
-    if (isOpen) {
-      Robot.gearManipulator.openManipulator();
-    } else {
-      Robot.gearManipulator.closeManipulator();
-    }
+    Robot.gearManipulator.setOpen(shouldBeOpen);
   }
 
-  // Make this return true when this Command no longer needs to run execute()
   protected boolean isFinished() {
     return true;
   }
 
-  // Called once after isFinished returns true
   protected void end() {}
 
-  // Called when another command which requires one or more of the same
-  // subsystems is scheduled to run
   protected void interrupted() {}
 }
