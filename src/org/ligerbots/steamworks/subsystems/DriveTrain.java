@@ -61,7 +61,7 @@ public class DriveTrain extends Subsystem {
    */
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
-    setDefaultCommand(Robot.driveJoystickCommand);
+//    setDefaultCommand(Robot.driveJoystickCommand);
   }
 
   /**

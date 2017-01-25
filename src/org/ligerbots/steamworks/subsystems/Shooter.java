@@ -22,14 +22,15 @@ public class Shooter extends Subsystem {
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
     shooterMaster.enableBrakeMode(false); // probably bad for 775pros
     shooterMaster.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
-    shooterMaster.reverseSensor(false);
+//    shooterMaster.reverseSensor(true);
+//    shooterMaster.reverseOutput(true);
     // the Talon needs peak and nominal output values
     shooterMaster.configNominalOutputVoltage(+0.0f, -0.0f);
-    shooterMaster.configPeakOutputVoltage(+12.0f, 0.0f);
+    shooterMaster.configPeakOutputVoltage(+12.0f, -12.0f);
     // configure PID
     shooterMaster.setProfile(0);
-    shooterMaster.setF(0.1097);
-    shooterMaster.setP(0.22);
+    shooterMaster.setF(0.03556158097820419230368130149129);
+    shooterMaster.setP(0.03);
     shooterMaster.setI(0);
     shooterMaster.setD(0);
     // luckily, CANSpeedController does the heavy lifting of dashboard PID configuration for us
@@ -39,6 +40,7 @@ public class Shooter extends Subsystem {
     shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
+//    shooterSlave.reverseOutput(true);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
 
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
@@ -51,6 +53,13 @@ public class Shooter extends Subsystem {
   
   public void setShooterRpm(double rpm) {
     shooterMaster.set(rpm);
+    if(rpm != 0) {
+      shooterMaster.enableControl();
+      shooterSlave.enableControl();
+    } else {
+      shooterMaster.disableControl();
+      shooterSlave.disableControl();
+    }
   }
   
   public double getShooterRpm() {

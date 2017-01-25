@@ -1,6 +1,7 @@
 
 package org.ligerbots.steamworks;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -22,15 +23,13 @@ import org.ligerbots.steamworks.subsystems.Vision;
  */
 public class Robot extends IterativeRobot {
 
-  public static final DriveTrain driveTrain = new DriveTrain();
-  public static final Vision vision = new Vision();
-  public static final Shooter shooter = new Shooter();
-  public static final Feeder feeder = new Feeder();
-  
+  public static final DriveTrain driveTrain = null;//new DriveTrain();
+  public static final Vision vision = null;//new Vision();
+  public static Shooter shooter = null;
+  public static final Feeder feeder = null;//new Feeder();
+  public static final GearManipulator gearManipulator = null;//new GearManipulator();
 
-  public static final GearManipulator gearManipulator = new GearManipulator();
-
-  public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
+//  public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
   public static OperatorInterface operatorInterface;
   Command autonomousCommand;
   SendableChooser<Command> chooser = new SendableChooser<>();
@@ -41,6 +40,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void robotInit() {
+    shooter = new Shooter();
     operatorInterface = new OperatorInterface();
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
@@ -108,7 +108,9 @@ public class Robot extends IterativeRobot {
       autonomousCommand.cancel();
     }
 
-    driveJoystickCommand.start();
+//    driveJoystickCommand.start();
+    
+    SmartDashboard.putNumber("rpm", 0);
   }
 
   /**
@@ -117,6 +119,14 @@ public class Robot extends IterativeRobot {
   @Override
   public void teleopPeriodic() {
     commonPeriodic();
+    
+    if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
+      shooter.setShooterRpm(-SmartDashboard.getNumber("rpm", 0));
+    } else {
+      shooter.setShooterRpm(0);
+    }
+    
+    SmartDashboard.putNumber("actualRpm", shooter.getShooterRpm());
   }
 
   /**
@@ -125,5 +135,12 @@ public class Robot extends IterativeRobot {
   @Override
   public void testPeriodic() {
     LiveWindow.run();
+    
+    if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
+      shooter.setShooterRpm(-2000);
+    } else {
+      shooter.setShooterRpm(0);
+    }
+    System.out.println(shooter.getShooterRpm());
   }
 }
