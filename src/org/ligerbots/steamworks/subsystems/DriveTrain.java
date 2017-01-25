@@ -1,8 +1,11 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.buttons.Button;
+import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import java.util.Arrays;
 import org.ligerbots.steamworks.Robot;
@@ -28,7 +31,7 @@ public class DriveTrain extends Subsystem {
   CANTalon right2;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
-
+  DigitalInput limitSwitch;
   /**
    * Creates a new drive train instance.
    */
@@ -54,6 +57,9 @@ public class DriveTrain extends Subsystem {
     robotDrive = new RobotDrive(left1, right1);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.SOLENOID_SHIFT_UP, RobotMap.SOLENOID_SHIFT_DOWN);
+    
+    limitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_DIO_PORT);
+    
   }
 
   /**
@@ -91,6 +97,18 @@ public class DriveTrain extends Subsystem {
     } else {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
+  }
+  
+  /**
+   * Makes the robot drive until the limitSwitch is pressed.
+   */
+  public void climb() {
+    shift(ShiftType.DOWN);
+    joystickDrive(1,0); 
+  }
+  
+  public boolean limitSwitch(){
+    return limitSwitch.get();
   }
 }
 

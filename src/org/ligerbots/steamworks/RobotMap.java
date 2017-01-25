@@ -29,4 +29,6 @@ public class RobotMap {
   public static final int MAG_ENCODER_UNITS_PER_REVOLUTION = 4096;
   public static final float MAG_ENCODER_FREQUENCY = 10;
   public static final double NANOS_PER_MINUTE = 60.0e9;
+  
+  public static final int LIMIT_SWITCH_DIO_PORT = 0;
 }
