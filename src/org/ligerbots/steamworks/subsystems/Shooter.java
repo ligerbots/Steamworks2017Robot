@@ -3,7 +3,6 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 
 /**
@@ -32,8 +31,7 @@ public class Shooter extends Subsystem {
     shooterMaster.setP(0.22);
     shooterMaster.setI(0);
     shooterMaster.setD(0);
-    // luckily, CANSpeedController does the heavy lifting of dashboard PID configuration for us
-    SmartDashboard.putData("Shooter PID", shooterMaster);
+    // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
 
     shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
@@ -63,6 +61,10 @@ public class Shooter extends Subsystem {
 
   /**
    * Constantly checks 775pro current and kills the shooter if it gets close to stall current.
+   * 
+   * <p>
+   * No Charles, this is not a physical watch dog!
+   * </p>
    */
   private void shooterWatchdogThread() {
     while (true) {
