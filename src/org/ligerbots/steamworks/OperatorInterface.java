@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
+import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 
@@ -28,6 +29,8 @@ public class OperatorInterface {
     xxButton.whenPressed(new GearCommand(!Robot.gearManipulator.isOpen())); //Toggle the mechanism open or closed.
     JoystickButton bbButton = new JoystickButton(xboxController, 2);
     bbButton.whenPressed(new ClimbCommand());
+    JoystickButton aaButton = new JoystickButton(xboxController, 1);
+    aaButton.whenPressed(new IntakeCommand(!Robot.intake.isOn()));
   }
 
   public double getThrottle() {
