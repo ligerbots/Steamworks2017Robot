@@ -32,6 +32,8 @@ public class Robot extends IterativeRobot {
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
   
+  long prevNanos = System.nanoTime();
+  
   Command autonomousCommand;
   SendableChooser<Command> chooser;
 
@@ -60,6 +62,9 @@ public class Robot extends IterativeRobot {
   public void commonPeriodic() {
     Scheduler.getInstance().run();
     driveTrain.dumpNavX();
+    long currentNanos = System.nanoTime();
+    SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000.0);
+    prevNanos = currentNanos;
   }
 
   /**
