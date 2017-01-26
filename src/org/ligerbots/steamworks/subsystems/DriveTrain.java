@@ -1,12 +1,15 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
@@ -32,6 +35,7 @@ public class DriveTrain extends Subsystem {
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DigitalInput limitSwitch;
+  AHRS navX;
   
   /**
    * Creates a new drive train instance.
@@ -61,6 +65,7 @@ public class DriveTrain extends Subsystem {
     
     limitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_DIO_PORT);
     
+    navX = new AHRS(SPI.Port.kMXP);
   }
 
   /**
@@ -108,8 +113,62 @@ public class DriveTrain extends Subsystem {
     joystickDrive(1,0); 
   }
   
-  public boolean limitSwitch(){
+  public boolean limitSwitch() {
     return limitSwitch.get();
+  }
+  
+  public void dumpNavX() {
+    SmartDashboard.putBoolean("IMU_Connected", navX.isConnected());
+    SmartDashboard.putBoolean("IMU_IsCalibrating", navX.isCalibrating());
+    SmartDashboard.putNumber("IMU_Yaw", navX.getYaw());
+    SmartDashboard.putNumber("IMU_Pitch", navX.getPitch());
+    SmartDashboard.putNumber("IMU_Roll", navX.getRoll());
+
+    SmartDashboard.putNumber("IMU_CompassHeading",
+            navX.getCompassHeading());
+
+    SmartDashboard.putNumber("IMU_FusedHeading", navX.getFusedHeading());
+
+    SmartDashboard.putNumber("IMU_TotalYaw", navX.getAngle());
+    SmartDashboard.putNumber("IMU_YawRateDPS", navX.getRate());
+
+    SmartDashboard.putNumber("IMU_Accel_X", navX.getWorldLinearAccelX());
+    SmartDashboard.putNumber("IMU_Accel_Y", navX.getWorldLinearAccelY());
+    SmartDashboard.putBoolean("IMU_IsMoving", navX.isMoving());
+    SmartDashboard.putBoolean("IMU_IsRotating", navX.isRotating());
+
+    SmartDashboard.putNumber("Velocity_X", navX.getVelocityX());
+    SmartDashboard.putNumber("Velocity_Y", navX.getVelocityY());
+    SmartDashboard.putNumber("Displacement_X", navX.getDisplacementX());
+    SmartDashboard.putNumber("Displacement_Y", navX.getDisplacementY());
+
+    SmartDashboard.putNumber("RawGyro_X", navX.getRawGyroX());
+    SmartDashboard.putNumber("RawGyro_Y", navX.getRawGyroY());
+    SmartDashboard.putNumber("RawGyro_Z", navX.getRawGyroZ());
+    SmartDashboard.putNumber("RawAccel_X", navX.getRawAccelX());
+    SmartDashboard.putNumber("RawAccel_Y", navX.getRawAccelY());
+    SmartDashboard.putNumber("RawAccel_Z", navX.getRawAccelZ());
+    SmartDashboard.putNumber("RawMag_X", navX.getRawMagX());
+    SmartDashboard.putNumber("RawMag_Y", navX.getRawMagY());
+    SmartDashboard.putNumber("RawMag_Z", navX.getRawMagZ());
+    SmartDashboard.putNumber("IMU_Temp_C", navX.getTempC());
+
+    AHRS.BoardYawAxis yawAxis = navX.getBoardYawAxis();
+    SmartDashboard.putString("YawAxisDirection",
+            yawAxis.up ? "Up" : "Down");
+    SmartDashboard.putNumber("YawAxis", yawAxis.board_axis.getValue());
+
+    SmartDashboard.putString("FirmwareVersion", navX.getFirmwareVersion());
+
+    
+    SmartDashboard.putNumber("QuaternionW", navX.getQuaternionW());
+    SmartDashboard.putNumber("QuaternionX", navX.getQuaternionX());
+    SmartDashboard.putNumber("QuaternionY", navX.getQuaternionY());
+    SmartDashboard.putNumber("QuaternionZ", navX.getQuaternionZ());
+
+    SmartDashboard.putNumber("IMU_Byte_Count", navX.getByteCount());
+    SmartDashboard.putNumber("IMU_Update_Count", navX.getUpdateCount());
+    
   }
 }
 
