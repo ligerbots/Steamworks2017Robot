@@ -59,6 +59,7 @@ public class Robot extends IterativeRobot {
 
   public void commonPeriodic() {
     Scheduler.getInstance().run();
+    driveTrain.dumpNavX();
   }
 
   /**

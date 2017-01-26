@@ -117,7 +117,7 @@ public class DriveTrain extends Subsystem {
     return limitSwitch.get();
   }
   
-  public void dumpNavx() {
+  public void dumpNavX() {
     SmartDashboard.putBoolean("IMU_Connected", navX.isConnected());
     SmartDashboard.putBoolean("IMU_IsCalibrating", navX.isCalibrating());
     SmartDashboard.putNumber("IMU_Yaw", navX.getYaw());
