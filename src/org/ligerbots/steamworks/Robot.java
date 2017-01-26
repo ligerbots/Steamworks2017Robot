@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
 import org.ligerbots.steamworks.subsystems.Shooter;
@@ -21,17 +22,18 @@ import org.ligerbots.steamworks.subsystems.Vision;
  * resource directory.
  */
 public class Robot extends IterativeRobot {
+  public static DriveTrain driveTrain;
+  public static Vision vision;
+  public static Shooter shooter;
+  public static Feeder feeder;
+  public static Intake intake;
+  public static GearManipulator gearManipulator;
 
-  public static final DriveTrain driveTrain = new DriveTrain();
-  public static final Vision vision = new Vision();
-  public static final Shooter shooter = new Shooter();
-  public static final GearManipulator gearManipulator = new GearManipulator();
-  public static final Intake intake = new Intake();
-
-  public static final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand();
+  public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
+  
   Command autonomousCommand;
-  SendableChooser<Command> chooser = new SendableChooser<>();
+  SendableChooser<Command> chooser;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -39,7 +41,17 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void robotInit() {
+    driveTrain = new DriveTrain();
+    vision = new Vision();
+    shooter = new Shooter();
+    feeder = new Feeder();
+    gearManipulator = new GearManipulator();
+    intake = new Intake();
+    
+    driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
+    
+    chooser = new SendableChooser<>();
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);

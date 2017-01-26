@@ -3,7 +3,6 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 
 /**
@@ -12,7 +11,6 @@ import org.ligerbots.steamworks.RobotMap;
 public class Shooter extends Subsystem {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
-  volatile double rpm = 0;
   
   /**
    * Create the instance of Shooter.
@@ -33,15 +31,14 @@ public class Shooter extends Subsystem {
     shooterMaster.setP(0.22);
     shooterMaster.setI(0);
     shooterMaster.setD(0);
-    // luckily, CANSpeedController does the heavy lifting of dashboard PID configuration for us
-    SmartDashboard.putData("Shooter PID", shooterMaster);
+    // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
 
     shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
-    
+
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
     // allow JVM to exit
     shooterWatchdog.setDaemon(true);
@@ -50,6 +47,14 @@ public class Shooter extends Subsystem {
     shooterWatchdog.start();
     
   }
+  
+  public void setShooterRpm(double rpm) {
+    shooterMaster.set(rpm);
+  }
+  
+  public double getShooterRpm() {
+    return shooterMaster.get();
+  }
 
   public void initDefaultCommand() {
     // No default command
@@ -57,10 +62,12 @@ public class Shooter extends Subsystem {
 
   /**
    * Constantly checks 775pro current and kills the shooter if it gets close to stall current.
+   * 
+   * <p>
+   * No Charles, this is not a physical watch dog!
+   * </p>
    */
   private void shooterWatchdogThread() {
-    double prevEncoderPos = shooterMaster.getEncPosition();
-    long prevNano = System.nanoTime();
     while (true) {
       if (shooterMaster.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO
           || shooterSlave.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO) {
@@ -75,22 +82,6 @@ public class Shooter extends Subsystem {
       } catch (InterruptedException ex) {
         ex.printStackTrace();
       }
-      double encoderPos = shooterMaster.getEncPosition();
-      double deltaEncoderPos = encoderPos - prevEncoderPos;
-      long curNano = System.nanoTime();
-      long deltaNano = curNano - prevNano;
-      rpm = RobotMap.NANOS_PER_MINUTE * deltaEncoderPos / RobotMap.MAG_ENCODER_UNITS_PER_REVOLUTION 
-          / deltaNano;
-      prevNano = curNano;
-      prevEncoderPos = encoderPos;
     }
-  }
-
-  public void setShooterRpm(double rpm) {
-    shooterMaster.set(rpm);
-  }
-  
-  public double getShooterRpm() {
-    return rpm;
   }
 }
