@@ -45,6 +45,8 @@ public class Robot extends IterativeRobot {
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);
+    
+    SmartDashboard.putNumber("rpm", 0);
   }
 
   public void commonPeriodic() {
@@ -63,6 +65,8 @@ public class Robot extends IterativeRobot {
   @Override
   public void disabledPeriodic() {
     commonPeriodic();
+    
+    System.out.println(SmartDashboard.getNumber("rpm", 0));
   }
 
   /**
@@ -110,7 +114,6 @@ public class Robot extends IterativeRobot {
 
 //    driveJoystickCommand.start();
     
-    SmartDashboard.putNumber("rpm", 0);
   }
 
   /**
@@ -126,7 +129,7 @@ public class Robot extends IterativeRobot {
       shooter.setShooterRpm(0);
     }
     
-    SmartDashboard.putNumber("actualRpm", shooter.getShooterRpm());
+    shooter.reportSmartDashboard();
   }
 
   /**
@@ -135,6 +138,8 @@ public class Robot extends IterativeRobot {
   @Override
   public void testPeriodic() {
     LiveWindow.run();
+    
+    shooter.reportSmartDashboard();
     
     if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
       shooter.setShooterRpm(-2000);
