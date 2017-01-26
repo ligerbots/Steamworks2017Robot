@@ -31,8 +31,8 @@ public class ShooterFeederCommand extends Command {
 
   protected void execute() {
     double currentShooterRpm = Robot.shooter.getShooterRpm();
-    if (Math.abs(currentShooterRpm - desiredShooterRpm)
-        / desiredShooterRpm < RPM_PERCENT_TOLERANCE) {
+    if (Math.abs((currentShooterRpm - desiredShooterRpm)
+        / desiredShooterRpm) < RPM_PERCENT_TOLERANCE) {
       readyToStartFeeder = true;
     }
 
