@@ -16,7 +16,7 @@ import org.ligerbots.steamworks.RobotMap;
 /**
  * The subsystem that handles communication with the android.
  */
-public class Vision extends Subsystem {
+public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final int CS_STREAM_PORT = 5810;
   private static final int DATA_PORT = 5808;
   private static final int CS_FEEDBACK_INTERVAL = 1000;
@@ -190,5 +190,11 @@ public class Vision extends Subsystem {
         ex.printStackTrace();
       }
     }
+  }
+
+  @Override
+  public void sendDataToSmartDashboard() {
+    // TODO Auto-generated method stub
+    
   }
 }

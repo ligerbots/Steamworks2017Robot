@@ -7,12 +7,15 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Arrays;
+import java.util.List;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
 import org.ligerbots.steamworks.subsystems.Shooter;
+import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
 import org.ligerbots.steamworks.subsystems.Vision;
 
 /**
@@ -28,12 +31,12 @@ public class Robot extends IterativeRobot {
   public static Feeder feeder;
   public static Intake intake;
   public static GearManipulator gearManipulator;
-
+  public static List<SmartDashboardLogger> allSubsystems;
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
-  
+
   long prevNanos = System.nanoTime();
-  
+
   Command autonomousCommand;
   SendableChooser<Command> chooser;
 
@@ -49,10 +52,10 @@ public class Robot extends IterativeRobot {
     feeder = new Feeder();
     gearManipulator = new GearManipulator();
     intake = new Intake();
-    
+    allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake);
     driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
-    
+
     chooser = new SendableChooser<>();
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
@@ -61,7 +64,7 @@ public class Robot extends IterativeRobot {
 
   public void commonPeriodic() {
     Scheduler.getInstance().run();
-    driveTrain.dumpNavX();
+    allSubsystems.forEach((SmartDashboardLogger logger) -> logger.sendDataToSmartDashboard());
     long currentNanos = System.nanoTime();
     SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000.0);
     prevNanos = currentNanos;
