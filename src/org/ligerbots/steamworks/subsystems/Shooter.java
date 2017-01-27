@@ -29,10 +29,10 @@ public class Shooter extends Subsystem {
     shooterMaster.configPeakOutputVoltage(+12.0f, -12.0f);
     // configure PID
     shooterMaster.setProfile(0);
-    shooterMaster.setF(0.03556158097820419230368130149129);
-    shooterMaster.setP(0.1);
-    shooterMaster.setI(1.0E-4);
-    shooterMaster.setD(0);
+    shooterMaster.setF(0);
+    shooterMaster.setP(0.05);
+    shooterMaster.setI(0.0003);
+    shooterMaster.setD(0.1);
     // luckily, CANSpeedController does the heavy lifting of dashboard PID configuration for us
     SmartDashboard.putData("Shooter PID", shooterMaster);
     LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
@@ -50,15 +50,22 @@ public class Shooter extends Subsystem {
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
   }
+  
+  public void fixHacks() {
+    shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.enableControl();
+  }
 
   public void setShooterRpm(double rpm) {
-    shooterMaster.set(rpm);
-    if (rpm != 0) {
-      shooterMaster.enableControl();
-      shooterSlave.enableControl();
+    System.out.println("set to" + rpm);
+    if(rpm == 0) {
+      shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+      shooterMaster.set(0);
     } else {
-      shooterMaster.disableControl();
-      shooterSlave.disableControl();
+      shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+      shooterMaster.set(rpm);
+      shooterMaster.enableControl();
     }
   }
 
@@ -94,6 +101,7 @@ public class Shooter extends Subsystem {
         setShooterRpm(0);
         shooterMaster.disableControl();
         shooterSlave.disableControl();
+        System.exit(-10);
       }
 
       try {

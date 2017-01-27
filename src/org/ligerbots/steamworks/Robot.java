@@ -128,6 +128,7 @@ public class Robot extends IterativeRobot {
     } else {
       shooter.setShooterRpm(0);
     }
+    shooter.fixHacks();
     
     shooter.reportSmartDashboard();
   }
@@ -140,6 +141,8 @@ public class Robot extends IterativeRobot {
     LiveWindow.run();
     
     shooter.reportSmartDashboard();
+    
+    shooter.fixHacks();
     
     if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
       shooter.setShooterRpm(-2000);
