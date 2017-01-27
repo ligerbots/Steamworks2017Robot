@@ -9,14 +9,20 @@ import org.ligerbots.steamworks.Robot;
 public class GearCommand extends Command {
 
   boolean shouldBeOpen;
+  boolean hold;
   
   /**
    * Creates a new GearCommand.
    * @param shouldBeOpen Whether the gear mechanism should be open or not.
    */
   public GearCommand(boolean shouldBeOpen) {
+    this(shouldBeOpen, false);
+  }
+  
+  public GearCommand(boolean shouldBeOpen, boolean hold) {
     requires(Robot.gearManipulator);
     this.shouldBeOpen = shouldBeOpen;
+    this.hold = hold;
   }
 
   protected void initialize() {}
@@ -26,10 +32,18 @@ public class GearCommand extends Command {
   }
 
   protected boolean isFinished() {
-    return true;
+    return !hold;
   }
 
-  protected void end() {}
+  protected void end() {
+    if (hold) {
+      Robot.gearManipulator.setOpen(!shouldBeOpen);
+    }
+  }
 
-  protected void interrupted() {}
+  protected void interrupted() {
+    if (hold) {
+      Robot.gearManipulator.setOpen(!shouldBeOpen);
+    }
+  }
 }

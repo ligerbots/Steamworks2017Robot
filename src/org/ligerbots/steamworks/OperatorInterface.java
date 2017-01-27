@@ -4,10 +4,12 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import org.ligerbots.steamworks.commands.ClimbCommand;
+import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 
 /**
  * This class is the glue that binds the controls on the physical operator interface to the commands
@@ -27,11 +29,13 @@ public class OperatorInterface {
     xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
     // Toggle the mechanism open or closed.
-    xboxXButton.whenPressed(new GearCommand(!Robot.gearManipulator.isOpen()));
+    xboxXButton.whileHeld(new GearCommand(true, true));
     JoystickButton bbButton = new JoystickButton(xboxController, 2);
     bbButton.whenPressed(new ClimbCommand());
     JoystickButton aaButton = new JoystickButton(xboxController, 1);
     aaButton.whenPressed(new IntakeCommand(!Robot.intake.isIntakeOn()));
+    JoystickButton startButton = new JoystickButton(xboxController, 9);
+    startButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
   }
 
   public double getThrottle() {

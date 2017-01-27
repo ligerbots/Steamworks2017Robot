@@ -17,6 +17,7 @@ import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
+import org.ligerbots.steamworks.subsystems.Pneumatics;
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -43,6 +44,7 @@ public class Robot extends IterativeRobot {
   }
 
   public static DriveTrain driveTrain;
+  public static Pneumatics pneumatics;
   public static Vision vision;
   public static Shooter shooter;
   public static Feeder feeder;
@@ -73,6 +75,7 @@ public class Robot extends IterativeRobot {
     feeder = new Feeder();
     gearManipulator = new GearManipulator();
     intake = new Intake();
+    pneumatics = new Pneumatics();
     allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake);
     driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
