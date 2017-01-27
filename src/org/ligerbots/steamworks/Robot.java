@@ -1,6 +1,9 @@
 
 package org.ligerbots.steamworks;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.net.server.ServerSocketAppender;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -17,6 +20,8 @@ import org.ligerbots.steamworks.subsystems.Intake;
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
 import org.ligerbots.steamworks.subsystems.Vision;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,6 +30,18 @@ import org.ligerbots.steamworks.subsystems.Vision;
  * resource directory.
  */
 public class Robot extends IterativeRobot {
+  static {
+    // set up log server that the DS laptop can read and save
+    ch.qos.logback.classic.Logger root =
+        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    root.setLevel(Level.ALL);
+    ServerSocketAppender socketAppender = new ServerSocketAppender();
+    socketAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+    socketAppender.setPort(5801);
+    socketAppender.start();
+    root.addAppender(socketAppender);
+  }
+
   public static DriveTrain driveTrain;
   public static Vision vision;
   public static Shooter shooter;
@@ -40,12 +57,16 @@ public class Robot extends IterativeRobot {
   Command autonomousCommand;
   SendableChooser<Command> chooser;
 
+  Logger logger = LoggerFactory.getLogger(Robot.class);
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
+    logger.trace("robotInit()");
+
     driveTrain = new DriveTrain();
     vision = new Vision();
     shooter = new Shooter();
@@ -62,7 +83,10 @@ public class Robot extends IterativeRobot {
     SmartDashboard.putData("Auto mode", chooser);
   }
 
-  public void commonPeriodic() {
+  @Override
+  public void robotPeriodic() {
+    logger.trace("robotPeriodic()");
+    
     Scheduler.getInstance().run();
     allSubsystems.forEach((SmartDashboardLogger logger) -> logger.sendDataToSmartDashboard());
     long currentNanos = System.nanoTime();
@@ -76,12 +100,12 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void disabledInit() {
-
+    logger.trace("disabledInit()");
   }
 
   @Override
   public void disabledPeriodic() {
-    commonPeriodic();
+    logger.trace("disabledPeriodic()");
   }
 
   /**
@@ -95,6 +119,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void autonomousInit() {
+    logger.trace("autonomousInit()");
     autonomousCommand = chooser.getSelected();
 
     /*
@@ -114,11 +139,12 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    commonPeriodic();
+    logger.trace("autonomousPeriodic()");
   }
 
   @Override
   public void teleopInit() {
+    logger.trace("teleopInit()");
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -135,7 +161,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void teleopPeriodic() {
-    commonPeriodic();
+    logger.trace("teleopPeriodic()");
   }
 
   /**
@@ -143,6 +169,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void testPeriodic() {
+    logger.trace("testPeriodic()");
     LiveWindow.run();
   }
 }

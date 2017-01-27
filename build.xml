@@ -26,5 +26,13 @@
   <property file="${user.home}/wpilib/java/${version}/ant/build.properties"/>
 
   <import file="${wpilib.ant.dir}/build.xml"/>
-
+  
+  <!-- Override a wpilib task to copy JARs --> 
+  <target name="clean" description="Clean up all build and distribution artifacts.">
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
+  	<copy todir="${userLibs.dir}">
+      <fileset dir="lib" includes="*.jar" excludes="*-sources.jar,*-javadoc.jar" />
+  	</copy>
+  </target>
 </project>
