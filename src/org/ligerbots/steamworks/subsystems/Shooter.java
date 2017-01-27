@@ -3,12 +3,13 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 
 /**
  * This subsystem controls the shooter.
  */
-public class Shooter extends Subsystem {
+public class Shooter extends Subsystem implements SmartDashboardLogger {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
   
@@ -83,5 +84,13 @@ public class Shooter extends Subsystem {
         ex.printStackTrace();
       }
     }
+  }
+  
+  public void sendDataToSmartDashboard() {
+    SmartDashboard.putNumber("Shooter_Master_Talon_Power",
+        shooterMaster.getOutputCurrent() * shooterMaster.getOutputVoltage());
+    SmartDashboard.putNumber("Shooter_Slave_Talon_Power",
+        shooterSlave.getOutputCurrent() * shooterSlave.getOutputVoltage());
+    SmartDashboard.putNumber("Shooter_RPM_Real", getShooterRpm());
   }
 }

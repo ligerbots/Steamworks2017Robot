@@ -2,13 +2,14 @@ package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import org.ligerbots.steamworks.RobotMap;
 
 /**
  * The feeder is the mechanism that delivers fuel consistently to the shooter from the hopper.
  */
-public class Feeder extends Subsystem {
+public class Feeder extends Subsystem implements SmartDashboardLogger {
   CANTalon feederMaster;
   CANTalon feederSlave;
 
@@ -37,5 +38,12 @@ public class Feeder extends Subsystem {
   }
 
   public void initDefaultCommand() {}
+
+  public void sendDataToSmartDashboard() {
+    SmartDashboard.putNumber("Feeder_Master_Talon_Power",
+        feederMaster.getOutputCurrent() * feederMaster.getOutputVoltage());
+    SmartDashboard.putNumber("Feeder_Slave_Talon_Power",
+        feederSlave.getOutputCurrent() * feederSlave.getOutputVoltage());
+  }
 }
 

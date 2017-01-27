@@ -17,7 +17,7 @@ import org.ligerbots.steamworks.RobotMap;
 /**
  * This subsystem handles driving (duh).
  */
-public class DriveTrain extends Subsystem {
+public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
   /**
    * This is a list of all shift actions. Toggle is there because we will probably need to change
@@ -36,7 +36,7 @@ public class DriveTrain extends Subsystem {
   DoubleSolenoid shiftingSolenoid;
   DigitalInput limitSwitch;
   AHRS navX;
-  
+
   /**
    * Creates a new drive train instance.
    */
@@ -62,9 +62,9 @@ public class DriveTrain extends Subsystem {
     robotDrive = new RobotDrive(left1, right1);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.SOLENOID_SHIFT_UP, RobotMap.SOLENOID_SHIFT_DOWN);
-    
+
     limitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_DIO_PORT);
-    
+
     navX = new AHRS(SPI.Port.kMXP);
   }
 
@@ -104,19 +104,19 @@ public class DriveTrain extends Subsystem {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
   }
-  
+
   /**
    * Makes the robot drive until the limitSwitch is pressed.
    */
   public void climb() {
     shift(ShiftType.DOWN);
-    joystickDrive(1,0); 
+    joystickDrive(1, 0);
   }
-  
+
   public boolean limitSwitch() {
     return limitSwitch.get();
   }
-  
+
   public void dumpNavX() {
     SmartDashboard.putBoolean("IMU_Connected", navX.isConnected());
     SmartDashboard.putBoolean("IMU_IsCalibrating", navX.isCalibrating());
@@ -124,8 +124,7 @@ public class DriveTrain extends Subsystem {
     SmartDashboard.putNumber("IMU_Pitch", navX.getPitch());
     SmartDashboard.putNumber("IMU_Roll", navX.getRoll());
 
-    SmartDashboard.putNumber("IMU_CompassHeading",
-            navX.getCompassHeading());
+    SmartDashboard.putNumber("IMU_CompassHeading", navX.getCompassHeading());
 
     SmartDashboard.putNumber("IMU_FusedHeading", navX.getFusedHeading());
 
@@ -154,13 +153,12 @@ public class DriveTrain extends Subsystem {
     SmartDashboard.putNumber("IMU_Temp_C", navX.getTempC());
 
     AHRS.BoardYawAxis yawAxis = navX.getBoardYawAxis();
-    SmartDashboard.putString("YawAxisDirection",
-            yawAxis.up ? "Up" : "Down");
+    SmartDashboard.putString("YawAxisDirection", yawAxis.up ? "Up" : "Down");
     SmartDashboard.putNumber("YawAxis", yawAxis.board_axis.getValue());
 
     SmartDashboard.putString("FirmwareVersion", navX.getFirmwareVersion());
 
-    
+
     SmartDashboard.putNumber("QuaternionW", navX.getQuaternionW());
     SmartDashboard.putNumber("QuaternionX", navX.getQuaternionX());
     SmartDashboard.putNumber("QuaternionY", navX.getQuaternionY());
@@ -168,7 +166,19 @@ public class DriveTrain extends Subsystem {
 
     SmartDashboard.putNumber("IMU_Byte_Count", navX.getByteCount());
     SmartDashboard.putNumber("IMU_Update_Count", navX.getUpdateCount());
-    
+
+  }
+
+  public void sendDataToSmartDashboard() {
+    dumpNavX();
+    SmartDashboard.putNumber("Left_Talon_1_Power",
+        left1.getOutputCurrent() * left1.getOutputVoltage());
+    SmartDashboard.putNumber("Left_Talon_2_Power",
+        left2.getOutputCurrent() * left2.getOutputVoltage());
+    SmartDashboard.putNumber("Right_Talon_1_Power",
+        right1.getOutputCurrent() * right1.getOutputVoltage());
+    SmartDashboard.putNumber("Right_Talon_2_Power",
+        right2.getOutputCurrent() * right2.getOutputVoltage());
   }
 }
 
