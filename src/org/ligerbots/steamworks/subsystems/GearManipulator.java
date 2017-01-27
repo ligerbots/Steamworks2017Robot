@@ -46,7 +46,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     return isOpen;
   }
   
-  public void sendDataToSmartDashboard(){
+  public void sendDataToSmartDashboard() {
     SmartDashboard.putBoolean("Gear_Mechanism_Open", isOpen);
   }
 }

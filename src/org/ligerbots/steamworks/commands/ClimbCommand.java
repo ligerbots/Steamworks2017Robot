@@ -4,38 +4,28 @@ import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 
 /**
- *
+ * This command runs the drive until it detects the climb limit switch has been pressed.
  */
 public class ClimbCommand extends Command {
-  
-  
-    boolean shouldClimb;
-    public ClimbCommand() {
-      requires(Robot.driveTrain);
-      shouldClimb = true;
-    }
+  public ClimbCommand() {
+    requires(Robot.driveTrain);
+  }
 
-    // Called just before this Command runs the first time
-    protected void initialize() {
-    }
+  protected void initialize() {}
 
-    // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
-      shouldClimb = Robot.driveTrain.limitSwitch();
-      Robot.driveTrain.climb();
-    }
+  protected void execute() {
+    Robot.driveTrain.climb();
+  }
 
-    // Make this return true when this Command no longer needs to run execute()
-    protected boolean isFinished() {
-        return shouldClimb;
-    }
+  protected boolean isFinished() {
+    return Robot.driveTrain.isClimbLimitSwitchPressed();
+  }
 
-    // Called once after isFinished returns true
-    protected void end() {
-    }
+  protected void end() {
+    Robot.driveTrain.joystickDrive(0, 0);
+  }
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
-    protected void interrupted() {
-    }
+  protected void interrupted() {
+    Robot.driveTrain.joystickDrive(0, 0);
+  }
 }

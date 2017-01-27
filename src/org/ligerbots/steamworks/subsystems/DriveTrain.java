@@ -6,8 +6,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.buttons.Button;
-import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
@@ -34,7 +32,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   CANTalon right2;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
-  DigitalInput limitSwitch;
+  DigitalInput climbLimitSwitch;
   AHRS navX;
 
   /**
@@ -63,7 +61,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.SOLENOID_SHIFT_UP, RobotMap.SOLENOID_SHIFT_DOWN);
 
-    limitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_DIO_PORT);
+    climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
     navX = new AHRS(SPI.Port.kMXP);
   }
@@ -113,11 +111,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     joystickDrive(1, 0);
   }
 
-  public boolean limitSwitch() {
-    return limitSwitch.get();
+  public boolean isClimbLimitSwitchPressed() {
+    return climbLimitSwitch.get();
   }
 
-  public void dumpNavX() {
+  /**
+   * Sends all navx data to the dashboard.
+   */
+  public void dumpNavxData() {
     SmartDashboard.putBoolean("IMU_Connected", navX.isConnected());
     SmartDashboard.putBoolean("IMU_IsCalibrating", navX.isCalibrating());
     SmartDashboard.putNumber("IMU_Yaw", navX.getYaw());
@@ -169,8 +170,11 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
   }
 
+  /**
+   * Sends all navx and talon data to the dashboard.
+   */
   public void sendDataToSmartDashboard() {
-    dumpNavX();
+    dumpNavxData();
     SmartDashboard.putNumber("Left_Talon_1_Power",
         left1.getOutputCurrent() * left1.getOutputVoltage());
     SmartDashboard.putNumber("Left_Talon_2_Power",

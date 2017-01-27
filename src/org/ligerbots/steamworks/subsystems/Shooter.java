@@ -12,7 +12,7 @@ import org.ligerbots.steamworks.RobotMap;
 public class Shooter extends Subsystem implements SmartDashboardLogger {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
-  
+
   /**
    * Create the instance of Shooter.
    */
@@ -25,13 +25,13 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterMaster.reverseSensor(false);
     // the Talon needs peak and nominal output values
     shooterMaster.configNominalOutputVoltage(+0.0f, -0.0f);
-    shooterMaster.configPeakOutputVoltage(+12.0f, 0.0f);
+    shooterMaster.configPeakOutputVoltage(+12.0f, -12.0f);
     // configure PID
     shooterMaster.setProfile(0);
-    shooterMaster.setF(0.1097);
-    shooterMaster.setP(0.22);
-    shooterMaster.setI(0);
-    shooterMaster.setD(0);
+    shooterMaster.setF(0);
+    shooterMaster.setP(0.05);
+    shooterMaster.setI(0.0003);
+    shooterMaster.setD(0.1);
     // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
 
@@ -46,13 +46,43 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     // in the debugger, we'd like to know what this is
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
-    
+
   }
-  
+
+  /**
+   * Sets the rpm of the shooter and changes the talon to speed mode. If set to zero, it changes the
+   * talon to percentvbus mode and allows it to spin down.
+   * 
+   * @param rpm The desired rpm.
+   */
   public void setShooterRpm(double rpm) {
-    shooterMaster.set(rpm);
+    // seriously not sure why this is necessary. Issue #6
+    shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.enableControl();
+    
+    if (rpm == 0) {
+      shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+      shooterMaster.set(0);
+    } else {
+      shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+      shooterMaster.set(rpm);
+    }
   }
-  
+
+  /**
+   * Sets the shooter using percentvbus control. Useful for manual joystick control during testing.
+   * @param percentVbus The percentvbus value, 0.0 to 1.0
+   */
+  public void setShooterPercentVBus(double percentVbus) {
+    shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.enableControl();
+    
+    shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+    shooterMaster.set(percentVbus);
+  }
+
   public double getShooterRpm() {
     return shooterMaster.get();
   }
@@ -76,6 +106,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         setShooterRpm(0);
         shooterMaster.disableControl();
         shooterSlave.disableControl();
+        System.exit(-42);
       }
 
       try {
@@ -85,7 +116,10 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       }
     }
   }
-  
+
+  /**
+   * Sends shooter data to smart dashboard.
+   */
   public void sendDataToSmartDashboard() {
     SmartDashboard.putNumber("Shooter_Master_Talon_Power",
         shooterMaster.getOutputCurrent() * shooterMaster.getOutputVoltage());

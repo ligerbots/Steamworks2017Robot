@@ -31,7 +31,7 @@ public class OperatorInterface {
     JoystickButton bbButton = new JoystickButton(xboxController, 2);
     bbButton.whenPressed(new ClimbCommand());
     JoystickButton aaButton = new JoystickButton(xboxController, 1);
-    aaButton.whenPressed(new IntakeCommand(!Robot.intake.isOn()));
+    aaButton.whenPressed(new IntakeCommand(!Robot.intake.isIntakeOn()));
   }
 
   public double getThrottle() {

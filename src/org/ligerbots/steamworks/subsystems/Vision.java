@@ -17,13 +17,25 @@ import org.ligerbots.steamworks.RobotMap;
  * The subsystem that handles communication with the android.
  */
 public class Vision extends Subsystem implements SmartDashboardLogger {
+  static class VisionData {
+    double rvec0;
+    double rvec1;
+    double rvec2;
+    double tvec0;
+    double tvec1;
+    double tvec2;
+  }
+  
   private static final int CS_STREAM_PORT = 5810;
   private static final int DATA_PORT = 5808;
   private static final int CS_FEEDBACK_INTERVAL = 1000;
   private static final int CS_MAGIC_NUMBER = 16777216;
-
+  
   Relay ledRing;
   ITable table = null;
+  // buffer vision data for multithreaded access
+  VisionData[] visionData = { new VisionData(), new VisionData() };
+  volatile int currentVisionDataIndex = 0;
 
   /**
    * Creates the instance of VisionSubsystem.
@@ -62,14 +74,16 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   public void setLedRingOn(boolean on) {
     ledRing.set(on ? Relay.Value.kForward : Relay.Value.kReverse);
   }
+  
+  public VisionData getVisionData() {
+    return visionData[currentVisionDataIndex];
+  }
 
   public void initDefaultCommand() {}
 
   /**
    * This method runs in a separate thread and receives data from the phone.
    */
-  // yes this will be removed once vision data is used
-  @SuppressWarnings({"unused", "localvariablename"})
   public void dataThread() {
     DatagramChannel udpChannel = null;
     ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 6);
@@ -94,13 +108,15 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           continue;
         }
 
-        double rvec_0 = dataPacket.getDouble();
-        double rvec_1 = dataPacket.getDouble();
-        double rvec_2 = dataPacket.getDouble();
-        double tvec_0 = dataPacket.getDouble();
-        double tvec_1 = dataPacket.getDouble();
-        double tvec_2 = dataPacket.getDouble();
-
+        VisionData notCurrentData = visionData[1 - currentVisionDataIndex];
+        notCurrentData.rvec0 = dataPacket.getDouble();
+        notCurrentData.rvec1 = dataPacket.getDouble();
+        notCurrentData.rvec2 = dataPacket.getDouble();
+        notCurrentData.tvec0 = dataPacket.getDouble();
+        notCurrentData.tvec1 = dataPacket.getDouble();
+        notCurrentData.tvec2 = dataPacket.getDouble();
+        currentVisionDataIndex = 1 - currentVisionDataIndex;
+        
         // now do something with the data
       } catch (IOException ex) {
         ex.printStackTrace();

@@ -6,55 +6,44 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 
 /**
- *
+ * This subsystem handles the intake, which uses a bag motor to bring fuel from the floor into the
+ * fuel tank.
  */
 public class Intake extends Subsystem implements SmartDashboardLogger {
+  static final double INTAKE_SPEED = 0.7;
+  
+  boolean intakeOn;
 
-  // Put methods for controlling this subsystem
-  // here. Call these from Commands.
+  CANTalon intakeTalon;
 
-  boolean isOn;
-
-  CANTalon masterIntake;
-  CANTalon slaveIntake;
-
+  /**
+   * Creates the intake subsystem.
+   */
   public Intake() {
-    masterIntake = new CANTalon(RobotMap.CT_ID_INTAKE_MASTER);
-    slaveIntake = new CANTalon(RobotMap.CT_ID_INTAKE_SLAVE);
+    intakeTalon = new CANTalon(RobotMap.CT_ID_INTAKE);
+    intakeTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 
-    masterIntake.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-
-    slaveIntake.changeControlMode(CANTalon.TalonControlMode.Follower);
-    slaveIntake.set(RobotMap.CT_ID_INTAKE_MASTER);
-
-    intakeOff();
+    setIntakeOn(false);
   }
 
-  public void initDefaultCommand() {
-    // Set the default command for a subsystem here.
-    // setDefaultCommand(new MySpecialCommand());
+  public void initDefaultCommand() {}
+
+  public void setIntakeOn(boolean intakeOn) {
+    intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
+    this.intakeOn = intakeOn;
   }
 
-  public void intakeOn() {
-    masterIntake.set(0.7);
-    isOn = true;
+  public boolean isIntakeOn() {
+    return intakeOn;
   }
 
-  public void intakeOff() {
-    masterIntake.set(0.0);
-    isOn = false;
-  }
-
-  public boolean isOn() {
-    return isOn;
-  }
-
+  /**
+   * Sends intake data to smart dashboard.
+   */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("Intake_Master_Talon_Power",
-        masterIntake.getOutputCurrent() * masterIntake.getOutputVoltage());
-    SmartDashboard.putNumber("Intake_Slave_Talon_Power",
-        slaveIntake.getOutputCurrent() * slaveIntake.getOutputVoltage());
-    SmartDashboard.putBoolean("Intake_On", isOn);
+    SmartDashboard.putNumber("Intake_Talon_Power",
+        intakeTalon.getOutputCurrent() * intakeTalon.getOutputVoltage());
+    SmartDashboard.putBoolean("Intake_On", intakeOn);
   }
 }
 
