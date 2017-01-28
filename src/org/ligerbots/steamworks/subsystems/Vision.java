@@ -156,11 +156,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
       recvPacket = ByteBuffer.allocateDirect(udpChannel.socket().getReceiveBufferSize());
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception during socket configuration in packetForwardingThread", ex);
     }
 
     while (true) {
       try {
+        logger.trace("Getting driver laptop IP from networktables in packetForwardingThread");
         // steal the driver laptop's IP from networktables
         if (sendAddress == null) {
           ConnectionInfo[] connections = NetworkTablesJNI.getConnections();
@@ -172,7 +173,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
             sendAddress = new InetSocketAddress(connInfo.remote_ip, CS_STREAM_PORT);
           }
         }
-
+        logger.trace("Getting packet from phone in packetForwardingThread");
         // get a packet from the phone
         SocketAddress from = null;
         recvPacket.limit(recvPacket.capacity());
@@ -182,7 +183,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
         // if we have a packet and it's time to tell the phone we're
         // getting packets then tell the phone we're getting packets
+        
         if (from != null && System.currentTimeMillis() - lastFeedbackTime > CS_FEEDBACK_INTERVAL) {
+          logger.trace("Dropping all old packets in packetForwardingThread");
           lastFeedbackTime = System.currentTimeMillis();
           feedbackPacket.position(0);
           udpChannel.send(feedbackPacket, from);
@@ -214,7 +217,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           // don't actually care
         }
       } catch (Exception ex) {
-        ex.printStackTrace();
+        logger.error("Exception forwarding packets during packetForwardingThread");
       }
     }
   }
