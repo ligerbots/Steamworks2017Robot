@@ -3,7 +3,11 @@ package org.ligerbots.steamworks;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.filter.LevelFilter;
 import ch.qos.logback.classic.net.server.ServerSocketAppender;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -11,6 +15,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
@@ -36,8 +41,22 @@ public class Robot extends IterativeRobot {
     ch.qos.logback.classic.Logger root =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     root.setLevel(Level.ALL);
+    LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
+    
+    LevelFilter levelFilter = new LevelFilter();
+    levelFilter.setContext(ctx);
+    levelFilter.setLevel(Level.DEBUG);
+    levelFilter.setOnMatch(FilterReply.ACCEPT);
+    levelFilter.setOnMismatch(FilterReply.DENY);
+    levelFilter.start();
+    
+    Iterator<Appender<ILoggingEvent>> apps = root.iteratorForAppenders();
+    while (apps.hasNext()) {
+      apps.next().addFilter(levelFilter);
+    }
+    
     ServerSocketAppender socketAppender = new ServerSocketAppender();
-    socketAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
+    socketAppender.setContext(ctx);
     socketAppender.setPort(5801);
     socketAppender.start();
     root.addAppender(socketAppender);
@@ -67,7 +86,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void robotInit() {
-    logger.trace("robotInit()");
+    logger.info("robotInit()");
 
     driveTrain = new DriveTrain();
     vision = new Vision();
