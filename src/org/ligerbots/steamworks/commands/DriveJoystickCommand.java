@@ -9,38 +9,36 @@ import org.slf4j.LoggerFactory;
  * Command that lets you use the joysticks to drive.
  */
 public class DriveJoystickCommand extends Command {
-
-  Logger logger = LoggerFactory.getLogger(DriveJoystickCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(DriveJoystickCommand.class);
+  
+  /**
+   * Creates a DriveJoystickCommand.
+   */
   public DriveJoystickCommand() {
     requires(Robot.driveTrain);
   }
 
-  // Called just before this Command runs the first time
   protected void initialize() {
-    logger.trace("Drive Joystick command begun");
+    logger.info("Initialize");
   }
 
-  // Called repeatedly when this Command is scheduled to run
   protected void execute() {
-    
     Robot.driveTrain.joystickDrive(Robot.operatorInterface.getThrottle(),
         Robot.operatorInterface.getTurn());
   }
 
-  // Make this return true when this Command no longer needs to run execute()
   protected boolean isFinished() {
     return false;
   }
 
-  // Called once after isFinished returns true
   protected void end() {
-    
+    // never called
+    logger.error("end() called, Scheduler probably screwed up");
   }
 
-  // Called when another command which requires one or more of the same
-  // subsystems is scheduled to run
   protected void interrupted() {
-    logger.warn("Drive command Interrupted");
+    // not warn because we expect this to be interrupted by auto driving later
+    logger.info("Interrupted");
     Robot.driveTrain.joystickDrive(0, 0);
   }
 }

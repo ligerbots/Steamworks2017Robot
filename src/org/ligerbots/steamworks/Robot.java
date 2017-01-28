@@ -54,12 +54,12 @@ public class Robot extends IterativeRobot {
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
 
+  private static final Logger logger = LoggerFactory.getLogger(Robot.class);
+
   long prevNanos = System.nanoTime();
 
   Command autonomousCommand;
   SendableChooser<Command> chooser;
-
-  Logger logger = LoggerFactory.getLogger(Robot.class);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -76,7 +76,9 @@ public class Robot extends IterativeRobot {
     gearManipulator = new GearManipulator();
     intake = new Intake();
     pneumatics = new Pneumatics();
-    allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake);
+    allSubsystems =
+        Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake, pneumatics);
+    
     driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
 
@@ -89,7 +91,7 @@ public class Robot extends IterativeRobot {
   @Override
   public void robotPeriodic() {
     logger.trace("robotPeriodic()");
-    
+
     Scheduler.getInstance().run();
     allSubsystems.forEach((SmartDashboardLogger logger) -> logger.sendDataToSmartDashboard());
     long currentNanos = System.nanoTime();

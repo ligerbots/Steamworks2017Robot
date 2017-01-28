@@ -12,17 +12,18 @@ import org.slf4j.LoggerFactory;
  * fuel tank.
  */
 public class Intake extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(Intake.class);
   static final double INTAKE_SPEED = 0.7;
   
   boolean intakeOn;
-
   CANTalon intakeTalon;
-  Logger logger = LoggerFactory.getLogger(Intake.class);  
   
   /**
    * Creates the intake subsystem.
    */
   public Intake() {
+    logger.info("Initialize");
+    
     intakeTalon = new CANTalon(RobotMap.CT_ID_INTAKE);
     intakeTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 
@@ -31,8 +32,12 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
 
   public void initDefaultCommand() {}
 
+  /**
+   * Turns the intake on or off.
+   * @param intakeOn true for on, false for off
+   */
   public void setIntakeOn(boolean intakeOn) {
-    logger.trace("intakeOn: " + intakeOn);
+    logger.info("Setting intake, on=%b", intakeOn);
     intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
     this.intakeOn = intakeOn;
   }

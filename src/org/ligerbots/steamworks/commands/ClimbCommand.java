@@ -9,15 +9,21 @@ import org.slf4j.LoggerFactory;
  * This command runs the drive until it detects the climb limit switch has been pressed.
  */
 public class ClimbCommand extends Command {
-  Logger logger = LoggerFactory.getLogger(ClimbCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(ClimbCommand.class);
+  
+  /**
+   * Creates a new ClimbCommand.
+   */
   public ClimbCommand() {
     requires(Robot.driveTrain);
   }
 
-  protected void initialize() {}
+  protected void initialize() {
+    logger.info("Starting");
+  }
 
   protected void execute() {
-    logger.trace("Starting climb command");
+    logger.trace("Running");
     Robot.driveTrain.climb();
   }
 
@@ -26,12 +32,12 @@ public class ClimbCommand extends Command {
   }
 
   protected void end() {
-    logger.trace("Climb Finished");
+    logger.info("Finished");
     Robot.driveTrain.joystickDrive(0, 0);
   }
 
   protected void interrupted() {
-    logger.warn("Climbing Interrupted");
+    logger.info("Interrupted");
     Robot.driveTrain.joystickDrive(0, 0);
   }
 }

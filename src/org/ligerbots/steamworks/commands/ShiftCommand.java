@@ -10,32 +10,35 @@ import org.slf4j.LoggerFactory;
  * This command shifts the drive train using the specified {@link DriveTrain.ShiftType}
  */
 public class ShiftCommand extends Command {
-  Logger logger = LoggerFactory.getLogger(ShiftCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(ShiftCommand.class);
   DriveTrain.ShiftType shiftType;
   
+  /**
+   * Creates a new ShiftCommand.
+   * @param shiftType Whether to shift up, down, or toggle.
+   */
   public ShiftCommand(DriveTrain.ShiftType shiftType) {
-    logger.trace("Shift beginning");
     requires(Robot.driveTrain);
     this.shiftType = shiftType;
   }
 
-  protected void initialize() {}
+  protected void initialize() {
+    logger.info("Initialize, type=%s", shiftType.toString());
+  }
 
   protected void execute() {
-    logger.trace("Shifting");
     Robot.driveTrain.shift(shiftType);
   }
 
   protected boolean isFinished() {
-
     return true;
   }
 
   protected void end() {
-    logger.trace("Shift complete");
+    logger.trace("Finish");
   }
 
   protected void interrupted() {
-    logger.warn("Shift interrupted");
+    logger.warn("Interrupted");
   }
 }

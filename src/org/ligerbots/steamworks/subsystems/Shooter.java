@@ -12,14 +12,17 @@ import org.slf4j.LoggerFactory;
  * This subsystem controls the shooter.
  */
 public class Shooter extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(Shooter.class);
+
   CANTalon shooterMaster;
   CANTalon shooterSlave;
-  Logger logger = LoggerFactory.getLogger(Shooter.class); 
+
   /**
    * Create the instance of Shooter.
    */
   public Shooter() {
-    logger.trace("Beginning shooter");
+    logger.info("Initialize");
+
     shooterMaster = new CANTalon(RobotMap.CT_ID_SHOOTER_MASTER);
     // basic setup
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
@@ -36,20 +39,20 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterMaster.setI(0.0003);
     shooterMaster.setD(0.1);
     // add to LiveWindow for easy testing
-    LiveWindow.addActuator("Shooter", "Talon", shooterMaster);
+    LiveWindow.addActuator("Shooter", "Master", shooterMaster);
 
     shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
-    logger.trace("Creating shooter watchdog");
+    LiveWindow.addActuator("Shooter", "Slave", shooterSlave);
+
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
     // allow JVM to exit
     shooterWatchdog.setDaemon(true);
     // in the debugger, we'd like to know what this is
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
-
   }
 
   /**
@@ -59,13 +62,15 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param rpm The desired rpm.
    */
   public void setShooterRpm(double rpm) {
-    logger.trace("Setting speed to " + rpm);
+    logger.trace("Setting rpm=%f", rpm);
     // seriously not sure why this is necessary. Issue #6
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
     shooterSlave.enableControl();
-    
+
     if (rpm == 0) {
+      // just spin down, don't try to speed control it to zero because it tends to unnecessarily
+      // oscillate and waste power
       shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
       shooterMaster.set(0);
     } else {
@@ -76,20 +81,21 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
 
   /**
    * Sets the shooter using percentvbus control. Useful for manual joystick control during testing.
+   * 
    * @param percentVbus The percentvbus value, 0.0 to 1.0
    */
   public void setShooterPercentVBus(double percentVbus) {
-    logger.trace("Setting percentvbus to " + percentVbus);
+    logger.trace("Setting percentvbus=%f", percentVbus);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
     shooterSlave.enableControl();
-    
+
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
     shooterMaster.set(percentVbus);
   }
 
   public double getShooterRpm() {
-    return shooterMaster.get();
+    return shooterMaster.getSpeed();
   }
 
   public void initDefaultCommand() {
@@ -104,6 +110,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * </p>
    */
   private void shooterWatchdogThread() {
+    logger.info("Initialize watchdog");
     while (true) {
       if (shooterMaster.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO
           || shooterSlave.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO) {
@@ -132,5 +139,6 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putNumber("Shooter_Slave_Talon_Power",
         shooterSlave.getOutputCurrent() * shooterSlave.getOutputVoltage());
     SmartDashboard.putNumber("Shooter_RPM_Real", getShooterRpm());
+    SmartDashboard.putNumber("Shooter_PID_error", shooterMaster.getClosedLoopError());
   }
 }

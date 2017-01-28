@@ -9,12 +9,13 @@ import org.slf4j.LoggerFactory;
  * This command spins up the shooter, then starts feeding once the shooter is up to speed.
  */
 public class ShooterFeederCommand extends Command {
+  private static final Logger logger = LoggerFactory.getLogger(ShooterFeederCommand.class);
+  
   static final double RPM_PERCENT_TOLERANCE = 0.05;
 
   double desiredShooterRpm = 0.0;
   boolean readyToStartFeeder = false;
 
-  Logger logger = LoggerFactory.getLogger(ShooterFeederCommand.class);
   /**
    * Creates a new ShooterFeederCommand.
    * 
@@ -27,7 +28,7 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void initialize() {
-    logger.trace("Spinning up shooter");
+    logger.info("Initialize, desired rpm=%f", desiredShooterRpm);
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(desiredShooterRpm);
     readyToStartFeeder = false;
@@ -38,27 +39,28 @@ public class ShooterFeederCommand extends Command {
     if (Math.abs((currentShooterRpm - desiredShooterRpm)
         / desiredShooterRpm) < RPM_PERCENT_TOLERANCE) {
       readyToStartFeeder = true;
+      logger.info("Shooter spun up, feeding");
     }
 
     if (readyToStartFeeder) {
-      logger.trace("Shooter ready");
       Robot.feeder.setFeeder(1.0);
     }
   }
 
   protected boolean isFinished() {
-    // we probably want to finish by a JoystickButton.isHeld calling cancel()
+    // we want to finish by a JoystickButton.isHeld calling cancel()
     return false;
   }
 
   protected void end() {
-    logger.trace("Spinning down shooter");
+    // shouldn't ever be called
+    logger.error("end() called");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
   }
 
   protected void interrupted() {
-    logger.warn("Shooter interrupted");
+    logger.info("Interrupted, spinning down shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
   }

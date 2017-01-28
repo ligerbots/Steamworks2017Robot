@@ -1,33 +1,36 @@
 package org.ligerbots.steamworks.subsystems;
 
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * This subsystem handles the compressor.
  */
-public class Pneumatics extends Subsystem {
- 
+public class Pneumatics extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(Pneumatics.class);
+
   public enum CompressorState {
     ON, OFF, TOGGLE
   }
 
   Compressor compressor;
-  Logger logger = LoggerFactory.getLogger(Pneumatics.class); 
+
   public Pneumatics() {
+    logger.info("Initialize");
     compressor = new Compressor();
   }
 
-  public void initDefaultCommand() {
-    // Set the default command for a subsystem here.
-    // setDefaultCommand(new MySpecialCommand());
-  }
+  public void initDefaultCommand() {}
 
-  public void setCompressor(CompressorState state) {
+  /**
+   * Turns the compressor on or off.
+   * 
+   * @param state Whether the compressor should be on, off, or toggled
+   */
+  public void setCompressorOn(CompressorState state) {
     if (state == CompressorState.TOGGLE) {
       compressor.setClosedLoopControl(!compressor.getClosedLoopControl());
     } else if (state == CompressorState.ON) {
@@ -35,10 +38,18 @@ public class Pneumatics extends Subsystem {
     } else if (state == CompressorState.OFF) {
       compressor.setClosedLoopControl(false);
     }
-    logger.trace("Current compressor state: " + state);
+
+    logger.info("Setting compressor, request=%s, compressor on=%b", state.toString(),
+        compressor.getClosedLoopControl());
   }
 
-  public boolean isOn() {
+  public boolean isCompressorOn() {
     return compressor.getClosedLoopControl();
+  }
+
+  @Override
+  public void sendDataToSmartDashboard() {
+    SmartDashboard.putBoolean("Compressor_Closed_Loop", isCompressorOn());
+    SmartDashboard.putBoolean("Compressor_Pressure_Switch", compressor.getPressureSwitchValue());
   }
 }

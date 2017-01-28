@@ -7,40 +7,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Turns the compressor on or off.
  */
 public class CompressorCommand extends Command {
-
+  private static final Logger logger = LoggerFactory.getLogger(CompressorCommand.class);
+  
   CompressorState state;
-  Logger logger = LoggerFactory.getLogger(CompressorCommand.class);
+  
+  /**
+   * Creates a new CompressorCommand.s
+   * @param state What to set the compressor to
+   */
   public CompressorCommand(CompressorState state) {
     requires(Robot.pneumatics);
     this.state = state;
   }
 
-  // Called just before this Command runs the first time
-  protected void initialize() {}
-
-  // Called repeatedly when this Command is scheduled to run
-  protected void execute() {
-    logger.trace("Compressor being set to state " + state);
-    Robot.pneumatics.setCompressor(state);
+  protected void initialize() {
+    logger.info("Set %s", state.toString());
   }
 
-  // Make this return true when this Command no longer needs to run execute()
+  protected void execute() {
+    Robot.pneumatics.setCompressorOn(state);
+  }
+
   protected boolean isFinished() {
     return true;
   }
 
-  // Called once after isFinished returns true
   protected void end() {
-    logger.trace("Compressor command finished");
+    logger.trace("Finished %s", state.toString());
   }
 
-  // Called when another command which requires one or more of the same
-  // subsystems is scheduled to run
   protected void interrupted() {
-
-    logger.warn("Compressor command interrupted");
+    logger.warn("Interrupted %s", state.toString());
   }
 }

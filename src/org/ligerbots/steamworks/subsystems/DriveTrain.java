@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
  * This subsystem handles driving (duh).
  */
 public class DriveTrain extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(DriveTrain.class);
 
   /**
    * This is a list of all shift actions. Toggle is there because we will probably need to change
@@ -37,12 +37,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   DoubleSolenoid shiftingSolenoid;
   DigitalInput climbLimitSwitch;
   AHRS navX;
-  Logger logger = LoggerFactory.getLogger(DriveTrain.class);
+
   /**
    * Creates a new drive train instance.
    */
   public DriveTrain() {
-    logger.trace("Starting drive train");
+    logger.info("Initialize");
     left1 = new CANTalon(RobotMap.CT_ID_LEFT_1);
     left2 = new CANTalon(RobotMap.CT_ID_LEFT_2);
     right1 = new CANTalon(RobotMap.CT_ID_RIGHT_1);
@@ -56,7 +56,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     right2.changeControlMode(CANTalon.TalonControlMode.Follower);
     right2.set(RobotMap.CT_ID_RIGHT_1);
-
 
     Arrays.asList(left1, left2, right1, right2)
         .forEach((CANTalon talon) -> talon.enableBrakeMode(true));
@@ -74,7 +73,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Sets the default command to give driver control.
    */
   public void initDefaultCommand() {
-    // Set the default command for a subsystem here.
+    logger.info("initDefaultCommand called, right now Robot.driveJoystickCommand=%s",
+        Robot.driveJoystickCommand.toString());
     setDefaultCommand(Robot.driveJoystickCommand);
   }
 
@@ -85,7 +85,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param turn is the horizontal axis
    */
   public void joystickDrive(double throttle, double turn) {
-    logger.trace("Driving with throttle " + throttle + " and turn " + turn); 
+    logger.trace("Driving with throttle %f and turn %f", throttle, turn);
     robotDrive.arcadeDrive(throttle, turn);
   }
 
@@ -106,14 +106,16 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     } else {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
-    logger.trace("Shifted to type " + shiftType);
+
+    logger.info("Shifting, type=%s, shifter state=%s", shiftType.toString(),
+        shiftingSolenoid.get().toString());
   }
 
   /**
    * Makes the robot drive until the limitSwitch is pressed.
    */
   public void climb() {
-    logger.trace("Beginning climb");
+    logger.trace("Doing climb");
     shift(ShiftType.DOWN);
     joystickDrive(1, 0);
   }
@@ -174,14 +176,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     SmartDashboard.putNumber("IMU_Byte_Count", navX.getByteCount());
     SmartDashboard.putNumber("IMU_Update_Count", navX.getUpdateCount());
-
   }
 
   /**
    * Sends all navx and talon data to the dashboard.
    */
   public void sendDataToSmartDashboard() {
-    logger.trace("Updating dashboard");
     dumpNavxData();
     SmartDashboard.putNumber("Left_Talon_1_Power",
         left1.getOutputCurrent() * left1.getOutputVoltage());

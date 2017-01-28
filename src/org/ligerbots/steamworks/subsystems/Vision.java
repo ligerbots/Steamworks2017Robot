@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.networktables.ConnectionInfo;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.tables.ITable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,6 +20,8 @@ import org.slf4j.LoggerFactory;
  * The subsystem that handles communication with the android.
  */
 public class Vision extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(Vision.class);
+  
   static class VisionData {
     double rvec0;
     double rvec1;
@@ -38,12 +41,13 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   // buffer vision data for multithreaded access
   VisionData[] visionData = { new VisionData(), new VisionData() };
   volatile int currentVisionDataIndex = 0;
-  Logger logger = LoggerFactory.getLogger(Vision.class);  
+  
   /**
    * Creates the instance of VisionSubsystem.
    */
   public Vision() {
-    logger.trace("Beginning vision");
+    logger.trace("Initialize");
+    
     ledRing = new Relay(RobotMap.RELAY_LED_RING);
 
     Thread forwardThread = new Thread(this::packetForwardingThread);
@@ -64,12 +68,11 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @param enabled Whether image processing should be enabled or not
    */
   public void setVisionEnabled(boolean enabled) {
+    logger.info("Setting vision enabled=%b", enabled);
     
     if (table == null) {
-      logger.trace("Getting new vision table");
       table = NetworkTable.getTable("Vision");
     }
-    logger.trace("Vision enabled: " + enabled);
     table.putBoolean("enabled", enabled);
   }
 
@@ -78,12 +81,11 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @param on Whether the LED ring should be on or not.
    */
   public void setLedRingOn(boolean on) {
-    logger.trace("Setting LedRingOn to " + on);
-    ledRing.set(on ? Relay.Value.kForward : Relay.Value.kReverse);
+    logger.trace("Setting LED ring on=%b", on);
+    ledRing.set(on ? Relay.Value.kForward : Relay.Value.kOff);
   }
   
   public VisionData getVisionData() {
-    
     return visionData[currentVisionDataIndex];
   }
 
@@ -93,6 +95,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * This method runs in a separate thread and receives data from the phone.
    */
   public void dataThread() {
+    // the phone sends processing data over UDP faster than NetworkTables
+    // 10fps refresh rate, so here we set up a receiver for the data
+    logger.info("Data thread init");
     DatagramChannel udpChannel = null;
     ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 6);
 
@@ -101,13 +106,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
       udpChannel.socket().setReuseAddress(true);
       udpChannel.socket().bind(new InetSocketAddress(DATA_PORT));
       udpChannel.configureBlocking(true);
-      logger.trace("Configuring socket in dataThread");
     } catch (Exception ex) {
-      logger.error("Exception during socket configuration in dataThread", ex);
+      logger.error("Data thread init error", ex);
     }
-
-    // the phone sends processing data over UDP faster than NetworkTables
-    // 10fps refresh rate, so here we set up a receiver for the data
 
     while (true) {
       try {
@@ -125,10 +126,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         notCurrentData.tvec1 = dataPacket.getDouble();
         notCurrentData.tvec2 = dataPacket.getDouble();
         currentVisionDataIndex = 1 - currentVisionDataIndex;
-        logger.trace("Getting data from socket in dataThread");
-        // now do something with the data
       } catch (IOException ex) {
-        logger.error("IOException during socket communication in dataThread", ex);
+        logger.error("Data thread communication error", ex);
       }
     }
   }
@@ -137,7 +136,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * This runs in a separate thread and forwards vision frames from the phone to the DS.
    */
   public void packetForwardingThread() {
-    logger.trace("Setting up the packetForwardingThread");
+    logger.info("Stream thread init");
+    
     DatagramChannel udpChannel = null;
     InetSocketAddress sendAddress = null;
     ByteBuffer recvPacket = null;
@@ -148,7 +148,6 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
     // set up UDP
     try {
-      logger.trace("Configuring socket in packetForwardingThread");
       udpChannel = DatagramChannel.open();
       udpChannel.socket().setReuseAddress(true);
       udpChannel.socket().bind(new InetSocketAddress(CS_STREAM_PORT));
@@ -156,12 +155,11 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
       recvPacket = ByteBuffer.allocateDirect(udpChannel.socket().getReceiveBufferSize());
     } catch (Exception ex) {
-      logger.error("Exception during socket configuration in packetForwardingThread", ex);
+      logger.error("Stream thread init error", ex);
     }
 
     while (true) {
       try {
-        logger.trace("Getting driver laptop IP from networktables in packetForwardingThread");
         // steal the driver laptop's IP from networktables
         if (sendAddress == null) {
           ConnectionInfo[] connections = NetworkTablesJNI.getConnections();
@@ -171,9 +169,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
               continue;
             }
             sendAddress = new InetSocketAddress(connInfo.remote_ip, CS_STREAM_PORT);
+            logger.trace("Got DS IP address %s", sendAddress.toString());
           }
         }
-        logger.trace("Getting packet from phone in packetForwardingThread");
         // get a packet from the phone
         SocketAddress from = null;
         recvPacket.limit(recvPacket.capacity());
@@ -185,7 +183,6 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         // getting packets then tell the phone we're getting packets
         
         if (from != null && System.currentTimeMillis() - lastFeedbackTime > CS_FEEDBACK_INTERVAL) {
-          logger.trace("Dropping all old packets in packetForwardingThread");
           lastFeedbackTime = System.currentTimeMillis();
           feedbackPacket.position(0);
           udpChannel.send(feedbackPacket, from);
@@ -217,14 +214,14 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           // don't actually care
         }
       } catch (Exception ex) {
-        logger.error("Exception forwarding packets during packetForwardingThread");
+        logger.error("Stream thread communication error", ex);
       }
     }
   }
 
   @Override
   public void sendDataToSmartDashboard() {
-    // TODO Auto-generated method stub
-    
+    // phone handles vision data for us
+    SmartDashboard.putBoolean("LED_On", ledRing.get() != Relay.Value.kOff);
   }
 }

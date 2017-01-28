@@ -11,15 +11,16 @@ import org.slf4j.LoggerFactory;
  * The feeder is the mechanism that delivers fuel consistently to the shooter from the hopper.
  */
 public class Feeder extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(Feeder.class);
+  
   CANTalon feederTalon;
 
   /**
    * Creates the Feeder subsystem.
    */
-
-  Logger logger = LoggerFactory.getLogger(Feeder.class);
   public Feeder() {
-    logger.trace("Feeder beginning");
+    logger.trace("Initialize");
+    
     feederTalon = new CANTalon(RobotMap.CT_ID_FEEDER);
     feederTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     feederTalon.enableBrakeMode(true);
@@ -31,7 +32,7 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
    * @param value A percentvbus value, 0.0 to 1.0
    */
   public void setFeeder(double value) {
-    logger.trace("Setting feeder to percentvbus of " + value);
+    logger.trace("Setting feeder, percentvbus=%f", value);
     feederTalon.set(value);
   }
 

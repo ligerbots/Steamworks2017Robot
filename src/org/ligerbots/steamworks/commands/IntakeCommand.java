@@ -9,7 +9,8 @@ import org.slf4j.LoggerFactory;
  * This command toggles the intake on and off.
  */
 public class IntakeCommand extends Command {
-  Logger logger = LoggerFactory.getLogger(IntakeCommand.class);
+  private static final Logger logger = LoggerFactory.getLogger(IntakeCommand.class);
+  
   boolean setIntakeOn;
 
   public IntakeCommand(boolean setIntakeOn) {
@@ -17,7 +18,9 @@ public class IntakeCommand extends Command {
     this.setIntakeOn = setIntakeOn;
   }
 
-  protected void initialize() {}
+  protected void initialize() {
+    logger.info("Initialize, set intake=%b", setIntakeOn);
+  }
 
   protected void execute() {
     Robot.intake.setIntakeOn(setIntakeOn);
@@ -27,7 +30,11 @@ public class IntakeCommand extends Command {
     return true;
   }
 
-  protected void end() {}
+  protected void end() {
+    logger.info("Finish");
+  }
 
-  protected void interrupted() {}
+  protected void interrupted() {
+    logger.warn("Interrupted");
+  }
 }

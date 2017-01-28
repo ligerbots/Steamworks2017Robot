@@ -8,6 +8,7 @@ import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
+import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 
@@ -23,17 +24,25 @@ public class OperatorInterface {
    */
   public OperatorInterface() {
     xboxController = new XboxController(0);
+    
+    JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
+    xboxAButton.whenPressed(new IntakeCommand(!Robot.intake.isIntakeOn()));
+    
+    JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
+    xboxBButton.whenPressed(new ClimbCommand());
+    
+    JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
+    xboxXButton.whileHeld(new ShooterFeederCommand(4000));
+    
+    JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
+    xboxYButton.whileHeld(new GearCommand(true, true));
+    
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
     xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
+    
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
     xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
-    JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
-    // Toggle the mechanism open or closed.
-    xboxXButton.whileHeld(new GearCommand(true, true));
-    JoystickButton bbButton = new JoystickButton(xboxController, 2);
-    bbButton.whenPressed(new ClimbCommand());
-    JoystickButton aaButton = new JoystickButton(xboxController, 1);
-    aaButton.whenPressed(new IntakeCommand(!Robot.intake.isIntakeOn()));
+    
     JoystickButton startButton = new JoystickButton(xboxController, 9);
     startButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
   }
