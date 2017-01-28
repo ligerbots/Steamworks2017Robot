@@ -21,14 +21,16 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(DriveTrain.class);
 
   /**
-   * This is a list of all shift actions. Toggle is there because we will probably need to change
-   * shifting to a single controller button in the future (and since there are three types, it can't
-   * simply be a boolean as before).
+   * This is a list of all shift actions. UP and DOWN shift up and down, and TOGGLE toggles. This is
+   * so that you can initialize a ShiftCommand with TOGGLE and it will always toggle.
    */
   public static enum ShiftType {
     UP, DOWN, TOGGLE
   }
-  
+
+  /**
+   * This makes calls to getEncoderValue() readable.
+   */
   public static enum DriveTrainSide {
     LEFT, RIGHT
   }
@@ -125,13 +127,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     shift(ShiftType.DOWN);
     joystickDrive(1, 0);
   }
-  
+
   public boolean isClimbLimitSwitchPressed() {
     return climbLimitSwitch.get();
   }
-  
+
   /**
    * Gets the encoder value for the specified side.
+   * 
    * @param side The side, either LEFT or RIGHT
    * @return The encoder value
    */
@@ -210,7 +213,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         right1.getOutputCurrent() * right1.getOutputVoltage());
     SmartDashboard.putNumber("Right_Talon_2_Power",
         right2.getOutputCurrent() * right2.getOutputVoltage());
-    
+
     SmartDashboard.putNumber("Encoder_Left", getEncoderValue(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderValue(DriveTrainSide.RIGHT));
   }
