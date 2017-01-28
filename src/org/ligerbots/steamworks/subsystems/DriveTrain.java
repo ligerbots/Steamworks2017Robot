@@ -28,6 +28,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public static enum ShiftType {
     UP, DOWN, TOGGLE
   }
+  
+  public static enum DriveTrainSide {
+    LEFT, RIGHT
+  }
 
   CANTalon left1;
   CANTalon left2;
@@ -50,6 +54,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     left1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     right1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    left1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    right1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 
     left2.changeControlMode(CANTalon.TalonControlMode.Follower);
     left2.set(RobotMap.CT_ID_LEFT_1);
@@ -119,9 +125,22 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     shift(ShiftType.DOWN);
     joystickDrive(1, 0);
   }
-
+  
   public boolean isClimbLimitSwitchPressed() {
     return climbLimitSwitch.get();
+  }
+  
+  /**
+   * Gets the encoder value for the specified side.
+   * @param side The side, either LEFT or RIGHT
+   * @return The encoder value
+   */
+  public double getEncoderValue(DriveTrainSide side) {
+    if (side == DriveTrainSide.LEFT) {
+      return left1.getPosition();
+    } else {
+      return right1.getPosition();
+    }
   }
 
   /**
@@ -191,6 +210,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         right1.getOutputCurrent() * right1.getOutputVoltage());
     SmartDashboard.putNumber("Right_Talon_2_Power",
         right2.getOutputCurrent() * right2.getOutputVoltage());
+    
+    SmartDashboard.putNumber("Encoder_Left", getEncoderValue(DriveTrainSide.LEFT));
+    SmartDashboard.putNumber("Encoder_Right", getEncoderValue(DriveTrainSide.RIGHT));
   }
 }
 
