@@ -32,7 +32,7 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
    * @param value A percentvbus value, 0.0 to 1.0
    */
   public void setFeeder(double value) {
-    logger.trace("Setting feeder, percentvbus=%f", value);
+    logger.trace(String.format("Setting feeder, percentvbus=%f", value));
     feederTalon.set(value);
   }
 

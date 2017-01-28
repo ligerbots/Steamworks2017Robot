@@ -24,7 +24,7 @@ public class CompressorCommand extends Command {
   }
 
   protected void initialize() {
-    logger.info("Set %s", state.toString());
+    logger.info(String.format("Set %s", state.toString()));
   }
 
   protected void execute() {
@@ -36,10 +36,10 @@ public class CompressorCommand extends Command {
   }
 
   protected void end() {
-    logger.trace("Finished %s", state.toString());
+    logger.trace(String.format("Finished %s", state.toString()));
   }
 
   protected void interrupted() {
-    logger.warn("Interrupted %s", state.toString());
+    logger.warn(String.format("Interrupted %s", state.toString()));
   }
 }

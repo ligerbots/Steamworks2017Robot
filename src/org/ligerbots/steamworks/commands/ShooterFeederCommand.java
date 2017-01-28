@@ -28,7 +28,7 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void initialize() {
-    logger.info("Initialize, desired rpm=%f", desiredShooterRpm);
+    logger.info(String.format("Initialize, desired rpm=%f", desiredShooterRpm));
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(desiredShooterRpm);
     readyToStartFeeder = false;

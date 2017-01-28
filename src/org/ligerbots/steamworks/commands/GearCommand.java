@@ -42,7 +42,7 @@ public class GearCommand extends Command {
   }
 
   protected void initialize() {
-    logger.info("Initialize, shouldBeOpen=%b, hold=%b", shouldBeOpen, hold);
+    logger.info(String.format("Initialize, shouldBeOpen=%b, hold=%b", shouldBeOpen, hold));
   }
 
   protected void execute() {

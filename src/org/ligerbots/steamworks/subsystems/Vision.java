@@ -68,7 +68,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @param enabled Whether image processing should be enabled or not
    */
   public void setVisionEnabled(boolean enabled) {
-    logger.info("Setting vision enabled=%b", enabled);
+    logger.info(String.format("Setting vision enabled=%b", enabled));
     
     if (table == null) {
       table = NetworkTable.getTable("Vision");
@@ -81,7 +81,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @param on Whether the LED ring should be on or not.
    */
   public void setLedRingOn(boolean on) {
-    logger.trace("Setting LED ring on=%b", on);
+    logger.trace(String.format("Setting LED ring on=%b", on));
     ledRing.set(on ? Relay.Value.kForward : Relay.Value.kOff);
   }
   
@@ -169,7 +169,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
               continue;
             }
             sendAddress = new InetSocketAddress(connInfo.remote_ip, CS_STREAM_PORT);
-            logger.trace("Got DS IP address %s", sendAddress.toString());
+            logger.trace(String.format("Got DS IP address %s", sendAddress.toString()));
           }
         }
         // get a packet from the phone

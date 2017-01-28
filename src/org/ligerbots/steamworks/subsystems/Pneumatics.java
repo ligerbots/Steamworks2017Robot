@@ -39,8 +39,8 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
       compressor.setClosedLoopControl(false);
     }
 
-    logger.info("Setting compressor, request=%s, compressor on=%b", state.toString(),
-        compressor.getClosedLoopControl());
+    logger.info(String.format("Setting compressor, request=%s, compressor on=%b", state.toString(),
+        compressor.getClosedLoopControl()));
   }
 
   public boolean isCompressorOn() {

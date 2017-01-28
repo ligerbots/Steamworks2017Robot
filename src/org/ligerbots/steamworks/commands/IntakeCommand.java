@@ -19,7 +19,7 @@ public class IntakeCommand extends Command {
   }
 
   protected void initialize() {
-    logger.info("Initialize, set intake=%b", setIntakeOn);
+    logger.info(String.format("Initialize, set intake=%b", setIntakeOn));
   }
 
   protected void execute() {

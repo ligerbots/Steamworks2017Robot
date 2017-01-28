@@ -62,7 +62,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param rpm The desired rpm.
    */
   public void setShooterRpm(double rpm) {
-    logger.trace("Setting rpm=%f", rpm);
+    logger.trace(String.format("Setting rpm=%f", rpm));
     // seriously not sure why this is necessary. Issue #6
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
@@ -85,7 +85,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param percentVbus The percentvbus value, 0.0 to 1.0
    */
   public void setShooterPercentVBus(double percentVbus) {
-    logger.trace("Setting percentvbus=%f", percentVbus);
+    logger.trace(String.format("Setting percentvbus=%f", percentVbus));
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
     shooterSlave.enableControl();

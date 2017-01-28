@@ -23,7 +23,7 @@ public class ShiftCommand extends Command {
   }
 
   protected void initialize() {
-    logger.info("Initialize, type=%s", shiftType.toString());
+    logger.info(String.format("Initialize, type=%s", shiftType.toString()));
   }
 
   protected void execute() {

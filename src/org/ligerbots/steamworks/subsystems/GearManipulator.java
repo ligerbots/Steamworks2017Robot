@@ -37,7 +37,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
    * @param shouldBeOpen Whether it should be open or closed.
    */
   public void setOpen(boolean shouldBeOpen) {
-    logger.info("Set gear manipulator, open=%b", shouldBeOpen);
+    logger.info(String.format("Set gear manipulator, open=%b", shouldBeOpen));
     
     isOpen = shouldBeOpen;
     if (shouldBeOpen) {

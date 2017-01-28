@@ -81,8 +81,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Sets the default command to give driver control.
    */
   public void initDefaultCommand() {
-    logger.info("initDefaultCommand called, right now Robot.driveJoystickCommand=%s",
-        Robot.driveJoystickCommand.toString());
+    logger.info(String.format("initDefaultCommand called, right now Robot.driveJoystickCommand=%s",
+        Robot.driveJoystickCommand.toString()));
     setDefaultCommand(Robot.driveJoystickCommand);
   }
 
@@ -93,7 +93,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param turn is the horizontal axis
    */
   public void joystickDrive(double throttle, double turn) {
-    logger.trace("Driving with throttle %f and turn %f", throttle, turn);
+    logger.trace(String.format("Driving with throttle %f and turn %f", throttle, turn));
     robotDrive.arcadeDrive(throttle, turn);
   }
 
@@ -115,8 +115,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
 
-    logger.info("Shifting, type=%s, shifter state=%s", shiftType.toString(),
-        shiftingSolenoid.get().toString());
+    logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
+        shiftingSolenoid.get().toString()));
   }
 
   /**
