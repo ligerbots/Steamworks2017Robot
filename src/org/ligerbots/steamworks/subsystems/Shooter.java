@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import com.ctre.CANTalon.TalonControlMode;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,7 +59,7 @@ public class Shooter extends Subsystem {
   }
 
   public void setShooterRpm(double rpm) {
-    System.out.println("set to" + rpm);
+    System.out.println("set to rpm " + rpm);
     if(rpm == 0) {
       shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
       shooterMaster.set(0);
@@ -67,6 +68,13 @@ public class Shooter extends Subsystem {
       shooterMaster.set(rpm);
       shooterMaster.enableControl();
     }
+  }
+  
+  public void setShooterVoltage(double volts) {
+    System.out.println("set to volts " + volts);
+    shooterMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+    shooterMaster.set(volts);
+    shooterMaster.enableControl();
   }
 
   public double getShooterRpm() {

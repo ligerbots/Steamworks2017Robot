@@ -2,7 +2,10 @@
 package org.ligerbots.steamworks;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -33,6 +36,8 @@ public class Robot extends IterativeRobot {
   public static OperatorInterface operatorInterface;
   Command autonomousCommand;
   SendableChooser<Command> chooser = new SendableChooser<>();
+  
+  XboxController controller;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -46,7 +51,9 @@ public class Robot extends IterativeRobot {
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);
     
-    SmartDashboard.putNumber("rpm", 0);
+    SmartDashboard.putNumber("rpm", 4000);
+    
+    controller = new XboxController(0);
   }
 
   public void commonPeriodic() {
@@ -123,8 +130,10 @@ public class Robot extends IterativeRobot {
   public void teleopPeriodic() {
     commonPeriodic();
     
-    if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
+    if(controller.getXButton()) {
       shooter.setShooterRpm(-SmartDashboard.getNumber("rpm", 0));
+    } else if(controller.getStickButton(Hand.kLeft)) {
+      shooter.setShooterVoltage(12 * controller.getY(Hand.kLeft));
     } else {
       shooter.setShooterRpm(0);
     }
@@ -144,7 +153,7 @@ public class Robot extends IterativeRobot {
     
     shooter.fixHacks();
     
-    if(DriverStation.getInstance().getStickButton(0, (byte) 3)) {
+    if(controller.getXButton()) {
       shooter.setShooterRpm(-2000);
     } else {
       shooter.setShooterRpm(0);
