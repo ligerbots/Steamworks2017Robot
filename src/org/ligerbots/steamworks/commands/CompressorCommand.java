@@ -3,6 +3,8 @@ package org.ligerbots.steamworks.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -10,7 +12,7 @@ import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 public class CompressorCommand extends Command {
 
   CompressorState state;
-
+  Logger logger = LoggerFactory.getLogger(CompressorCommand.class);
   public CompressorCommand(CompressorState state) {
     requires(Robot.pneumatics);
     this.state = state;
@@ -21,6 +23,7 @@ public class CompressorCommand extends Command {
 
   // Called repeatedly when this Command is scheduled to run
   protected void execute() {
+    logger.trace("Compressor being set to state " + state);
     Robot.pneumatics.setCompressor(state);
   }
 
@@ -30,9 +33,14 @@ public class CompressorCommand extends Command {
   }
 
   // Called once after isFinished returns true
-  protected void end() {}
+  protected void end() {
+    logger.trace("Compressor command finished");
+  }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
-  protected void interrupted() {}
+  protected void interrupted() {
+
+    logger.warn("Compressor command interrupted");
+  }
 }

@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This subsystem opens or closes the gear manipulator.
@@ -14,11 +16,13 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   
   Servo gearServo;
   boolean isOpen;
-  
+
+  Logger logger = LoggerFactory.getLogger(GearManipulator.class);  
   /**
    * Creates the GearManipulator, and sets servo to closed position.
    */
   public GearManipulator() {
+
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
     setOpen(false);
   }
@@ -37,6 +41,8 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     } else {
       gearServo.set(GM_POSITION_CLOSED);
     }
+    logger.trace("shouldBeOpen: " + shouldBeOpen);
+    
   }
   
   /**

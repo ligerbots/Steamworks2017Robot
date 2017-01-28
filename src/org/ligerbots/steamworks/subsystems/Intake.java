@@ -4,6 +4,8 @@ import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This subsystem handles the intake, which uses a bag motor to bring fuel from the floor into the
@@ -15,7 +17,8 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
   boolean intakeOn;
 
   CANTalon intakeTalon;
-
+  Logger logger = LoggerFactory.getLogger(Intake.class);  
+  
   /**
    * Creates the intake subsystem.
    */
@@ -29,6 +32,7 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
   public void initDefaultCommand() {}
 
   public void setIntakeOn(boolean intakeOn) {
+    logger.trace("intakeOn: " + intakeOn);
     intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
     this.intakeOn = intakeOn;
   }

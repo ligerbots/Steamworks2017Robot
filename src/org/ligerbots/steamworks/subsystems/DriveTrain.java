@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.commands.ShooterFeederCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This subsystem handles driving (duh).
@@ -34,11 +37,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   DoubleSolenoid shiftingSolenoid;
   DigitalInput climbLimitSwitch;
   AHRS navX;
-
+  Logger logger = LoggerFactory.getLogger(DriveTrain.class);
   /**
    * Creates a new drive train instance.
    */
   public DriveTrain() {
+    logger.trace("Starting drive train");
     left1 = new CANTalon(RobotMap.CT_ID_LEFT_1);
     left2 = new CANTalon(RobotMap.CT_ID_LEFT_2);
     right1 = new CANTalon(RobotMap.CT_ID_RIGHT_1);
@@ -81,6 +85,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param turn is the horizontal axis
    */
   public void joystickDrive(double throttle, double turn) {
+    logger.trace("Driving with throttle " + throttle + " and turn " + turn); 
     robotDrive.arcadeDrive(throttle, turn);
   }
 
@@ -101,12 +106,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     } else {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
+    logger.trace("Shifted to type " + shiftType);
   }
 
   /**
    * Makes the robot drive until the limitSwitch is pressed.
    */
   public void climb() {
+    logger.trace("Beginning climb");
     shift(ShiftType.DOWN);
     joystickDrive(1, 0);
   }
@@ -174,6 +181,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Sends all navx and talon data to the dashboard.
    */
   public void sendDataToSmartDashboard() {
+    logger.trace("Updating dashboard");
     dumpNavxData();
     SmartDashboard.putNumber("Left_Talon_1_Power",
         left1.getOutputCurrent() * left1.getOutputVoltage());

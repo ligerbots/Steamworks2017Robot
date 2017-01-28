@@ -2,6 +2,8 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This command spins up the shooter, then starts feeding once the shooter is up to speed.
@@ -12,6 +14,7 @@ public class ShooterFeederCommand extends Command {
   double desiredShooterRpm = 0.0;
   boolean readyToStartFeeder = false;
 
+  Logger logger = LoggerFactory.getLogger(ShooterFeederCommand.class);
   /**
    * Creates a new ShooterFeederCommand.
    * 
@@ -24,6 +27,7 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void initialize() {
+    logger.trace("Spinning up shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(desiredShooterRpm);
     readyToStartFeeder = false;
@@ -37,6 +41,7 @@ public class ShooterFeederCommand extends Command {
     }
 
     if (readyToStartFeeder) {
+      logger.trace("Shooter ready");
       Robot.feeder.setFeeder(1.0);
     }
   }
@@ -47,11 +52,13 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void end() {
+    logger.trace("Spinning down shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
   }
 
   protected void interrupted() {
+    logger.warn("Shooter interrupted");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
   }

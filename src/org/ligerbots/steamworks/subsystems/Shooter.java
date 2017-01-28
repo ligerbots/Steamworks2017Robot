@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This subsystem controls the shooter.
@@ -12,11 +14,12 @@ import org.ligerbots.steamworks.RobotMap;
 public class Shooter extends Subsystem implements SmartDashboardLogger {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
-
+  Logger logger = LoggerFactory.getLogger(Shooter.class); 
   /**
    * Create the instance of Shooter.
    */
   public Shooter() {
+    logger.trace("Beginning shooter");
     shooterMaster = new CANTalon(RobotMap.CT_ID_SHOOTER_MASTER);
     // basic setup
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
@@ -39,7 +42,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
-
+    logger.trace("Creating shooter watchdog");
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
     // allow JVM to exit
     shooterWatchdog.setDaemon(true);
@@ -56,6 +59,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param rpm The desired rpm.
    */
   public void setShooterRpm(double rpm) {
+    logger.trace("Setting speed to " + rpm);
     // seriously not sure why this is necessary. Issue #6
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
@@ -75,6 +79,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param percentVbus The percentvbus value, 0.0 to 1.0
    */
   public void setShooterPercentVBus(double percentVbus) {
+    logger.trace("Setting percentvbus to " + percentVbus);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
     shooterSlave.enableControl();
@@ -102,7 +107,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     while (true) {
       if (shooterMaster.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO
           || shooterSlave.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO) {
-        System.err.println("Dangerous shooter current detected!");
+        logger.error("Dangerous shooter current detected!");
         setShooterRpm(0);
         shooterMaster.disableControl();
         shooterSlave.disableControl();
@@ -113,6 +118,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         Thread.sleep(20);
       } catch (InterruptedException ex) {
         ex.printStackTrace();
+        logger.error("InterruptedException", ex);
       }
     }
   }
