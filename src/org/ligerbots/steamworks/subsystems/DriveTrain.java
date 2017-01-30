@@ -70,7 +70,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     robotDrive = new RobotDrive(left1, right1);
 
-    shiftingSolenoid = new DoubleSolenoid(RobotMap.SOLENOID_SHIFT_UP, RobotMap.SOLENOID_SHIFT_DOWN);
+    shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
+        RobotMap.SOLENOID_SHIFT_DOWN);
 
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
@@ -103,6 +104,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param shiftType whether to shift up or down
    */
   public void shift(ShiftType shiftType) {
+    logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
+        shiftingSolenoid.get().toString()));
+    
     if (shiftType == ShiftType.TOGGLE) {
       if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
         shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
@@ -114,9 +118,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     } else {
       shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
-
-    logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
-        shiftingSolenoid.get().toString()));
   }
 
   /**

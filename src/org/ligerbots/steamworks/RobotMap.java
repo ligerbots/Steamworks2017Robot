@@ -6,6 +6,8 @@ package org.ligerbots.steamworks;
  * reduces the number of magic numbers floating around.
  */
 public class RobotMap {  
+  public static final int PCM_CAN_ID = 7;
+  
   public static final int CT_ID_LEFT_1 = 1;
   public static final int CT_ID_LEFT_2 = 3;
   public static final int CT_ID_RIGHT_1 = 2;
@@ -15,7 +17,7 @@ public class RobotMap {
   public static final int CT_ID_SHOOTER_SLAVE = 6;
   
   public static final int CT_ID_INTAKE = 7;
-  public static final int CT_ID_FEEDER = 9;
+  public static final int CT_ID_FEEDER = 8;
 
   // Data from http://motors.vex.com/775pro
   public static final int MAX_RPM_775PRO = 18700;
