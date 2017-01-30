@@ -8,5 +8,8 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry exported="true" kind="var" path="USERLIBS_DIR/CTRLib.jar"/>
 	<classpathentry exported="true" kind="var" path="USERLIBS_DIR/navx_frc.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/logback-classic-1.1.9.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/logback-core-1.1.9.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/slf4j-api-1.7.22.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
