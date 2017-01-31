@@ -246,11 +246,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2  
         / RobotMap.ENCODER_TICKS_PER_INCH;
     
-    xPos = xPos + Math.sin(Math.toRadians(rotation)) * deltaInches;
-    yPos = yPos + Math.cos(Math.toRadians(rotation)) * deltaInches;
+    xPos = xPos + Math.cos(Math.toRadians(rotation)) * deltaInches;
+    yPos = yPos + Math.sin(Math.toRadians(rotation)) * deltaInches;
     
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;    
   }
+  
 }
 
