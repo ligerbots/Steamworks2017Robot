@@ -9,8 +9,10 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
+import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.RobotPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,11 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   DoubleSolenoid shiftingSolenoid;
   DigitalInput climbLimitSwitch;
   AHRS navX;
+  double xPos;
+  double yPos;
+  double rotation;
+  double prevEncoderLeft;
+  double prevEncoderRight;
 
   /**
    * Creates a new drive train instance.
@@ -216,6 +223,34 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderValue(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderValue(DriveTrainSide.RIGHT));
+  }
+  
+  public RobotPosition getRobotPosition() {
+    return new RobotPosition(xPos,yPos, rotation);
+  }
+  
+  public void setPosition(FieldPosition fieldPos) {
+    xPos = fieldPos.getX();
+    yPos = fieldPos.getY();
+  }
+  
+  public void updatePosition() {
+    rotation = navX.getYaw();
+    
+    double encoderLeft = getEncoderValue(DriveTrainSide.LEFT);
+    double encoderRight = getEncoderValue(DriveTrainSide.RIGHT);
+    
+    double deltaEncoderLeft = encoderLeft - prevEncoderLeft;
+    double deltaEncoderRight = encoderRight - prevEncoderRight;
+    
+    double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2  
+        / RobotMap.ENCODER_TICKS_PER_INCH;
+    
+    xPos = xPos + Math.sin(Math.toRadians(rotation)) * deltaInches;
+    yPos = yPos + Math.cos(Math.toRadians(rotation)) * deltaInches;
+    
+    prevEncoderLeft = encoderLeft;
+    prevEncoderRight = encoderRight;    
   }
 }
 

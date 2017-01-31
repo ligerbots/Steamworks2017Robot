@@ -110,7 +110,7 @@ public class Robot extends IterativeRobot {
   @Override
   public void robotPeriodic() {
     logger.trace("robotPeriodic()");
-
+    driveTrain.updatePosition();
     Scheduler.getInstance().run();
     allSubsystems.forEach((SmartDashboardLogger logger) -> logger.sendDataToSmartDashboard());
     long currentNanos = System.nanoTime();
