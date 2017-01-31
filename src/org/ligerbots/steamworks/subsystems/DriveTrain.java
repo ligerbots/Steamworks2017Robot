@@ -4,6 +4,7 @@ import com.ctre.CANTalon;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -50,6 +51,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double rotation;
   double prevEncoderLeft;
   double prevEncoderRight;
+  DriverStation driverStation;
+  double rotationOffset;
 
   /**
    * Creates a new drive train instance.
@@ -82,6 +85,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
     navX = new AHRS(SPI.Port.kMXP);
+    
+    calibrateYaw();
   }
 
   /**
@@ -235,7 +240,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
   
   public void updatePosition() {
-    rotation = navX.getYaw();
+    rotation = navX.getYaw() + rotationOffset;
     
     double encoderLeft = getEncoderValue(DriveTrainSide.LEFT);
     double encoderRight = getEncoderValue(DriveTrainSide.RIGHT);
@@ -253,5 +258,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     prevEncoderRight = encoderRight;    
   }
   
+  public void calibrateYaw() {
+    if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
+      rotationOffset = -90.0;
+    } else {
+      rotationOffset = 90.0;
+    }
+  }
 }
 
