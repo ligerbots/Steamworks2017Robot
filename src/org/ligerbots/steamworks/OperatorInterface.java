@@ -53,10 +53,10 @@ public class OperatorInterface {
   }
 
   public double getThrottle() {
-    return xboxController.getY(GenericHID.Hand.kLeft);
+    return -xboxController.getY(GenericHID.Hand.kLeft);
   }
 
   public double getTurn() {
-    return xboxController.getX(GenericHID.Hand.kRight);
+    return -xboxController.getX(GenericHID.Hand.kRight);
   }
 }

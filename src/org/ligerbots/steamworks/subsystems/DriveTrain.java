@@ -53,6 +53,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double prevEncoderRight;
   DriverStation driverStation;
   double rotationOffset;
+  double lastOutputLeft = 0;
+  double lastOutputRight = 0;
 
   /**
    * Creates a new drive train instance.
@@ -78,7 +80,13 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     Arrays.asList(left1, left2, right1, right2)
         .forEach((CANTalon talon) -> talon.enableBrakeMode(true));
 
-    robotDrive = new RobotDrive(left1, right1);
+    robotDrive = new RobotDrive(left1, right1) {
+      public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
+        super.setLeftRightMotorOutputs(leftOutput, rightOutput);
+        lastOutputLeft = leftOutput;
+        lastOutputRight = rightOutput;
+      }
+    };
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
@@ -109,7 +117,34 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     logger.trace(String.format("Driving with throttle %f and turn %f", throttle, turn));
     robotDrive.arcadeDrive(throttle, turn);
   }
-
+  
+  /**
+   * Sets raw left and right motor values.
+   * @param left The left value
+   * @param right The right value
+   */
+  public void rawLeftRightDrive(double left, double right) {
+    robotDrive.setLeftRightMotorOutputs(left, right);
+  }
+  
+  public void setBrakeOn(boolean brakeOn) {
+    Arrays.asList(left1, left2, right1, right2)
+      .forEach((CANTalon talon) -> talon.enableBrakeMode(brakeOn));
+  }
+  
+  /**
+   * Returns the last output value for the motors.
+   * @param side Which side to get the last output value for
+   * @return The last known output value for that side
+   */
+  public double getLastOutput(DriveTrainSide side) {
+    if (side == DriveTrainSide.LEFT) {
+      return lastOutputLeft;
+    } else {
+      return lastOutputRight;
+    }
+  }
+  
   /**
    * Shifts the gearboxes up or down.
    * 
