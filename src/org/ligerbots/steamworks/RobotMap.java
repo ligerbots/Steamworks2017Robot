@@ -39,5 +39,5 @@ public class RobotMap {
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
 
   // We don't really know whether or not to multiply or divide by the gear ratio (2.06)
-  public static final double ENCODER_TICKS_PER_INCH = 1024 * 2.06 / (4 * Math.PI);
+  public static final double ENCODER_TICKS_PER_INCH = 1024 * 3.0 / (4 * Math.PI);
 }
