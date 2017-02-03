@@ -43,8 +43,8 @@ public class TurnCommand extends Command {
     error1 = Math.abs(targetRotation - Robot.driveTrain.getYaw());
     error2 = Math.abs(360 - error1);
     double actualError = Math.min(error1, error2);
-    if (actualError <= 30) {
-      double driveSpeed = 0.6 * actualError / 30;
+    if (actualError <= 60) {
+      double driveSpeed = 0.6 * actualError / 60;
       Robot.driveTrain.joystickDrive(0, isClockwise ? -driveSpeed : driveSpeed);
     } else {
       Robot.driveTrain.joystickDrive(0, isClockwise ? -0.6 : 0.6);
@@ -53,7 +53,7 @@ public class TurnCommand extends Command {
 
   // Make this return true when this Command no longer needs to run execute()
   protected boolean isFinished() {
-    boolean check1 = false;// System.nanoTime() - startTime > (maxTime * RobotMap.NANOS_PER_SECOND);
+    boolean check1 = System.nanoTime() - startTime > (maxTime * RobotMap.NANOS_PER_SECOND);
     boolean check2;
     
     logger.debug(

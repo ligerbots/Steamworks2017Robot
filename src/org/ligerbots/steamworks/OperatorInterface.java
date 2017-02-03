@@ -56,7 +56,7 @@ public class OperatorInterface {
     
     leftJoystickButton = new JoystickButton(xboxController, 9);
     
-    SmartDashboard.putData(new TurnCommand(90));
+    SmartDashboard.putData(new TurnCommand(180));
   }
 
   public double getThrottle() {
