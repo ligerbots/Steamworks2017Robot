@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
+import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.LedRingCommand;
@@ -57,6 +58,8 @@ public class OperatorInterface {
     leftJoystickButton = new JoystickButton(xboxController, 9);
     
     SmartDashboard.putData(new TurnCommand(180));
+    
+    SmartDashboard.putData(new DriveDistanceCommand(12 * 15));
   }
 
   public double getThrottle() {

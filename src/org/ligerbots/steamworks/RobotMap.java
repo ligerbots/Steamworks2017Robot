@@ -40,7 +40,11 @@ public class RobotMap {
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
 
   // We don't really know whether or not to multiply or divide by the gear ratio (2.06)
-  public static final double ENCODER_TICKS_PER_INCH = 1024 * 3.0 / (4 * Math.PI);
-  
-  public static final double YAW_MARGIN = 1.5; //Degrees
+  public static final int QUAD_ENCODER_TICKS_PER_REV = 256;
+  public static final double WHEEL_RADIUS = 3; // in
+  public static final double WHEEL_DIAMETER = WHEEL_RADIUS * 2;
+  public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
+  public static final double GEARING_FACTOR = 1;
+
+  public static final double YAW_MARGIN = 1.5; // Degrees
 }

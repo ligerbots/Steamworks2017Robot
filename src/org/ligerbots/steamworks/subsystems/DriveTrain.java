@@ -69,7 +69,13 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     left1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     right1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     left1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    left1.reverseSensor(true);
+    left1.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
     right1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    right1.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
+    left1.setPosition(0);
+    right1.setPosition(0);
+
 
     left2.changeControlMode(CANTalon.TalonControlMode.Follower);
     left2.set(RobotMap.CT_ID_LEFT_1);
@@ -94,7 +100,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
     navX = new AHRS(SPI.Port.kMXP);
-    
+    navX.reset();
+    navX.resetDisplacement();
+
     calibrateYaw();
   }
 
@@ -117,23 +125,25 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     logger.trace(String.format("Driving with throttle %f and turn %f", throttle, turn));
     robotDrive.arcadeDrive(throttle, turn);
   }
-  
+
   /**
    * Sets raw left and right motor values.
+   * 
    * @param left The left value
    * @param right The right value
    */
   public void rawLeftRightDrive(double left, double right) {
     robotDrive.setLeftRightMotorOutputs(left, right);
   }
-  
+
   public void setBrakeOn(boolean brakeOn) {
     Arrays.asList(left1, left2, right1, right2)
-      .forEach((CANTalon talon) -> talon.enableBrakeMode(brakeOn));
+        .forEach((CANTalon talon) -> talon.enableBrakeMode(brakeOn));
   }
-  
+
   /**
    * Returns the last output value for the motors.
+   * 
    * @param side Which side to get the last output value for
    * @return The last known output value for that side
    */
@@ -144,7 +154,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       return lastOutputRight;
     }
   }
-  
+
   /**
    * Shifts the gearboxes up or down.
    * 
@@ -153,7 +163,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public void shift(ShiftType shiftType) {
     logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
         shiftingSolenoid.get().toString()));
-    
+
     if (shiftType == ShiftType.TOGGLE) {
       if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
         shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
@@ -184,13 +194,15 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Gets the encoder value for the specified side.
    * 
    * @param side The side, either LEFT or RIGHT
-   * @return The encoder value
+   * @return The encoder value, in inches
    */
-  public double getEncoderValue(DriveTrainSide side) {
+  public double getEncoderDistance(DriveTrainSide side) {
+    // getPosition() gives revolutions, since the talons are calibrated for the ticks per
+    // revolution. Multiply by wheel circumference and gearing factor to get distance in inches.
     if (side == DriveTrainSide.LEFT) {
-      return left1.getPosition();
+      return left1.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
     } else {
-      return right1.getPosition();
+      return right1.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
     }
   }
 
@@ -263,43 +275,41 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         right2.getOutputCurrent() * right2.getOutputVoltage());
     SmartDashboard.putNumber("Corrected_Yaw", rotation);
 
-    SmartDashboard.putNumber("Encoder_Left", getEncoderValue(DriveTrainSide.LEFT));
-    SmartDashboard.putNumber("Encoder_Right", getEncoderValue(DriveTrainSide.RIGHT));
+    SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
+    SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
   }
-  
+
   public RobotPosition getRobotPosition() {
-    return new RobotPosition(xPos,yPos, rotation);
+    return new RobotPosition(xPos, yPos, rotation);
   }
-  
+
   public void setPosition(FieldPosition fieldPos) {
     xPos = fieldPos.getX();
     yPos = fieldPos.getY();
   }
-  
+
   public void updatePosition() {
-    rotation = navX.getYaw() + rotationOffset;
-    rotation = fixDegrees(rotation);
-    
-    double encoderLeft = getEncoderValue(DriveTrainSide.LEFT);
-    double encoderRight = getEncoderValue(DriveTrainSide.RIGHT);
-    
+    rotation = fixDegrees(navX.getYaw() + rotationOffset);
+
+    double encoderLeft = getEncoderDistance(DriveTrainSide.LEFT);
+    double encoderRight = getEncoderDistance(DriveTrainSide.RIGHT);
+
     double deltaEncoderLeft = encoderLeft - prevEncoderLeft;
     double deltaEncoderRight = encoderRight - prevEncoderRight;
-    
-    double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2  
-        / RobotMap.ENCODER_TICKS_PER_INCH;
-    
+
+    double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2;
+
     xPos = xPos + Math.cos(Math.toRadians(rotation)) * deltaInches;
     yPos = yPos + Math.sin(Math.toRadians(rotation)) * deltaInches;
-    
+
     prevEncoderLeft = encoderLeft;
-    prevEncoderRight = encoderRight;    
+    prevEncoderRight = encoderRight;
   }
-  
+
   public double getYaw() {
     return rotation;
   }
-  
+
   public void calibrateYaw() {
     if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
       rotationOffset = -90.0;
@@ -307,8 +317,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       rotationOffset = 90.0;
     }
   }
-  
-  public static double fixDegrees(double angle) { 
+
+  public static double fixDegrees(double angle) {
     return ((angle % 360) + 360) % 360;
   }
 }

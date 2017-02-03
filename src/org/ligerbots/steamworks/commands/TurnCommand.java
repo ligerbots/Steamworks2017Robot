@@ -23,7 +23,7 @@ public class TurnCommand extends Command {
   double error1;
 
   public TurnCommand(double offsetDegrees) {
-    super("TurnCommand");
+    super("TurnCommand_" + offsetDegrees);
     requires(Robot.driveTrain);
     this.offsetDegrees = offsetDegrees;
     maxTime = 2.5 * (offsetDegrees / 180);
