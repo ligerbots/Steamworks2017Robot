@@ -277,6 +277,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   
   public void updatePosition() {
     rotation = navX.getYaw() + rotationOffset;
+    rotation = fixDegrees(rotation);
     
     double encoderLeft = getEncoderValue(DriveTrainSide.LEFT);
     double encoderRight = getEncoderValue(DriveTrainSide.RIGHT);
@@ -294,11 +295,25 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     prevEncoderRight = encoderRight;    
   }
   
+  public double getYaw() {
+    return rotation;
+  }
+  
   public void calibrateYaw() {
     if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
       rotationOffset = -90.0;
     } else {
       rotationOffset = 90.0;
+    }
+  }
+  
+  public static double fixDegrees(double angle) { 
+    if (angle <= -180) { 
+      return angle + 360;
+    } else if (angle > 180) {
+      return angle - 360;
+    } else { 
+      return angle;
     }
   }
 }

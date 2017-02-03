@@ -35,9 +35,12 @@ public class RobotMap {
   public static final int MAG_ENCODER_UNITS_PER_REVOLUTION = 4096;
   public static final float MAG_ENCODER_FREQUENCY = 10;
   public static final double NANOS_PER_MINUTE = 60.0e9;
+  public static final double NANOS_PER_SECOND = 1.0e9;
 
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
 
   // We don't really know whether or not to multiply or divide by the gear ratio (2.06)
   public static final double ENCODER_TICKS_PER_INCH = 1024 * 3.0 / (4 * Math.PI);
+  
+  public static final double YAW_MARGIN = 1.5; //Degrees
 }

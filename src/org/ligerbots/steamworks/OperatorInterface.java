@@ -20,7 +20,8 @@ import org.ligerbots.steamworks.subsystems.Vision;
  */
 public class OperatorInterface {
   XboxController xboxController;
-
+  JoystickButton centralXButton;
+  
   /**
    * This is where we set up the operator interface.
    */
@@ -50,6 +51,8 @@ public class OperatorInterface {
 
     JoystickButton startButton = new JoystickButton(xboxController, 8);
     startButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+    
+    centralXButton = new JoystickButton(xboxController, 11);
   }
 
   public double getThrottle() {
@@ -58,5 +61,13 @@ public class OperatorInterface {
 
   public double getTurn() {
     return -xboxController.getX(GenericHID.Hand.kRight);
+  }
+  
+  /**
+   * Abort if a button is pressed or other things.
+   * @return look above.
+   */
+  public boolean isCancelled() { 
+    return getThrottle() > 0.5 || getThrottle() < -0.5 || centralXButton.get();
   }
 }
