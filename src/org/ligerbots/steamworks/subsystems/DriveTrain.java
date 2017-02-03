@@ -261,6 +261,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         right1.getOutputCurrent() * right1.getOutputVoltage());
     SmartDashboard.putNumber("Right_Talon_2_Power",
         right2.getOutputCurrent() * right2.getOutputVoltage());
+    SmartDashboard.putNumber("Corrected_Yaw", rotation);
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderValue(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderValue(DriveTrainSide.RIGHT));
@@ -308,13 +309,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
   
   public static double fixDegrees(double angle) { 
-    if (angle <= -180) { 
-      return angle + 360;
-    } else if (angle > 180) {
-      return angle - 360;
-    } else { 
-      return angle;
-    }
+    return ((angle % 360) + 360) % 360;
   }
 }
 
