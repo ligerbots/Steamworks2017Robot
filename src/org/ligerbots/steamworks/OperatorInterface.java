@@ -3,6 +3,7 @@ package org.ligerbots.steamworks;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
@@ -10,6 +11,7 @@ import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.LedRingCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
+import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -53,6 +55,8 @@ public class OperatorInterface {
     startButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
     
     centralXButton = new JoystickButton(xboxController, 11);
+    
+    SmartDashboard.putData(new TurnCommand(90));
   }
 
   public double getThrottle() {

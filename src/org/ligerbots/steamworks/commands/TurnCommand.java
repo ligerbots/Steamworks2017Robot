@@ -17,6 +17,7 @@ public class TurnCommand extends Command {
   double targetRotation;
 
   public TurnCommand(double degrees) {
+    super("TurnCommand");
     requires(Robot.driveTrain);
     this.degrees = degrees;
     maxTime = 2.5 * (degrees / 180);
