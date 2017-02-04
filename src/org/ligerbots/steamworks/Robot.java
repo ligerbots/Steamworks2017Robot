@@ -130,12 +130,20 @@ public class Robot extends IterativeRobot {
   public void robotPeriodic() {
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
-    allSubsystems.forEach((SmartDashboardLogger logger) -> logger.sendDataToSmartDashboard());
+    
+    allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
     long currentNanos = System.nanoTime();
     SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000.0);
     prevNanos = currentNanos;
   }
-
+  public void tryToSendDataToSmartDashboard(SmartDashboardLogger logger) {
+    try {
+      logger.sendDataToSmartDashboard();
+    }
+    catch (Exception ex) {
+      Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
+    }
+  }
   /**
    * This function is called once each time the robot enters Disabled mode. You can use it to reset
    * any subsystem information you want to clear when the robot is disabled.
