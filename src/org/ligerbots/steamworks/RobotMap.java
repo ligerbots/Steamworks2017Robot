@@ -18,6 +18,8 @@ public class RobotMap {
 
   public static final int CT_ID_INTAKE = 7;
   public static final int CT_ID_FEEDER = 8;
+  
+  public static final int ANALOG_INPUT_PROXIMITY_SENSOR = 0;
 
   // Data from http://motors.vex.com/775pro
   public static final int MAX_RPM_775PRO = 18700;
@@ -36,6 +38,8 @@ public class RobotMap {
   public static final float MAG_ENCODER_FREQUENCY = 10;
   public static final double NANOS_PER_MINUTE = 60.0e9;
   public static final double NANOS_PER_SECOND = 1.0e9;
+  public static final double MILLIMETERS_PER_INCH = 25.4;
+  public static final double MILLIVOLTS_PER_MILLIMETER = 0.977;
 
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
 
