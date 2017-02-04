@@ -23,6 +23,7 @@ import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
 import org.ligerbots.steamworks.subsystems.Pneumatics;
+import org.ligerbots.steamworks.subsystems.ProximitySensor;
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -42,19 +43,19 @@ public class Robot extends IterativeRobot {
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     root.setLevel(Level.ALL);
     LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
-    
+
     LevelFilter levelFilter = new LevelFilter();
     levelFilter.setContext(ctx);
     levelFilter.setLevel(Level.DEBUG);
     levelFilter.setOnMatch(FilterReply.ACCEPT);
     levelFilter.setOnMismatch(FilterReply.DENY);
     levelFilter.start();
-    
+
     Iterator<Appender<ILoggingEvent>> apps = root.iteratorForAppenders();
     while (apps.hasNext()) {
       apps.next().addFilter(levelFilter);
     }
-    
+
     ServerSocketAppender socketAppender = new ServerSocketAppender();
     socketAppender.setContext(ctx);
     socketAppender.setPort(5801);
@@ -69,6 +70,7 @@ public class Robot extends IterativeRobot {
   public static Feeder feeder;
   public static Intake intake;
   public static GearManipulator gearManipulator;
+  public static ProximitySensor proximitySensor;
   public static List<SmartDashboardLogger> allSubsystems;
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
@@ -95,9 +97,10 @@ public class Robot extends IterativeRobot {
     gearManipulator = new GearManipulator();
     intake = new Intake();
     pneumatics = new Pneumatics();
-    allSubsystems =
-        Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake, pneumatics);
-    
+    proximitySensor = new ProximitySensor();
+    allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake,
+        pneumatics, proximitySensor);
+
     driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
 
@@ -105,14 +108,14 @@ public class Robot extends IterativeRobot {
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);
-    
-    Thread updatePositionThread = new Thread(this:: updatePosition);
+
+    Thread updatePositionThread = new Thread(this::updatePosition);
     updatePositionThread.setDaemon(true);
     // in the debugger, we'd like to know what this is
     updatePositionThread.setName("Update Position Thread");
     updatePositionThread.start();
   }
-  
+
   public void updatePosition() {
     logger.info("Initialize Update Position Thread");
     while (true) {
@@ -130,20 +133,21 @@ public class Robot extends IterativeRobot {
   public void robotPeriodic() {
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
-    
+
     allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
     long currentNanos = System.nanoTime();
     SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000.0);
     prevNanos = currentNanos;
   }
+
   public void tryToSendDataToSmartDashboard(SmartDashboardLogger logger) {
     try {
       logger.sendDataToSmartDashboard();
-    }
-    catch (Exception ex) {
+    } catch (Throwable ex) {
       Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
     }
   }
+
   /**
    * This function is called once each time the robot enters Disabled mode. You can use it to reset
    * any subsystem information you want to clear when the robot is disabled.
