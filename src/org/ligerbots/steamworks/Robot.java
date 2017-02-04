@@ -74,6 +74,7 @@ public class Robot extends IterativeRobot {
   public static List<SmartDashboardLogger> allSubsystems;
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
+  public static DeviceFinder deviceFinder;
 
   private static final Logger logger = LoggerFactory.getLogger(Robot.class);
 
@@ -89,7 +90,9 @@ public class Robot extends IterativeRobot {
   @Override
   public void robotInit() {
     logger.info("robotInit()");
-
+    deviceFinder = new DeviceFinder();
+    deviceFinder.findDevices();
+    
     driveTrain = new DriveTrain();
     vision = new Vision();
     shooter = new Shooter();

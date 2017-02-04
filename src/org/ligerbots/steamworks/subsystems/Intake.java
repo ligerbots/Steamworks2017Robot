@@ -3,6 +3,7 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +23,19 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * Creates the intake subsystem.
    */
   public Intake() {
-    logger.info("Initialize");
+    if (Robot.deviceFinder.isSrxAvailable(RobotMap.CT_ID_INTAKE)) {
+      logger.info("Initialize");
     
-    intakeTalon = new CANTalon(RobotMap.CT_ID_INTAKE);
-    intakeTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+      intakeTalon = new CANTalon(RobotMap.CT_ID_INTAKE);
+      intakeTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
 
-    setIntakeOn(false);
+      setIntakeOn(false);
+    }
+    else {
+      logger.warn("Intake unavailable");
+    }
   }
+    
 
   public void initDefaultCommand() {}
 
@@ -37,11 +44,12 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * @param intakeOn true for on, false for off
    */
   public void setIntakeOn(boolean intakeOn) {
-    logger.info(String.format("Setting intake, on=%b", intakeOn));
-    intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
-    this.intakeOn = intakeOn;
+    if (intakeTalon != null) {
+      logger.info(String.format("Setting intake, on=%b", intakeOn));
+      intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
+      this.intakeOn = intakeOn;
+    }
   }
-
   public boolean isIntakeOn() {
     return intakeOn;
   }
@@ -50,9 +58,11 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * Sends intake data to smart dashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("Intake_Talon_Power",
-        intakeTalon.getOutputCurrent() * intakeTalon.getOutputVoltage());
-    SmartDashboard.putBoolean("Intake_On", intakeOn);
+    if (intakeTalon != null) {
+      SmartDashboard.putNumber("Intake_Talon_Power",
+          intakeTalon.getOutputCurrent() * intakeTalon.getOutputVoltage());
+      SmartDashboard.putBoolean("Intake_On", intakeOn);
+    }
   }
 }
 

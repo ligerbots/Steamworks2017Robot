@@ -3,6 +3,7 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +20,15 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
    * Creates the Feeder subsystem.
    */
   public Feeder() {
-    logger.trace("Initialize");
-    
-    feederTalon = new CANTalon(RobotMap.CT_ID_FEEDER);
-    feederTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    feederTalon.enableBrakeMode(true);
+    if (Robot.deviceFinder.isSrxAvailable(RobotMap.CT_ID_FEEDER)) {
+      logger.trace("Initialize");
+      feederTalon = new CANTalon(RobotMap.CT_ID_FEEDER);
+      feederTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+      feederTalon.enableBrakeMode(true);
+    }
+    else {
+      logger.warn("Feeder unavailable");
+    }
   }
 
   /**
@@ -32,15 +37,19 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
    * @param value A percentvbus value, 0.0 to 1.0
    */
   public void setFeeder(double value) {
-    logger.trace(String.format("Setting feeder, percentvbus=%f", value));
-    feederTalon.set(value);
+    if (feederTalon != null) {
+      logger.trace(String.format("Setting feeder, percentvbus=%f", value));
+      feederTalon.set(value);
+    }
   }
 
   public void initDefaultCommand() {}
 
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("Feeder_Talon_Power",
-        feederTalon.getOutputCurrent() * feederTalon.getOutputVoltage());
+    if (feederTalon != null) {
+      SmartDashboard.putNumber("Feeder_Talon_Power",
+          feederTalon.getOutputCurrent() * feederTalon.getOutputVoltage());
+    }
   }
 }
 
