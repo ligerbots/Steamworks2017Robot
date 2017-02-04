@@ -105,12 +105,30 @@ public class Robot extends IterativeRobot {
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);
+    
+    Thread updatePositionThread = new Thread(this:: updatePosition);
+    updatePositionThread.setDaemon(true);
+    // in the debugger, we'd like to know what this is
+    updatePositionThread.setName("Update Position Thread");
+    updatePositionThread.start();
+  }
+  
+  public void updatePosition() {
+    logger.info("Initialize Update Position Thread");
+    while (true) {
+      driveTrain.updatePosition();
+      try {
+        Thread.sleep(17);
+      } catch (InterruptedException ex) {
+        ex.printStackTrace();
+        logger.error("InterruptedException", ex);
+      }
+    }
   }
 
   @Override
   public void robotPeriodic() {
     logger.trace("robotPeriodic()");
-
     Scheduler.getInstance().run();
     
     allSubsystems.forEach(this::tryToSendDataToSmartDashboard);

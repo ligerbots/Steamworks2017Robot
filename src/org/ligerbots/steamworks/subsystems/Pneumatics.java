@@ -3,6 +3,7 @@ package org.ligerbots.steamworks.subsystems;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
 
   public Pneumatics() {
     logger.info("Initialize");
-    compressor = new Compressor();
+    compressor = new Compressor(RobotMap.PCM_CAN_ID);
   }
 
   public void initDefaultCommand() {}

@@ -61,7 +61,7 @@ public class GearCommand extends Command {
   }
 
   protected void interrupted() {
-    logger.warn("Interrupted");
+    logger.info("Interrupted");
     if (hold) {
       Robot.gearManipulator.setOpen(!shouldBeOpen);
     }

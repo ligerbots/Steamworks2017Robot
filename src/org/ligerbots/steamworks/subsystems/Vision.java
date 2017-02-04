@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Vision.class);
-  
+
   static class VisionData {
     double rvec0;
     double rvec1;
@@ -30,24 +30,28 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     double tvec1;
     double tvec2;
   }
-  
+
+  public static enum LedState {
+    ON, OFF, TOGGLE
+  }
+
   private static final int CS_STREAM_PORT = 5810;
   private static final int DATA_PORT = 5808;
   private static final int CS_FEEDBACK_INTERVAL = 1000;
   private static final int CS_MAGIC_NUMBER = 16777216;
-  
+
   Relay ledRing;
   ITable table = null;
   // buffer vision data for multithreaded access
-  VisionData[] visionData = { new VisionData(), new VisionData() };
+  VisionData[] visionData = {new VisionData(), new VisionData()};
   volatile int currentVisionDataIndex = 0;
-  
+
   /**
    * Creates the instance of VisionSubsystem.
    */
   public Vision() {
     logger.trace("Initialize");
-    
+
     ledRing = new Relay(RobotMap.RELAY_LED_RING);
 
     Thread forwardThread = new Thread(this::packetForwardingThread);
@@ -69,7 +73,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    */
   public void setVisionEnabled(boolean enabled) {
     logger.info(String.format("Setting vision enabled=%b", enabled));
-    
+
     if (table == null) {
       table = NetworkTable.getTable("Vision");
     }
@@ -78,13 +82,32 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
   /**
    * Turns the LED ring for the retroreflective tape on or off.
-   * @param on Whether the LED ring should be on or not.
+   * 
+   * @param desiredState Whether the LED ring should be on or not.
    */
-  public void setLedRingOn(boolean on) {
-    logger.trace(String.format("Setting LED ring on=%b", on));
-    ledRing.set(on ? Relay.Value.kForward : Relay.Value.kOff);
+  public void setLedRingOn(LedState desiredState) {
+    logger.trace(String.format("Setting LED ring %s, current state %b", desiredState.toString(),
+        isLedRingOn()));
+    boolean on;
+    if (desiredState == LedState.TOGGLE) {
+      on = !isLedRingOn();
+    } else if (desiredState == LedState.ON) {
+      on = true;
+    } else {
+      on = false;
+    }
+    ledRing.set(on ? Relay.Value.kReverse : Relay.Value.kOff);
   }
-  
+
+  /**
+   * Returns whether the LED ring is on or off.
+   * 
+   * @return True for on, false for off
+   */
+  public boolean isLedRingOn() {
+    return ledRing.get() != Relay.Value.kOff;
+  }
+
   public VisionData getVisionData() {
     return visionData[currentVisionDataIndex];
   }
@@ -137,7 +160,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    */
   public void packetForwardingThread() {
     logger.info("Stream thread init");
-    
+
     DatagramChannel udpChannel = null;
     InetSocketAddress sendAddress = null;
     ByteBuffer recvPacket = null;
@@ -181,7 +204,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
         // if we have a packet and it's time to tell the phone we're
         // getting packets then tell the phone we're getting packets
-        
+
         if (from != null && System.currentTimeMillis() - lastFeedbackTime > CS_FEEDBACK_INTERVAL) {
           lastFeedbackTime = System.currentTimeMillis();
           feedbackPacket.position(0);

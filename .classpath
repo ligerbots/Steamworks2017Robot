@@ -11,5 +11,8 @@
 	<classpathentry kind="lib" path="lib/logback-classic-1.1.9.jar" sourcepath="lib/logback-classic-1.1.9-sources.jar"/>
 	<classpathentry kind="lib" path="lib/logback-core-1.1.9.jar" sourcepath="lib/logback-core-1.1.9-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.22.jar" sourcepath="lib/slf4j-api-1.7.22-sources.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/logback-classic-1.1.9.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/logback-core-1.1.9.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/slf4j-api-1.7.22.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
