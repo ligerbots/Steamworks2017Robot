@@ -22,13 +22,60 @@ import org.slf4j.LoggerFactory;
 public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Vision.class);
 
-  static class VisionData {
-    double rvec0;
-    double rvec1;
-    double rvec2;
-    double tvec0;
-    double tvec1;
-    double tvec2;
+  public static class VisionData {
+    double rvecPitch;
+    double rvecYaw;
+    double rvecRoll;
+    double tvecX;
+    double tvecY;
+    double tvecZ;
+
+    /**
+     * @return the rvecPitch
+     */
+    public double getRvecPitch() {
+      return rvecPitch;
+    }
+
+    /**
+     * @return the rvecYaw
+     */
+    public double getRvecYaw() {
+      return rvecYaw;
+    }
+
+    /**
+     * @return the rvecRoll
+     */
+    public double getRvecRoll() {
+      return rvecRoll;
+    }
+
+    /**
+     * @return the tvecX
+     */
+    public double getTvecX() {
+      return tvecX;
+    }
+
+    /**
+     * @return the tvecY
+     */
+    public double getTvecY() {
+      return tvecY;
+    }
+
+    /**
+     * @return the tvecZ
+     */
+    public double getTvecZ() {
+      return tvecZ;
+    }
+    
+    public String toString() {
+      return String.format("%f,%f,%f | %f,%f,%f", tvecX, tvecY, tvecZ, rvecPitch, rvecYaw,
+          rvecRoll);
+    }
   }
 
   public static enum LedState {
@@ -140,14 +187,17 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         if (from == null) {
           continue;
         }
-
+        
+        dataPacket.position(0);
+        
         VisionData notCurrentData = visionData[1 - currentVisionDataIndex];
-        notCurrentData.rvec0 = dataPacket.getDouble();
-        notCurrentData.rvec1 = dataPacket.getDouble();
-        notCurrentData.rvec2 = dataPacket.getDouble();
-        notCurrentData.tvec0 = dataPacket.getDouble();
-        notCurrentData.tvec1 = dataPacket.getDouble();
-        notCurrentData.tvec2 = dataPacket.getDouble();
+        notCurrentData.rvecPitch = dataPacket.getDouble();
+        notCurrentData.rvecYaw = dataPacket.getDouble();
+        notCurrentData.rvecRoll = dataPacket.getDouble();
+        notCurrentData.tvecX = dataPacket.getDouble();
+        notCurrentData.tvecY = dataPacket.getDouble();
+        notCurrentData.tvecZ = dataPacket.getDouble();
+//        logger.info(String.format("Data: %s", notCurrentData));
         currentVisionDataIndex = 1 - currentVisionDataIndex;
       } catch (IOException ex) {
         logger.error("Data thread communication error", ex);

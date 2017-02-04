@@ -21,12 +21,17 @@ public class TurnCommand extends Command {
   boolean isClockwise;
   double error2;
   double error1;
+  
+  boolean succeeded;
 
   public TurnCommand(double offsetDegrees) {
     super("TurnCommand_" + offsetDegrees);
     requires(Robot.driveTrain);
     this.offsetDegrees = offsetDegrees;
     maxTime = 2.5 * (offsetDegrees / 180);
+    if (maxTime < 5) {
+      maxTime = 5;
+    }
     isClockwise = offsetDegrees > 0 && offsetDegrees <= 180;
   }
 
@@ -36,6 +41,7 @@ public class TurnCommand extends Command {
     startingRotation = Robot.driveTrain.getYaw();
     targetRotation = DriveTrain.fixDegrees(startingRotation + offsetDegrees);
     logger.debug(String.format("Start %f, target %f", startingRotation, targetRotation));
+    succeeded = false;
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -45,6 +51,9 @@ public class TurnCommand extends Command {
     double actualError = Math.min(error1, error2);
     if (actualError <= 60) {
       double driveSpeed = 0.6 * actualError / 60;
+      if (driveSpeed < 0.3) {
+        driveSpeed = 0.3;
+      }
       Robot.driveTrain.joystickDrive(0, isClockwise ? -driveSpeed : driveSpeed);
     } else {
       Robot.driveTrain.joystickDrive(0, isClockwise ? -0.6 : 0.6);
@@ -54,11 +63,12 @@ public class TurnCommand extends Command {
   // Make this return true when this Command no longer needs to run execute()
   protected boolean isFinished() {
     boolean check1 = System.nanoTime() - startTime > (maxTime * RobotMap.NANOS_PER_SECOND);
-    boolean check2;
-    
     logger.debug(
         String.format("Error %f %f, absolute yaw %f", error1, error2, Robot.driveTrain.getYaw()));
-    check2 = error1 < RobotMap.YAW_MARGIN || error2 < RobotMap.YAW_MARGIN;
+    boolean check2 = error1 < RobotMap.YAW_MARGIN || error2 < RobotMap.YAW_MARGIN;
+    if (check2) {
+      succeeded = true;
+    }
     return check1 || check2 || Robot.operatorInterface.isCancelled();
   }
 

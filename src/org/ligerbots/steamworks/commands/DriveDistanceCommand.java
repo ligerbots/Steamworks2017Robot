@@ -2,13 +2,16 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
-import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class DriveDistanceCommand extends Command {
+  private static final Logger logger = LoggerFactory.getLogger(DriveDistanceCommand.class);
+
   private static final double ACCEPTABLE_ERROR = 2.0; // in
   private static final double TURN_PROPORTIONAL_CONSTANT = 0.05;
   private static final double MIN_SPEED = 0.3;
@@ -54,6 +57,9 @@ public class DriveDistanceCommand extends Command {
         yawDifference = -yawDifference;
       }
     }
+
+    logger.info(String.format("left: %f, right: %f, delta: %f, error: %f, yawError: %f",
+        currentLeftEncoderValue, currentRightEncoderValue, delta, error, yawDifference));
 
     double turn = TURN_PROPORTIONAL_CONSTANT * yawDifference;
     if (turn > 1.0) {
