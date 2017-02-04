@@ -134,12 +134,14 @@ public class Robot extends IterativeRobot {
 
   @Override
   public void robotPeriodic() {
+    long start = System.nanoTime();
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
 
     allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
     long currentNanos = System.nanoTime();
-    SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000.0);
+    SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000000.0);
+    SmartDashboard.putNumber("ourTime", (currentNanos - start) / 1000000.0);
     prevNanos = currentNanos;
   }
 
@@ -162,6 +164,7 @@ public class Robot extends IterativeRobot {
 
   @Override
   public void disabledPeriodic() {
+    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
     logger.trace("disabledPeriodic()");
   }
 
@@ -196,6 +199,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void autonomousPeriodic() {
+    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
     logger.trace("autonomousPeriodic()");
   }
 
@@ -218,6 +222,7 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void teleopPeriodic() {
+    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
     logger.trace("teleopPeriodic()");
   }
 
