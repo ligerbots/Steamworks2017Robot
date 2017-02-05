@@ -8,12 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Subsystem for the ultrasonic sensor that will be used to align to precise distances from the
+ * feeder station.
  */
 public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   AnalogInput ai;
   private static final Logger logger = LoggerFactory.getLogger(ProximitySensor.class);
 
+  /**
+   * Creates the ProximitySensor.
+   */
   public ProximitySensor() {
     logger.trace("Initializing proximity sensor");
 
@@ -21,19 +25,16 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   }
 
   /**
-   * @return inches
-   * 
+   * Returns the distance detected by the ultrasonic sensor.
+   * @return Distance in inches
    */
   public double getDistance() {
     double voltage = ai.getVoltage();
     double distanceInMillimeters = voltage / 1000 / RobotMap.MILLIVOLTS_PER_MILLIMETER;
     return distanceInMillimeters / RobotMap.MILLIMETERS_PER_INCH;
-
   }
 
   public void initDefaultCommand() {
-    // Set the default command for a subsystem here.
-    // setDefaultCommand(new MySpecialCommand());
   }
 
   public void sendDataToSmartDashboard() {

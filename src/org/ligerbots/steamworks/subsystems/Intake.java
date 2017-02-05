@@ -23,15 +23,15 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * Creates the intake subsystem.
    */
   public Intake() {
-    if (Robot.deviceFinder.isSrxAvailable(RobotMap.CT_ID_INTAKE)) {
+    if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_INTAKE)) {
       logger.info("Initialize");
     
       intakeTalon = new CANTalon(RobotMap.CT_ID_INTAKE);
       intakeTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+      intakeTalon.setSafetyEnabled(false);
 
       setIntakeOn(false);
-    }
-    else {
+    } else {
       logger.warn("Intake unavailable");
     }
   }
@@ -50,18 +50,23 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
       this.intakeOn = intakeOn;
     }
   }
+  
   public boolean isIntakeOn() {
     return intakeOn;
   }
 
   /**
-   * Sends intake data to smart dashboard.
+   * Sends intake data to SmartDashboard.
    */
   public void sendDataToSmartDashboard() {
+    SmartDashboard.putBoolean("Intake_Present", intakeTalon != null);
     if (intakeTalon != null) {
-      SmartDashboard.putNumber("Intake_Talon_Power",
+      SmartDashboard.putNumber("Intake_Power",
           intakeTalon.getOutputCurrent() * intakeTalon.getOutputVoltage());
       SmartDashboard.putBoolean("Intake_On", intakeOn);
+      
+      SmartDashboard.putNumber("Intake_Failure", intakeTalon.getFaultHardwareFailure());
+      SmartDashboard.putNumber("Intake_OverTemp", intakeTalon.getStickyFaultOverTemp());
     }
   }
 }

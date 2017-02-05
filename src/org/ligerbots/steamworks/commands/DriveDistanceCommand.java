@@ -2,23 +2,16 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Drives straight a certain distance (in inches).
  */
 public class DriveDistanceCommand extends Command {
   private static final Logger logger = LoggerFactory.getLogger(DriveDistanceCommand.class);
-
-  private static final double ACCEPTABLE_ERROR = 2.0; // in
-  private static final double TURN_PROPORTIONAL_CONSTANT = 0.05;
-  private static final double MIN_SPEED = 0.3;
-  private static final double START_SPEED = 0.5;
-  private static final double MAX_SPEED = 0.7;
-  private static final double RAMP_UP_DIST = 24.0;
-  private static final double RAMP_DOWN_DIST = 48.0;
 
   double offsetInches;
 
@@ -28,7 +21,14 @@ public class DriveDistanceCommand extends Command {
 
   double delta;
   double error;
+  
+  boolean succeeded;
 
+  /**
+   * Create a new DriveDistanceCommand.
+   * 
+   * @param offsetInches The number of inches to drive.
+   */
   public DriveDistanceCommand(double offsetInches) {
     super("DriveDistanceCommand_" + offsetInches);
     this.offsetInches = offsetInches;
@@ -39,16 +39,22 @@ public class DriveDistanceCommand extends Command {
     startLeftEncoderValue = Robot.driveTrain.getEncoderDistance(DriveTrainSide.LEFT);
     startRightEncoderValue = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT);
     startYaw = Robot.driveTrain.getYaw();
+    succeeded = false;
+    logger.info(String.format("Initialize, distance=%f", offsetInches));
   }
 
   protected void execute() {
+    // find the encoder average delta since initialize()
     double currentLeftEncoderValue = Robot.driveTrain.getEncoderDistance(DriveTrainSide.LEFT);
     double currentRightEncoderValue = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT);
     delta = ((currentLeftEncoderValue - startLeftEncoderValue)
         + (currentRightEncoderValue - startRightEncoderValue)) / 2;
+    // drive error
     error = Math.abs(delta - offsetInches);
+    // turn error
     double yawDifference;
     double currentYaw = Robot.driveTrain.getYaw();
+    // handle wrap around 360
     if (Math.abs(currentYaw - startYaw) < 180) {
       yawDifference = currentYaw - startYaw;
     } else {
@@ -61,27 +67,34 @@ public class DriveDistanceCommand extends Command {
     logger.info(String.format("left: %f, right: %f, delta: %f, error: %f, yawError: %f",
         currentLeftEncoderValue, currentRightEncoderValue, delta, error, yawDifference));
 
-    double turn = TURN_PROPORTIONAL_CONSTANT * yawDifference;
+    // turn to fix yaw error
+    double turn = RobotMap.AUTO_DRIVE_TURN_P * yawDifference;
     if (turn > 1.0) {
       turn = 1.0;
     } else if (turn < -1.0) {
       turn = -1.0;
     }
 
-    if (error < RAMP_DOWN_DIST) {
-      double driveSpeed = (error * (MAX_SPEED - MIN_SPEED) / RAMP_DOWN_DIST) + MIN_SPEED;
+    // ramp up, drive at max speed, or ramp down depending on progress (measured by error)
+    if (error < RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST) {
+      double driveSpeed = (error * (RobotMap.AUTO_DRIVE_MAX_SPEED - RobotMap.AUTO_DRIVE_MIN_SPEED)
+          / RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST) + RobotMap.AUTO_DRIVE_MIN_SPEED;
       Robot.driveTrain.joystickDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
-    } else if (Math.abs(delta) < RAMP_UP_DIST) {
+    } else if (Math.abs(delta) < RobotMap.AUTO_DRIVE_RAMP_UP_DIST) {
       double driveSpeed =
-          (Math.abs(delta) * (MAX_SPEED - START_SPEED) / RAMP_UP_DIST) + START_SPEED;
+          (Math.abs(delta) * (RobotMap.AUTO_DRIVE_MAX_SPEED - RobotMap.AUTO_DRIVE_START_SPEED)
+              / RobotMap.AUTO_DRIVE_RAMP_UP_DIST) + RobotMap.AUTO_DRIVE_START_SPEED;
       Robot.driveTrain.joystickDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
     } else {
-      Robot.driveTrain.joystickDrive(offsetInches > 0 ? MAX_SPEED : -MAX_SPEED, turn);
+      Robot.driveTrain.joystickDrive(
+          offsetInches > 0 ? RobotMap.AUTO_DRIVE_MAX_SPEED : -RobotMap.AUTO_DRIVE_MAX_SPEED, turn);
     }
   }
 
   protected boolean isFinished() {
+    // if we passed the target, just stop
     if ((offsetInches < 0 && delta < offsetInches) || (offsetInches > 0 && delta > offsetInches)) {
+      succeeded = true;
       return true;
     }
 
@@ -89,14 +102,20 @@ public class DriveDistanceCommand extends Command {
       return true;
     }
 
-    return error < ACCEPTABLE_ERROR;
+    boolean onTarget = error < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
+    if (onTarget) {
+      succeeded = true;
+    }
+    return onTarget;
   }
 
   protected void end() {
+    logger.info("Finish");
     Robot.driveTrain.joystickDrive(0, 0);
   }
 
   protected void interrupted() {
+    logger.warn("Interrupted");
     Robot.driveTrain.joystickDrive(0, 0);
   }
 }

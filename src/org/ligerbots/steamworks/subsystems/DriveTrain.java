@@ -38,17 +38,19 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     LEFT, RIGHT
   }
 
-  CANTalon left1;
-  CANTalon left2;
-  CANTalon right1;
-  CANTalon right2;
+  CANTalon leftMaster;
+  CANTalon leftSlave;
+  CANTalon rightMaster;
+  CANTalon rightSlave;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DigitalInput climbLimitSwitch;
   AHRS navX;
-  double xPos;
-  double yPos;
+
+  double positionX;
+  double positionY;
   double rotation;
+
   double prevEncoderLeft;
   double prevEncoderRight;
   DriverStation driverStation;
@@ -61,32 +63,37 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    */
   public DriveTrain() {
     logger.info("Initialize");
-    left1 = new CANTalon(RobotMap.CT_ID_LEFT_1);
-    left2 = new CANTalon(RobotMap.CT_ID_LEFT_2);
-    right1 = new CANTalon(RobotMap.CT_ID_RIGHT_1);
-    right2 = new CANTalon(RobotMap.CT_ID_RIGHT_2);
 
-    left1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    right1.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    left1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-    left1.reverseSensor(true);
-    left1.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
-    right1.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-    right1.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
-    left1.setPosition(0);
-    right1.setPosition(0);
+    if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
+      leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
+      configureMaster(leftMaster);
+      leftMaster.reverseSensor(true);
+      leftSlave = new CANTalon(RobotMap.CT_ID_LEFT_2);
+      configureSlave(leftSlave, RobotMap.CT_ID_LEFT_1);
+    } else {
+      logger.warn("Left1 not present, switching master to left2");
+      leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_2);
+      configureMaster(leftMaster);
+      // in case it comes back?
+      // also to avoid NPEs
+      leftSlave = new CANTalon(RobotMap.CT_ID_LEFT_1);
+      configureSlave(leftSlave, RobotMap.CT_ID_LEFT_2);
+    }
 
+    if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_RIGHT_1)) {
+      rightMaster = new CANTalon(RobotMap.CT_ID_RIGHT_1);
+      configureMaster(rightMaster);
+      rightSlave = new CANTalon(RobotMap.CT_ID_RIGHT_2);
+      configureSlave(rightSlave, RobotMap.CT_ID_RIGHT_1);
+    } else {
+      logger.warn("Right1 not present, switching master to right2");
+      rightMaster = new CANTalon(RobotMap.CT_ID_RIGHT_2);
+      configureMaster(rightMaster);
+      rightSlave = new CANTalon(RobotMap.CT_ID_RIGHT_1);
+      configureSlave(rightSlave, RobotMap.CT_ID_RIGHT_2);
+    }
 
-    left2.changeControlMode(CANTalon.TalonControlMode.Follower);
-    left2.set(RobotMap.CT_ID_LEFT_1);
-
-    right2.changeControlMode(CANTalon.TalonControlMode.Follower);
-    right2.set(RobotMap.CT_ID_RIGHT_1);
-
-    Arrays.asList(left1, left2, right1, right2)
-        .forEach((CANTalon talon) -> talon.enableBrakeMode(true));
-
-    robotDrive = new RobotDrive(left1, right1) {
+    robotDrive = new RobotDrive(leftMaster, rightMaster) {
       public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;
@@ -100,10 +107,22 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
     navX = new AHRS(SPI.Port.kMXP);
-    navX.reset();
-    navX.resetDisplacement();
 
     calibrateYaw();
+  }
+
+  private void configureMaster(CANTalon talon) {
+    talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    talon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+    talon.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
+    talon.setPosition(0);
+    talon.enableBrakeMode(true);
+  }
+
+  private void configureSlave(CANTalon talon, int masterId) {
+    talon.changeControlMode(CANTalon.TalonControlMode.Follower);
+    talon.set(masterId);
+    talon.enableBrakeMode(true);
   }
 
   /**
@@ -137,7 +156,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   public void setBrakeOn(boolean brakeOn) {
-    Arrays.asList(left1, left2, right1, right2)
+    Arrays.asList(leftMaster, leftSlave, rightMaster, rightSlave)
         .forEach((CANTalon talon) -> talon.enableBrakeMode(brakeOn));
   }
 
@@ -200,9 +219,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     // getPosition() gives revolutions, since the talons are calibrated for the ticks per
     // revolution. Multiply by wheel circumference and gearing factor to get distance in inches.
     if (side == DriveTrainSide.LEFT) {
-      return left1.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
+      return leftMaster.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
     } else {
-      return right1.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
+      return rightMaster.getPosition() * RobotMap.GEARING_FACTOR * RobotMap.WHEEL_CIRCUMFERENCE;
     }
   }
 
@@ -265,29 +284,55 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    */
   public void sendDataToSmartDashboard() {
     dumpNavxData();
-    SmartDashboard.putNumber("Left_Talon_1_Power",
-        left1.getOutputCurrent() * left1.getOutputVoltage());
-    SmartDashboard.putNumber("Left_Talon_2_Power",
-        left2.getOutputCurrent() * left2.getOutputVoltage());
-    SmartDashboard.putNumber("Right_Talon_1_Power",
-        right1.getOutputCurrent() * right1.getOutputVoltage());
-    SmartDashboard.putNumber("Right_Talon_2_Power",
-        right2.getOutputCurrent() * right2.getOutputVoltage());
+    
+    // talon output power
+    SmartDashboard.putNumber("Left_Master_Power",
+        leftMaster.getOutputCurrent() * leftMaster.getOutputVoltage());
+    SmartDashboard.putNumber("Left_Slave_Power",
+        leftSlave.getOutputCurrent() * leftSlave.getOutputVoltage());
+    SmartDashboard.putNumber("Right_Master_Power",
+        rightMaster.getOutputCurrent() * rightMaster.getOutputVoltage());
+    SmartDashboard.putNumber("Right_Slave_Power",
+        rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
+    
+    // talon fault diagnostics
+    // we don't care about under voltage because it's already clear when brownouts happen
+    SmartDashboard.putNumber("Left_Master_Failure", leftMaster.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Left_Master_OverTemp", leftMaster.getStickyFaultOverTemp());
+    SmartDashboard.putNumber("Left_Slave_Failure", leftSlave.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Left_Slave_OverTemp", leftSlave.getStickyFaultOverTemp());
+    SmartDashboard.putNumber("Right_Master_Failure", rightMaster.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Right_Master_OverTemp", rightMaster.getStickyFaultOverTemp());
+    SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
+    
     SmartDashboard.putNumber("Corrected_Yaw", rotation);
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
+
+    SmartDashboard.putBoolean("Climb_Switch", climbLimitSwitch.get());
+    
+    // solenoid diagnostics
+    SmartDashboard.putString("PCM_Blacklist",
+        Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));
+    SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
+    SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
+        shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
   }
 
   public RobotPosition getRobotPosition() {
-    return new RobotPosition(xPos, yPos, rotation);
+    return new RobotPosition(positionX, positionY, rotation);
   }
 
   public void setPosition(FieldPosition fieldPos) {
-    xPos = fieldPos.getX();
-    yPos = fieldPos.getY();
+    positionX = fieldPos.getX();
+    positionY = fieldPos.getY();
   }
 
+  /**
+   * Updates the dead reckoning for our current position.
+   */
   public void updatePosition() {
     rotation = fixDegrees(navX.getYaw() + rotationOffset);
 
@@ -299,8 +344,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2;
 
-    xPos = xPos + Math.cos(Math.toRadians(rotation)) * deltaInches;
-    yPos = yPos + Math.sin(Math.toRadians(rotation)) * deltaInches;
+    positionX = positionX + Math.cos(Math.toRadians(rotation)) * deltaInches;
+    positionY = positionY + Math.sin(Math.toRadians(rotation)) * deltaInches;
 
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;
@@ -310,12 +355,23 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     return rotation;
   }
 
+  /**
+   * Sets initial yaw based on where our starting position is.
+   */
   public void calibrateYaw() {
     if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) {
       rotationOffset = -90.0;
     } else {
       rotationOffset = 90.0;
     }
+  }
+
+  /**
+   * Zeroes the NavX.
+   */
+  public void resetNavX() {
+    navX.reset();
+    navX.resetDisplacement();
   }
 
   public static double fixDegrees(double angle) {

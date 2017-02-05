@@ -1,8 +1,10 @@
 package org.ligerbots.steamworks;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
@@ -24,8 +26,7 @@ import org.ligerbots.steamworks.subsystems.Vision;
  */
 public class OperatorInterface {
   XboxController xboxController;
-  JoystickButton leftJoystickButton;
-  
+
   /**
    * This is where we set up the operator interface.
    */
@@ -50,18 +51,22 @@ public class OperatorInterface {
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
     xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
 
-    JoystickButton menuButton = new JoystickButton(xboxController, 7);
-    menuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
+    JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
+    xboxMenuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
 
-    JoystickButton startButton = new JoystickButton(xboxController, 8);
-    startButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
-    
-    leftJoystickButton = new JoystickButton(xboxController, 9);
-    
+    JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
+    xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+
     SmartDashboard.putData(new TurnCommand(180));
-    
     SmartDashboard.putData(new DriveDistanceCommand(12 * 15));
     SmartDashboard.putData(new DriveToGearCommand());
+    
+    SmartDashboard.putData(new InstantCommand("ResetYaw") {
+      @Override
+      public void execute() {
+        Robot.driveTrain.resetNavX();
+      }
+    });
   }
 
   public double getThrottle() {
@@ -71,12 +76,23 @@ public class OperatorInterface {
   public double getTurn() {
     return -xboxController.getX(GenericHID.Hand.kRight);
   }
-  
+
   /**
-   * Abort if a button is pressed or other things.
-   * @return look above.
+   * Every command that implements automatic behavior should check this in isFinished(). This method
+   * returns true if
+   * <ul>
+   * <li>The left (throttle) stick button is pressed, or</li>
+   * <li>Throttle is applied beyond 0.5</li>
+   * </ul>
+   * 
+   * @return True if the above conditions are met.
    */
-  public boolean isCancelled() { 
-    return getThrottle() > 0.5 || getThrottle() < -0.5 || leftJoystickButton.get();
+  public boolean isCancelled() {
+    // just to be safe. The controller could fall down or something.
+    if (DriverStation.getInstance().isAutonomous()) {
+      return false;
+    }
+    return getThrottle() > 0.5 || getThrottle() < -0.5
+        || xboxController.getStickButton(GenericHID.Hand.kLeft);
   }
 }

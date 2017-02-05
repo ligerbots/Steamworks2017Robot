@@ -1,11 +1,10 @@
 package org.ligerbots.steamworks;
 
-/**
- * The RobotMap is a mapping from the ports sensors and actuators are wired into to a variable name.
- * This provides flexibility changing wiring, makes checking the wiring easier and significantly
- * reduces the number of magic numbers floating around.
- */
+import java.io.File;
+
 public class RobotMap {
+  public static final boolean IS_ROADKILL = new File("/home/lvuser/roadkill").exists();
+  
   public static final int PCM_CAN_ID = 7;
 
   public static final int CT_ID_LEFT_1 = 1;
@@ -43,12 +42,22 @@ public class RobotMap {
 
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
 
-  // We don't really know whether or not to multiply or divide by the gear ratio (2.06)
   public static final int QUAD_ENCODER_TICKS_PER_REV = 256;
-  public static final double WHEEL_RADIUS = 3; // in
+  public static final double WHEEL_RADIUS = IS_ROADKILL ? 3 : 2; // in
   public static final double WHEEL_DIAMETER = WHEEL_RADIUS * 2;
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
   public static final double GEARING_FACTOR = 1;
 
-  public static final double YAW_MARGIN = 1.5; // Degrees
+  public static final double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
+  
+  public static final double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
+  
+  public static final double AUTO_DRIVE_TURN_P = 0.05;
+  
+  public static final double AUTO_DRIVE_MIN_SPEED = 0.3; // percentvbus
+  public static final double AUTO_DRIVE_START_SPEED = 0.5;
+  public static final double AUTO_DRIVE_MAX_SPEED = 0.7;
+  
+  public static final double AUTO_DRIVE_RAMP_UP_DIST = 24.0; // in
+  public static final double AUTO_DRIVE_RAMP_DOWN_DIST = 48.0;
 }

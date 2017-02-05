@@ -15,6 +15,8 @@ public class ShooterFeederCommand extends Command {
 
   double desiredShooterRpm = 0.0;
   boolean readyToStartFeeder = false;
+  
+  boolean aborted;
 
   /**
    * Creates a new ShooterFeederCommand.
@@ -32,6 +34,7 @@ public class ShooterFeederCommand extends Command {
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(desiredShooterRpm);
     readyToStartFeeder = false;
+    aborted = false;
   }
 
   protected void execute() {
@@ -49,6 +52,14 @@ public class ShooterFeederCommand extends Command {
 
   protected boolean isFinished() {
     // we want to finish by a JoystickButton.isHeld calling cancel()
+    // unless there's a fault
+    
+    if (Robot.shooter.isShooterFault()) {
+      logger.warn("Shooter fault, disabling");
+      aborted = true;
+      return true;
+    }
+    
     return false;
   }
 

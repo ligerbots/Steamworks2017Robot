@@ -7,5 +7,8 @@ package org.ligerbots.steamworks.subsystems;
  *
  */
 public interface SmartDashboardLogger {
+  /**
+   * Sends diagnostics to smartdashboard.
+   */
   public void sendDataToSmartDashboard();
 }

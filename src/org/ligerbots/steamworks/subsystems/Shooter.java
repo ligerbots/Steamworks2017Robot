@@ -1,9 +1,11 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +16,12 @@ import org.slf4j.LoggerFactory;
 public class Shooter extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Shooter.class);
 
+  int masterId;
+  int slaveId;
   CANTalon shooterMaster;
   CANTalon shooterSlave;
+  
+  boolean shooterFault = false;
 
   /**
    * Create the instance of Shooter.
@@ -23,7 +29,18 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   public Shooter() {
     logger.info("Initialize");
 
-    shooterMaster = new CANTalon(RobotMap.CT_ID_SHOOTER_MASTER);
+    // account for missing Talons
+    if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_SHOOTER_MASTER)) {
+      masterId = RobotMap.CT_ID_SHOOTER_MASTER;
+      slaveId = RobotMap.CT_ID_SHOOTER_SLAVE;
+    } else {
+      logger.warn("Master talon is missing");
+      masterId = RobotMap.CT_ID_SHOOTER_SLAVE;
+      // in case it comes back
+      slaveId = RobotMap.CT_ID_SHOOTER_MASTER;
+    }
+    
+    shooterMaster = new CANTalon(masterId);
     // basic setup
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
     shooterMaster.enableBrakeMode(false); // probably bad for 775pros
@@ -41,10 +58,10 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Master", shooterMaster);
 
-    shooterSlave = new CANTalon(RobotMap.CT_ID_SHOOTER_SLAVE);
+    shooterSlave = new CANTalon(slaveId);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.enableBrakeMode(false);
-    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.set(masterId);
     LiveWindow.addActuator("Shooter", "Slave", shooterSlave);
 
     Thread shooterWatchdog = new Thread(this::shooterWatchdogThread);
@@ -53,8 +70,19 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     // in the debugger, we'd like to know what this is
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
+    
+    SmartDashboard.putData(new InstantCommand("ForceDisableShooterFault") {
+      @Override
+      public void execute() {
+        shooterFault = false;
+      }
+    });
   }
-
+  
+  public boolean isShooterFault() {
+    return shooterFault;
+  }
+  
   /**
    * Sets the rpm of the shooter and changes the talon to speed mode. If set to zero, it changes the
    * talon to percentvbus mode and allows it to spin down.
@@ -62,10 +90,13 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param rpm The desired rpm.
    */
   public void setShooterRpm(double rpm) {
+    if (shooterFault) {
+      return;
+    }
     logger.trace(String.format("Setting rpm=%f", rpm));
     // seriously not sure why this is necessary. Issue #6
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
-    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.set(masterId);
     shooterSlave.enableControl();
 
     if (rpm == 0) {
@@ -85,9 +116,12 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * @param percentVbus The percentvbus value, 0.0 to 1.0
    */
   public void setShooterPercentVBus(double percentVbus) {
+    if (shooterFault) {
+      return;
+    }
     logger.trace(String.format("Setting percentvbus=%f", percentVbus));
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
-    shooterSlave.set(RobotMap.CT_ID_SHOOTER_MASTER);
+    shooterSlave.set(masterId);
     shooterSlave.enableControl();
 
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
@@ -118,7 +152,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         setShooterRpm(0);
         shooterMaster.disableControl();
         shooterSlave.disableControl();
-        System.exit(-42);
+        shooterFault = true;
       }
 
       try {
@@ -140,5 +174,11 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         shooterSlave.getOutputCurrent() * shooterSlave.getOutputVoltage());
     SmartDashboard.putNumber("Shooter_RPM_Real", getShooterRpm());
     SmartDashboard.putNumber("Shooter_PID_error", shooterMaster.getClosedLoopError());
+    
+    SmartDashboard.putBoolean("Shooter_Fault", shooterFault);
+    SmartDashboard.putNumber("Shooter_Master_Failure", shooterMaster.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Shooter_Master_OverTemp", shooterMaster.getStickyFaultOverTemp());
+    SmartDashboard.putNumber("Shooter_Slave_Failure", shooterSlave.getFaultHardwareFailure());
+    SmartDashboard.putNumber("Shooter_Slave_OverTemp", shooterSlave.getStickyFaultOverTemp());
   }
 }

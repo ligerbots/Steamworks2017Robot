@@ -31,31 +31,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the IterativeRobot documentation. If you change the name of this class
- * or the package after creating this project, you must also update the manifest file in the
- * resource directory.
+ * The main robot class.
  */
 public class Robot extends IterativeRobot {
   static {
-    // set up log server that the DS laptop can read and save
+    // logging levels:
+    // TRACE: constant 50hz spam (eg, drive outputs)
+    // DEBUG: Frequent events: results of calculations, command progress, subsystem methods called
+    // INFO: Infrequent events: command initialize/end, state changes
+    // WARN/ERROR: self-explanatory
+
+    // configure logging
     ch.qos.logback.classic.Logger root =
         (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    // enable TRACE level
     root.setLevel(Level.ALL);
     LoggerContext ctx = (LoggerContext) LoggerFactory.getILoggerFactory();
 
+    // disable TRACE level for console output
     LevelFilter levelFilter = new LevelFilter();
     levelFilter.setContext(ctx);
     levelFilter.setLevel(Level.DEBUG);
     levelFilter.setOnMatch(FilterReply.ACCEPT);
     levelFilter.setOnMismatch(FilterReply.DENY);
     levelFilter.start();
-
+    // find the console appender and apply filter
     Iterator<Appender<ILoggingEvent>> apps = root.iteratorForAppenders();
     while (apps.hasNext()) {
       apps.next().addFilter(levelFilter);
     }
 
+    // send full logs (with TRACE) to drive laptop for offline analysis
     ServerSocketAppender socketAppender = new ServerSocketAppender();
     socketAppender.setContext(ctx);
     socketAppender.setPort(5801);
@@ -71,10 +77,13 @@ public class Robot extends IterativeRobot {
   public static Intake intake;
   public static GearManipulator gearManipulator;
   public static ProximitySensor proximitySensor;
+
   public static List<SmartDashboardLogger> allSubsystems;
+
   public static DriveJoystickCommand driveJoystickCommand;
   public static OperatorInterface operatorInterface;
-  public static DeviceFinder deviceFinder;
+
+  public static CanDeviceFinder deviceFinder;
 
   private static final Logger logger = LoggerFactory.getLogger(Robot.class);
 
@@ -90,9 +99,12 @@ public class Robot extends IterativeRobot {
   @Override
   public void robotInit() {
     logger.info("robotInit()");
-    deviceFinder = new DeviceFinder();
+    if (RobotMap.IS_ROADKILL) {
+      logger.info("Running on roadkill");
+    }
+    deviceFinder = new CanDeviceFinder();
     deviceFinder.findDevices();
-    
+
     driveTrain = new DriveTrain();
     vision = new Vision();
     shooter = new Shooter();
@@ -119,6 +131,9 @@ public class Robot extends IterativeRobot {
     updatePositionThread.start();
   }
 
+  /**
+   * Periodically updates robot dead reckoning position.
+   */
   public void updatePosition() {
     logger.info("Initialize Update Position Thread");
     while (true) {
@@ -134,7 +149,8 @@ public class Robot extends IterativeRobot {
 
   @Override
   public void robotPeriodic() {
-    long start = System.nanoTime();
+    // measure total cycle time, time we take during robotPeriodic, and WPIlib overhead
+    final long start = System.nanoTime();
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
 
@@ -145,6 +161,11 @@ public class Robot extends IterativeRobot {
     prevNanos = currentNanos;
   }
 
+  /**
+   * Call {@link SmartDashboardLogger#sendDataToSmartDashboard()} but with exception handling.
+   * 
+   * @param logger The logger to call the method on
+   */
   public void tryToSendDataToSmartDashboard(SmartDashboardLogger logger) {
     try {
       logger.sendDataToSmartDashboard();
@@ -168,15 +189,6 @@ public class Robot extends IterativeRobot {
     logger.trace("disabledPeriodic()");
   }
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString code to get the auto name from the text box below the Gyro You can add
-   * additional auto modes by adding additional commands to the chooser code above (like the
-   * commented example) or additional comparisons to the switch structure below with additional
-   * strings & commands.
-   */
   @Override
   public void autonomousInit() {
     logger.trace("autonomousInit()");
@@ -187,6 +199,11 @@ public class Robot extends IterativeRobot {
      * switch(autoSelected) { case "My Auto": autonomousCommand = new MyAutoCommand(); break; case
      * "Default Auto": default: autonomousCommand = new ExampleCommand(); break; }
      */
+
+    // zero the navX for our starting position. Having the call here instead of in robotInit() or
+    // the DriveTrain constructor makes sure it is zeroed when the robot is actually physically
+    // aligned, but not reset again if the robot code crashes and restarts
+    driveTrain.resetNavX();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -199,6 +216,11 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void autonomousPeriodic() {
+    // measure wpilib overhead between robotPeriodic and specific *perodic methods
+    // calling order is
+    // 1. m_ds.waitForData()
+    // 2. (auto|teleop|disabled)Periodic
+    // 3. robotPeriodic()
     SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
     logger.trace("autonomousPeriodic()");
   }

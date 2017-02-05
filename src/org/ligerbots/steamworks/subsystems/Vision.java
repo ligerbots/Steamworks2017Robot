@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Vision.class);
 
+  /**
+   * This is a container for vision data.
+   */
   public static class VisionData {
     double rvecPitch;
     double rvecYaw;
@@ -30,48 +33,30 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     double tvecY;
     double tvecZ;
 
-    /**
-     * @return the rvecPitch
-     */
     public double getRvecPitch() {
       return rvecPitch;
     }
 
-    /**
-     * @return the rvecYaw
-     */
     public double getRvecYaw() {
       return rvecYaw;
     }
 
-    /**
-     * @return the rvecRoll
-     */
     public double getRvecRoll() {
       return rvecRoll;
     }
 
-    /**
-     * @return the tvecX
-     */
     public double getTvecX() {
       return tvecX;
     }
 
-    /**
-     * @return the tvecY
-     */
     public double getTvecY() {
       return tvecY;
     }
 
-    /**
-     * @return the tvecZ
-     */
     public double getTvecZ() {
       return tvecZ;
     }
-    
+
     public String toString() {
       return String.format("%f,%f,%f | %f,%f,%f", tvecX, tvecY, tvecZ, rvecPitch, rvecYaw,
           rvecRoll);
@@ -91,6 +76,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   ITable table = null;
   // buffer vision data for multithreaded access
   VisionData[] visionData = {new VisionData(), new VisionData()};
+  long lastPhoneDataTimestamp;
   volatile int currentVisionDataIndex = 0;
 
   /**
@@ -159,6 +145,15 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     return visionData[currentVisionDataIndex];
   }
 
+  /**
+   * Checks to make sure the phone is currently active.
+   * 
+   * @return True if the phone has sent us data in the last 500 ms
+   */
+  public boolean isVisionDataValid() {
+    return System.nanoTime() - lastPhoneDataTimestamp < 500_000_000;
+  }
+
   public void initDefaultCommand() {}
 
   /**
@@ -187,18 +182,33 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         if (from == null) {
           continue;
         }
-        
+
         dataPacket.position(0);
-        
+
         VisionData notCurrentData = visionData[1 - currentVisionDataIndex];
-        notCurrentData.rvecPitch = dataPacket.getDouble();
-        notCurrentData.rvecYaw = dataPacket.getDouble();
-        notCurrentData.rvecRoll = dataPacket.getDouble();
-        notCurrentData.tvecX = dataPacket.getDouble();
-        notCurrentData.tvecY = dataPacket.getDouble();
-        notCurrentData.tvecZ = dataPacket.getDouble();
-//        logger.info(String.format("Data: %s", notCurrentData));
+        double rvecPitch = dataPacket.getDouble();
+        double rvecYaw = dataPacket.getDouble();
+        double rvecRoll = dataPacket.getDouble();
+        double tvecX = dataPacket.getDouble();
+        double tvecY = dataPacket.getDouble();
+        double tvecZ = dataPacket.getDouble();
+
+        // if the data is garbage or no target was located, keep the old data
+        if (Double.isNaN(rvecPitch) || Double.isNaN(rvecYaw) || Double.isNaN(rvecRoll)
+            || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)) {
+          continue;
+        }
+        
+        notCurrentData.rvecPitch = rvecPitch;
+        notCurrentData.rvecYaw = rvecYaw;
+        notCurrentData.rvecRoll = rvecRoll;
+        notCurrentData.tvecX = tvecX;
+        notCurrentData.tvecY = tvecY;
+        notCurrentData.tvecZ = tvecZ;
+        
         currentVisionDataIndex = 1 - currentVisionDataIndex;
+
+        lastPhoneDataTimestamp = System.nanoTime();
       } catch (IOException ex) {
         logger.error("Data thread communication error", ex);
       }

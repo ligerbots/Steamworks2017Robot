@@ -13,20 +13,20 @@ import org.slf4j.LoggerFactory;
  */
 public class Feeder extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Feeder.class);
-  
+
   CANTalon feederTalon;
 
   /**
    * Creates the Feeder subsystem.
    */
   public Feeder() {
-    if (Robot.deviceFinder.isSrxAvailable(RobotMap.CT_ID_FEEDER)) {
+    if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_FEEDER)) {
       logger.trace("Initialize");
       feederTalon = new CANTalon(RobotMap.CT_ID_FEEDER);
       feederTalon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
       feederTalon.enableBrakeMode(true);
-    }
-    else {
+      feederTalon.setSafetyEnabled(false);
+    } else {
       logger.warn("Feeder unavailable");
     }
   }
@@ -45,10 +45,17 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
 
   public void initDefaultCommand() {}
 
+  /**
+   * Sends diagnostics to SmartDashboard.
+   */
   public void sendDataToSmartDashboard() {
+    SmartDashboard.putBoolean("Feeder_Present", feederTalon != null);
     if (feederTalon != null) {
-      SmartDashboard.putNumber("Feeder_Talon_Power",
+      SmartDashboard.putNumber("Feeder_Power",
           feederTalon.getOutputCurrent() * feederTalon.getOutputVoltage());
+      
+      SmartDashboard.putNumber("Feeder_Failure", feederTalon.getFaultHardwareFailure());
+      SmartDashboard.putNumber("Feeder_OverTemp", feederTalon.getStickyFaultOverTemp());
     }
   }
 }
