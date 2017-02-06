@@ -21,7 +21,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   CANTalon shooterMaster;
   CANTalon shooterSlave;
   
-  boolean shooterFault = false;
+  volatile boolean shooterFault = false;
 
   /**
    * Create the instance of Shooter.
@@ -71,7 +71,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterWatchdog.setName("Shooter Watchdog Thread");
     shooterWatchdog.start();
     
-    SmartDashboard.putData(new InstantCommand("ForceDisableShooterFault") {
+    SmartDashboard.putData(new InstantCommand("ForceOverrideShooterFault") {
       @Override
       public void execute() {
         shooterFault = false;
@@ -91,6 +91,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    */
   public void setShooterRpm(double rpm) {
     if (shooterFault) {
+      killShooter();
       return;
     }
     logger.trace(String.format("Setting rpm=%f", rpm));
@@ -107,6 +108,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     } else {
       shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
       shooterMaster.set(rpm);
+      shooterMaster.enableControl();
     }
   }
 
@@ -117,6 +119,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    */
   public void setShooterPercentVBus(double percentVbus) {
     if (shooterFault) {
+      killShooter();
       return;
     }
     logger.trace(String.format("Setting percentvbus=%f", percentVbus));
@@ -126,6 +129,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
 
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
     shooterMaster.set(percentVbus);
+    shooterMaster.enableControl();
   }
 
   public double getShooterRpm() {
@@ -134,6 +138,15 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
 
   public void initDefaultCommand() {
     // No default command
+  }
+  
+  private void killShooter() {
+    shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    shooterSlave.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    shooterMaster.set(0);
+    shooterSlave.set(0);
+    shooterMaster.disableControl();
+    shooterSlave.disableControl();
   }
 
   /**
@@ -149,10 +162,8 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       if (shooterMaster.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO
           || shooterSlave.getOutputCurrent() > RobotMap.SAFE_CURRENT_775PRO) {
         logger.error("Dangerous shooter current detected!");
-        setShooterRpm(0);
-        shooterMaster.disableControl();
-        shooterSlave.disableControl();
         shooterFault = true;
+        killShooter();
       }
 
       try {
