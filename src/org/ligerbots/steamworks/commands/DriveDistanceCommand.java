@@ -79,14 +79,14 @@ public class DriveDistanceCommand extends Command {
     if (error < RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST) {
       double driveSpeed = (error * (RobotMap.AUTO_DRIVE_MAX_SPEED - RobotMap.AUTO_DRIVE_MIN_SPEED)
           / RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST) + RobotMap.AUTO_DRIVE_MIN_SPEED;
-      Robot.driveTrain.joystickDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
+      Robot.driveTrain.rawThrottleTurnDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
     } else if (Math.abs(delta) < RobotMap.AUTO_DRIVE_RAMP_UP_DIST) {
       double driveSpeed =
           (Math.abs(delta) * (RobotMap.AUTO_DRIVE_MAX_SPEED - RobotMap.AUTO_DRIVE_START_SPEED)
               / RobotMap.AUTO_DRIVE_RAMP_UP_DIST) + RobotMap.AUTO_DRIVE_START_SPEED;
-      Robot.driveTrain.joystickDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
+      Robot.driveTrain.rawThrottleTurnDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
     } else {
-      Robot.driveTrain.joystickDrive(
+      Robot.driveTrain.rawThrottleTurnDrive(
           offsetInches > 0 ? RobotMap.AUTO_DRIVE_MAX_SPEED : -RobotMap.AUTO_DRIVE_MAX_SPEED, turn);
     }
   }
@@ -111,11 +111,11 @@ public class DriveDistanceCommand extends Command {
 
   protected void end() {
     logger.info("Finish");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 }

@@ -59,14 +59,15 @@ public class TurnCommand extends Command {
     error1 = Math.abs(targetRotation - Robot.driveTrain.getYaw());
     error2 = Math.abs(360 - error1);
     double actualError = Math.min(error1, error2);
-    if (actualError <= 60) {
-      double driveSpeed = 0.6 * actualError / 60;
-      if (driveSpeed < 0.3) {
-        driveSpeed = 0.3;
+    if (actualError <= RobotMap.AUTO_TURN_RAMP_ZONE) {
+      double driveSpeed = RobotMap.AUTO_TURN_MAX_SPEED * actualError / RobotMap.AUTO_TURN_RAMP_ZONE;
+      if (driveSpeed < RobotMap.AUTO_TURN_MIN_SPEED) {
+        driveSpeed = RobotMap.AUTO_TURN_MIN_SPEED;
       }
-      Robot.driveTrain.joystickDrive(0, isClockwise ? -driveSpeed : driveSpeed);
+      Robot.driveTrain.rawThrottleTurnDrive(0, isClockwise ? -driveSpeed : driveSpeed);
     } else {
-      Robot.driveTrain.joystickDrive(0, isClockwise ? -0.6 : 0.6);
+      Robot.driveTrain.rawThrottleTurnDrive(0,
+          isClockwise ? -RobotMap.AUTO_TURN_MAX_SPEED : RobotMap.AUTO_TURN_MAX_SPEED);
     }
   }
 
@@ -84,11 +85,11 @@ public class TurnCommand extends Command {
 
   protected void end() {
     logger.info("Finish");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 }

@@ -100,6 +100,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         lastOutputRight = rightOutput;
       }
     };
+    robotDrive.setMaxOutput(12.5);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
@@ -112,7 +113,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   private void configureMaster(CANTalon talon) {
-    talon.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
     talon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     talon.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
     talon.setPosition(0);
@@ -143,6 +144,17 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public void joystickDrive(double throttle, double turn) {
     logger.trace(String.format("Driving with throttle %f and turn %f", throttle, turn));
     robotDrive.arcadeDrive(throttle, turn);
+  }
+
+  /**
+   * Arcade drive but without squared inputs.
+   * @param throttle is the vertical axis
+   * @param turn turn is the horizontal axis
+   */
+  public void rawThrottleTurnDrive(double throttle, double turn) {
+    logger.trace(
+        String.format("Driving no squared inputs with throttle %f and turn %f", throttle, turn));
+    robotDrive.arcadeDrive(throttle, turn, false);
   }
 
   /**
@@ -284,7 +296,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    */
   public void sendDataToSmartDashboard() {
     dumpNavxData();
-    
+
     // talon output power
     SmartDashboard.putNumber("Left_Master_Power",
         leftMaster.getOutputCurrent() * leftMaster.getOutputVoltage());
@@ -294,7 +306,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         rightMaster.getOutputCurrent() * rightMaster.getOutputVoltage());
     SmartDashboard.putNumber("Right_Slave_Power",
         rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
-    
+
     // talon fault diagnostics
     // we don't care about under voltage because it's already clear when brownouts happen
     SmartDashboard.putNumber("Left_Master_Failure", leftMaster.getFaultHardwareFailure());
@@ -305,14 +317,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putNumber("Right_Master_OverTemp", rightMaster.getStickyFaultOverTemp());
     SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
     SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
-    
+
     SmartDashboard.putNumber("Corrected_Yaw", rotation);
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
 
     SmartDashboard.putBoolean("Climb_Switch", climbLimitSwitch.get());
-    
+
     // solenoid diagnostics
     SmartDashboard.putString("PCM_Blacklist",
         Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));

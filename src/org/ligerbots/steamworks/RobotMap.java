@@ -48,16 +48,19 @@ public class RobotMap {
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
   public static final double GEARING_FACTOR = 1;
 
+  public static final double AUTO_TURN_MAX_SPEED = 0.3;
+  public static final double AUTO_TURN_MIN_SPEED = 0.1;
+  public static final double AUTO_TURN_RAMP_ZONE = 80.0;
   public static final double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
   
   public static final double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
   
-  public static final double AUTO_DRIVE_TURN_P = 0.05;
+  public static final double AUTO_DRIVE_TURN_P = 0.02;
   
-  public static final double AUTO_DRIVE_MIN_SPEED = 0.3; // percentvbus
-  public static final double AUTO_DRIVE_START_SPEED = 0.5;
-  public static final double AUTO_DRIVE_MAX_SPEED = 0.7;
+  public static final double AUTO_DRIVE_MIN_SPEED = 0.1; // percent voltage from 12.5V
+  public static final double AUTO_DRIVE_START_SPEED = 0.3;
+  public static final double AUTO_DRIVE_MAX_SPEED = 0.5;
   
   public static final double AUTO_DRIVE_RAMP_UP_DIST = 24.0; // in
-  public static final double AUTO_DRIVE_RAMP_DOWN_DIST = 48.0;
+  public static final double AUTO_DRIVE_RAMP_DOWN_DIST = 60.0;
 }

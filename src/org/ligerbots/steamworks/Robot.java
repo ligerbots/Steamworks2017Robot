@@ -101,6 +101,8 @@ public class Robot extends IterativeRobot {
     logger.info("robotInit()");
     if (RobotMap.IS_ROADKILL) {
       logger.info("Running on roadkill");
+    } else {
+      logger.info("Running on production");
     }
     deviceFinder = new CanDeviceFinder();
     deviceFinder.findDevices();
@@ -228,6 +230,14 @@ public class Robot extends IterativeRobot {
   @Override
   public void teleopInit() {
     logger.trace("teleopInit()");
+    
+    if (RobotMap.IS_ROADKILL) {
+      logger.info("Running on roadkill");
+      logger.info("Wheel radius: " + RobotMap.WHEEL_RADIUS);
+    } else {
+      logger.info("Running on production");
+    }
+    
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

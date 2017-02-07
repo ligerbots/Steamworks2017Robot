@@ -46,10 +46,10 @@ public class OperatorInterface {
     xboxYButton.whileHeld(new GearCommand(true, true));
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
-    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
+    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
 
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
-    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
+    xboxRightBumper.whenPressed(new DriveToGearCommand());
 
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
     xboxMenuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
@@ -58,7 +58,7 @@ public class OperatorInterface {
     xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
 
     SmartDashboard.putData(new TurnCommand(180));
-    SmartDashboard.putData(new DriveDistanceCommand(12 * 15));
+    SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveToGearCommand());
     
     SmartDashboard.putData(new InstantCommand("ResetYaw") {
