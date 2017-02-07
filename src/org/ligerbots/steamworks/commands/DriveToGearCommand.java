@@ -76,6 +76,11 @@ public class DriveToGearCommand extends Command {
     // of clockwise positive from +y
     double initialTurn = 90 - Math.toDegrees(Math.atan2(pz, px));
     double initialDist = Math.sqrt(px * px + pz * pz);
+    
+    if (Math.abs(initialTurn) > 90) {
+      initialTurn = Math.signum(initialTurn) * (Math.abs(initialTurn) - 180);
+      initialDist = -initialDist;
+    }
 
     // calculate turn back toward target after we drive to target - 48
     double finalTurn = -initialTurn + ry;

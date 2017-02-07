@@ -51,9 +51,9 @@ public class Robot extends IterativeRobot {
     // disable TRACE level for console output
     LevelFilter levelFilter = new LevelFilter();
     levelFilter.setContext(ctx);
-    levelFilter.setLevel(Level.DEBUG);
-    levelFilter.setOnMatch(FilterReply.ACCEPT);
-    levelFilter.setOnMismatch(FilterReply.DENY);
+    levelFilter.setLevel(Level.TRACE);
+    levelFilter.setOnMatch(FilterReply.DENY);
+    levelFilter.setOnMismatch(FilterReply.ACCEPT);
     levelFilter.start();
     // find the console appender and apply filter
     Iterator<Appender<ILoggingEvent>> apps = root.iteratorForAppenders();
