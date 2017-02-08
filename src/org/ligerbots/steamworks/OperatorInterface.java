@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.ligerbots.steamworks.commands.CameraFeedCommand;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
@@ -66,6 +67,8 @@ public class OperatorInterface {
     SmartDashboard.putData(new DriveUltrasonicCommand(3.0));
     
     SmartDashboard.putData(new FeederBackOutCommand());
+    
+    SmartDashboard.putData(new CameraFeedCommand(Vision.StreamType.TOGGLE));
     
     SmartDashboard.putData(new InstantCommand("ResetYaw") {
       @Override

@@ -71,13 +71,28 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final int DATA_PORT = 5808;
   private static final int CS_FEEDBACK_INTERVAL = 1000;
   private static final int CS_MAGIC_NUMBER = 16777216;
+  private static final byte DATA_CODE_GEAR = (byte) 0x93;
+  private static final byte DATA_CODE_BOILER = (byte) 0xB0;
 
   Relay ledRing;
   ITable table = null;
+
   // buffer vision data for multithreaded access
-  VisionData[] visionData = {new VisionData(), new VisionData()};
-  long lastPhoneDataTimestamp;
-  volatile int currentVisionDataIndex = 0;
+
+  class VisionContainer {
+    VisionData[] visionData = {new VisionData(), new VisionData()};
+    long lastPhoneDataTimestamp;
+    volatile int currentVisionDataIndex = 0;
+  }
+
+  VisionContainer gearVision = new VisionContainer();
+  VisionContainer boilerVision = new VisionContainer();
+
+  public static enum StreamType {
+    GEAR_CAM, BOILER_CAM, TOGGLE
+  }
+
+  StreamType streamType = StreamType.GEAR_CAM;
 
   /**
    * Creates the instance of VisionSubsystem.
@@ -96,6 +111,23 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     dataThread.setDaemon(true);
     dataThread.setName("Vision Data Thread");
     dataThread.start();
+  }
+
+  /**
+   * Sets the camera stream to send to the dashboard.
+   * @param streamType The stream to send
+   */
+  public void setStreamType(StreamType streamType) {
+    if (streamType == StreamType.TOGGLE) {
+      this.streamType =
+          this.streamType == StreamType.BOILER_CAM ? StreamType.GEAR_CAM : StreamType.BOILER_CAM;
+    } else {
+      this.streamType = streamType;
+    }
+  }
+
+  public StreamType getStreamType() {
+    return streamType;
   }
 
   /**
@@ -141,8 +173,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     return ledRing.get() != Relay.Value.kOff;
   }
 
-  public VisionData getVisionData() {
-    return visionData[currentVisionDataIndex];
+  public VisionData getGearVisionData() {
+    return gearVision.visionData[gearVision.currentVisionDataIndex];
+  }
+
+  public VisionData getBoilerVisionData() {
+    return boilerVision.visionData[boilerVision.currentVisionDataIndex];
   }
 
   /**
@@ -150,8 +186,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * 
    * @return True if the phone has sent us data in the last 500 ms
    */
-  public boolean isVisionDataValid() {
-    return System.nanoTime() - lastPhoneDataTimestamp < 500_000_000;
+  public boolean isGearVisionDataValid() {
+    return System.nanoTime() - gearVision.lastPhoneDataTimestamp < 500_000_000;
+  }
+
+  public boolean isBoilerVisionDataValid() {
+    return System.nanoTime() - boilerVision.lastPhoneDataTimestamp < 500_000_000;
   }
 
   public void initDefaultCommand() {}
@@ -164,7 +204,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     // 10fps refresh rate, so here we set up a receiver for the data
     logger.info("Data thread init");
     DatagramChannel udpChannel = null;
-    ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 6);
+    ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 6 + 1);
 
     try {
       udpChannel = DatagramChannel.open();
@@ -185,7 +225,19 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
         dataPacket.position(0);
 
-        VisionData notCurrentData = visionData[1 - currentVisionDataIndex];
+        byte code = dataPacket.get();
+
+        VisionContainer container;
+        if (code == DATA_CODE_BOILER) {
+          container = boilerVision;
+        } else if (code == DATA_CODE_GEAR) {
+          container = gearVision;
+        } else {
+          logger.error(String.format("Invalid data code: %x", code));
+          continue;
+        }
+
+        VisionData notCurrentData = container.visionData[1 - container.currentVisionDataIndex];
         double rvecPitch = dataPacket.getDouble();
         double rvecYaw = dataPacket.getDouble();
         double rvecRoll = dataPacket.getDouble();
@@ -198,17 +250,17 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
             || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)) {
           continue;
         }
-        
+
         notCurrentData.rvecPitch = rvecPitch;
         notCurrentData.rvecYaw = rvecYaw;
         notCurrentData.rvecRoll = rvecRoll;
         notCurrentData.tvecX = tvecX;
         notCurrentData.tvecY = tvecY;
         notCurrentData.tvecZ = tvecZ;
-        
-        currentVisionDataIndex = 1 - currentVisionDataIndex;
 
-        lastPhoneDataTimestamp = System.nanoTime();
+        container.currentVisionDataIndex = 1 - container.currentVisionDataIndex;
+
+        container.lastPhoneDataTimestamp = System.nanoTime();
       } catch (IOException ex) {
         logger.error("Data thread communication error", ex);
       }
@@ -248,7 +300,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           ConnectionInfo[] connections = NetworkTablesJNI.getConnections();
           for (ConnectionInfo connInfo : connections) {
             // we want the laptop, not the phone
-            if (connInfo.remote_id.equals("Android")) {
+            if (connInfo.remote_id.startsWith("Android")) {
               continue;
             }
             sendAddress = new InetSocketAddress(connInfo.remote_ip, CS_STREAM_PORT);
@@ -285,12 +337,16 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           // make sure to forward a packet of the same length, by
           // setting the limit on the bytebuffer
           recvPacket.position(0);
+          byte dataCode = recvPacket.get();
           int magic = recvPacket.getInt();
           int length = recvPacket.getInt();
           if (magic == CS_MAGIC_NUMBER) {
-            recvPacket.limit(length + 8);
-            recvPacket.position(0);
-            udpChannel.send(recvPacket, sendAddress);
+            if ((dataCode == DATA_CODE_BOILER && streamType == StreamType.BOILER_CAM)
+                || (dataCode == DATA_CODE_GEAR && streamType == StreamType.GEAR_CAM)) {
+              recvPacket.limit(length + 9);
+              recvPacket.position(1);
+              udpChannel.send(recvPacket, sendAddress);
+            }
           }
           // otherwise, it's probably a control packet from the
           // dashboard sending the resolution and fps settings - we
@@ -306,5 +362,19 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   public void sendDataToSmartDashboard() {
     // phone handles vision data for us
     SmartDashboard.putBoolean("LED_On", ledRing.get() != Relay.Value.kOff);
+
+    boolean gearLiftPhone = false;
+    boolean boilerPhone = false;
+    ConnectionInfo[] connections = NetworkTablesJNI.getConnections();
+    for (ConnectionInfo connInfo : connections) {
+      if (connInfo.remote_id.equals("Android_GEAR_LIFT")) {
+        gearLiftPhone = true;
+      } else if (connInfo.remote_id.equals("Android_BOILER")) {
+        boilerPhone = true;
+      }
+    }
+
+    SmartDashboard.putBoolean("VisionGearLift", gearLiftPhone);
+    SmartDashboard.putBoolean("VisionBoiler", boilerPhone);
   }
 }

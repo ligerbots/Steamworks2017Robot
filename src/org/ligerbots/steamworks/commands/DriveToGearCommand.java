@@ -59,14 +59,14 @@ public class DriveToGearCommand extends Command {
     currentState = State.INITIAL_TURN;
 
     // do we have recent data? if not, the command ends immediately
-    if (!Robot.vision.isVisionDataValid()) {
+    if (!Robot.vision.isGearVisionDataValid()) {
       validData = false;
       done = true;
       return;
     }
 
     // get current vision data
-    VisionData data = Robot.vision.getVisionData();
+    VisionData data = Robot.vision.getGearVisionData();
 
     double tx = data.getTvecX();
     double tz = data.getTvecZ();
@@ -183,11 +183,11 @@ public class DriveToGearCommand extends Command {
             done = true;
           }
 
-          if (!Robot.vision.isVisionDataValid()) {
+          if (!Robot.vision.isGearVisionDataValid()) {
             return;
           }
 
-          VisionData data = Robot.vision.getVisionData();
+          VisionData data = Robot.vision.getGearVisionData();
           double tx = data.getTvecX();
           double tz = data.getTvecZ();
           double ry = data.getRvecYaw();
