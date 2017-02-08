@@ -75,7 +75,6 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final byte DATA_CODE_BOILER = (byte) 0xB0;
 
   Relay ledRing;
-  ITable table = null;
 
   // buffer vision data for multithreaded access
 
@@ -83,6 +82,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     VisionData[] visionData = {new VisionData(), new VisionData()};
     long lastPhoneDataTimestamp;
     volatile int currentVisionDataIndex = 0;
+    ITable table;
   }
 
   VisionContainer gearVision = new VisionContainer();
@@ -102,6 +102,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
     ledRing = new Relay(RobotMap.RELAY_LED_RING);
 
+    gearVision.table = NetworkTable.getTable("Vision_Gear");
+    boilerVision.table = NetworkTable.getTable("Vision_Boiler");
+
+    initHsvRange(gearVision);
+    initHsvRange(boilerVision);
+
     Thread forwardThread = new Thread(this::packetForwardingThread);
     forwardThread.setDaemon(true);
     forwardThread.setName("Packet Forwarding Thread");
@@ -113,8 +119,21 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     dataThread.start();
   }
 
+  private void initHsvRange(VisionContainer container) {
+    ITable range = container.table.getSubTable("colorRange");
+    if (!range.containsKey("lower")) {
+      range.putNumberArray("lower", new double[] {0, 0, 0});
+    }
+    if (!range.containsKey("upper")) {
+      range.putNumberArray("upper", new double[] {0, 0, 0});
+    }
+    range.setPersistent("lower");
+    range.setPersistent("upper");
+  }
+
   /**
    * Sets the camera stream to send to the dashboard.
+   * 
    * @param streamType The stream to send
    */
   public void setStreamType(StreamType streamType) {
@@ -139,10 +158,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   public void setVisionEnabled(boolean enabled) {
     logger.info(String.format("Setting vision enabled=%b", enabled));
 
-    if (table == null) {
-      table = NetworkTable.getTable("Vision");
-    }
-    table.putBoolean("enabled", enabled);
+    gearVision.table.putBoolean("enabled", enabled);
+    boilerVision.table.putBoolean("enabled", enabled);
   }
 
   /**
