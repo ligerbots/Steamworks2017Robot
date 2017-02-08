@@ -175,7 +175,7 @@ public class Robot extends IterativeRobot {
       Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
     }
   }
-
+  
   /**
    * This function is called once each time the robot enters Disabled mode. You can use it to reset
    * any subsystem information you want to clear when the robot is disabled.

@@ -59,6 +59,7 @@ public class RobotMap {
   public static final double AUTO_TURN_ACCEPTABLE_ERROR = 3; // Degrees
   
   public static final double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
+  public static final double AUTO_FINE_DRIVE_ACCEPTABLE_ERROR = 0.5;
   
   public static final double AUTO_DRIVE_TURN_P = 0.02;
   

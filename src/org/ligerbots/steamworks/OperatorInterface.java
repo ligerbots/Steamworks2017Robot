@@ -10,6 +10,8 @@ import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DriveToGearCommand;
+import org.ligerbots.steamworks.commands.DriveUltrasonicCommand;
+import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.LedRingCommand;
@@ -60,6 +62,10 @@ public class OperatorInterface {
     SmartDashboard.putData(new TurnCommand(180));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveToGearCommand());
+    
+    SmartDashboard.putData(new DriveUltrasonicCommand(3.0));
+    
+    SmartDashboard.putData(new FeederBackOutCommand());
     
     SmartDashboard.putData(new InstantCommand("ResetYaw") {
       @Override
