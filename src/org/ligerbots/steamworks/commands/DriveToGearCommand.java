@@ -16,25 +16,42 @@ public class DriveToGearCommand extends Command {
 
   private static final long WAIT_VISION_NANOS = 500_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
+  
+  private static final long WAIT_GEAR_NANOS = 500_000_000;
 
   enum State {
-    INITIAL_TURN, INITIAL_DRIVE, ALIGNMENT_TURN, WAIT_FOR_VISION, FINE_ALIGNMENT_TURN, FINAL_DRIVE
+    INITIAL_TURN,
+    INITIAL_DRIVE,
+    ALIGNMENT_TURN,
+    WAIT_FOR_VISION,
+    FINE_ALIGNMENT_TURN,
+    FINAL_DRIVE,
+    DELIVER_GEAR,
+    DRIVE_AWAY
   }
 
   State currentState = State.INITIAL_TURN;
   boolean validData;
   boolean done;
   long nanosAtWaitForVisionStart;
+  long nanosAtGearDeliverStart;
 
   TurnCommand initialTurnCommand;
   DriveDistanceCommand initialDriveCommand;
   TurnCommand alignmentTurnCommand;
   TurnCommand fineAlignmentTurnCommand;
   DriveDistanceCommand finalDriveCommand;
+  DriveDistanceCommand driveAwayCommand;
 
+  /**
+   * Creates a new DriveToGearCommand.
+   */
   public DriveToGearCommand() {
     super("DriveToGearCommand");
     requires(Robot.driveTrain);
+    requires(Robot.gearManipulator);
+    
+    driveAwayCommand = new DriveDistanceCommand(-36.0);
   }
 
   protected void initialize() {
@@ -76,7 +93,7 @@ public class DriveToGearCommand extends Command {
     // of clockwise positive from +y
     double initialTurn = 90 - Math.toDegrees(Math.atan2(pz, px));
     double initialDist = Math.sqrt(px * px + pz * pz);
-    
+
     if (Math.abs(initialTurn) > 90) {
       initialTurn = Math.signum(initialTurn) * (Math.abs(initialTurn) - 180);
       initialDist = -initialDist;
@@ -165,11 +182,11 @@ public class DriveToGearCommand extends Command {
             validData = false;
             done = true;
           }
-          
+
           if (!Robot.vision.isVisionDataValid()) {
             return;
           }
-          
+
           VisionData data = Robot.vision.getVisionData();
           double tx = data.getTvecX();
           double tz = data.getTvecZ();
@@ -211,8 +228,33 @@ public class DriveToGearCommand extends Command {
 
           if (!finalDriveCommand.succeeded) {
             logger.warn("Final drive command aborted!");
+            done = true;
+            return;
           }
 
+          currentState = State.DELIVER_GEAR;
+          nanosAtGearDeliverStart = System.nanoTime();
+          logger.info("state=DELIVER_GEAR");
+        }
+        break;
+      case DELIVER_GEAR:
+        Robot.gearManipulator.setOpen(true);
+        if (System.nanoTime() - nanosAtGearDeliverStart > WAIT_GEAR_NANOS) {
+          currentState = State.DRIVE_AWAY;
+          logger.info("state=DRIVE_AWAY");
+          driveAwayCommand.initialize();
+        }
+        break;
+      case DRIVE_AWAY:
+        driveAwayCommand.execute();
+        if (driveAwayCommand.isFinished()) {
+          driveAwayCommand.end();
+          logger.info("DONE");
+          
+          if (!finalDriveCommand.succeeded) {
+            logger.warn("Drive away command aborted!");
+          }
+          
           done = true;
         }
         break;

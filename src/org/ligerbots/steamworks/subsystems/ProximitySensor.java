@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
@@ -13,6 +14,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   AnalogInput ai;
+  
+  Ultrasonic pulseWidthUltrasonic;
+  
   private static final Logger logger = LoggerFactory.getLogger(ProximitySensor.class);
 
   /**
@@ -22,6 +26,9 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
     logger.trace("Initializing proximity sensor");
 
     ai = new AnalogInput(RobotMap.ANALOG_INPUT_PROXIMITY_SENSOR);
+    
+    pulseWidthUltrasonic = new Ultrasonic(RobotMap.ULTRASONIC_TRIGGER, RobotMap.ULTRASONIC_ECHO);
+    pulseWidthUltrasonic.setAutomaticMode(true);
   }
 
   /**
@@ -37,7 +44,12 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   public void initDefaultCommand() {
   }
 
+  /**
+   * Sends sensor data to the dashboard.
+   */
   public void sendDataToSmartDashboard() {
+    SmartDashboard.putNumber("PWUltrasonic", pulseWidthUltrasonic.getRangeInches());
+    
     SmartDashboard.putNumber("Proximity_Sensor_Voltage", ai.getVoltage());
     SmartDashboard.putNumber("Proximity_Sensor_Distance", getDistance());
   }

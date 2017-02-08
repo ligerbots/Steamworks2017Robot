@@ -41,6 +41,11 @@ public class RobotMap {
   public static final double MILLIVOLTS_PER_MILLIMETER = 0.977;
 
   public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
+  public static final int ULTRASONIC_TRIGGER = 1;
+  public static final int ULTRASONIC_ECHO = 2;
+  
+  public static final double GEARMECH_POSITION_CLOSED = 0;
+  public static final double GEARMECH_POSITION_OPEN = 1;
 
   public static final int QUAD_ENCODER_TICKS_PER_REV = 256;
   public static final double WHEEL_RADIUS = IS_ROADKILL ? 3 : 2; // in

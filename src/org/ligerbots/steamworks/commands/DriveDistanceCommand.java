@@ -112,10 +112,12 @@ public class DriveDistanceCommand extends Command {
   protected void end() {
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    Robot.gearManipulator.setOpen(false);
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    Robot.gearManipulator.setOpen(false);
   }
 }

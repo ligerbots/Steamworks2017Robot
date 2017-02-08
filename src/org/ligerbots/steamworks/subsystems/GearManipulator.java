@@ -13,9 +13,6 @@ import org.slf4j.LoggerFactory;
 public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(GearManipulator.class);  
   
-  static final double GM_POSITION_CLOSED = 0;
-  static final double GM_POSITION_OPEN = 1;
-  
   Servo gearServo;
   boolean isOpen;
 
@@ -41,9 +38,9 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     
     isOpen = shouldBeOpen;
     if (shouldBeOpen) {
-      gearServo.set(GM_POSITION_OPEN);
+      gearServo.set(RobotMap.GEARMECH_POSITION_OPEN);
     } else {
-      gearServo.set(GM_POSITION_CLOSED);
+      gearServo.set(RobotMap.GEARMECH_POSITION_CLOSED);
     }
   }
   
