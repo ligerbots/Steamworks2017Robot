@@ -1,0 +1,160 @@
+
+<!doctype html>
+<html>
+
+<head>
+	<style type="text/css">
+		html, body {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+		}
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+		img { 
+			width: 100%;
+			height: "auto";
+		}
+	
+	</style>
+
+</head>
+<body>
+<canvas id="DrawingBoard"></canvas>
+<canvas id="ImageCanvas"></canvas>
+<br>
+<img id="fieldImg" src="steamworksField.png"></img>
+<img id="robot" src="spaceship.png"></img>
+<button id="clear" style="top:0px;left:0px;width:50px;height:30px;position:absolute">Clear</button>
+<button id="save" style="top:0px;left:50px;width:50px;height:30px;position:absolute">Save</button>
+<canvas class="canvas" id="DrawingBoard"></canvas>
+<canvas class="canvas" id="ImageCanvas"></canvas>
+
+<script>
+
+	var oldX;
+	var oldY;
+	var clearbtn = document.getElementById("clear");
+	var savebtn = document.getElementById("save");
+	var fieldImg = document.getElementById("fieldImg");
+	var robotImg = document.getElementById("robot");
+	var imgCanvas = document.getElementById("ImageCanvas");
+	var imgContext = imgCanvas.getContext("2d");
+	var canvas = document.getElementById("DrawingBoard");
+	var context = canvas.getContext("2d");
+	clearbtn.style.zIndex = "3";
+	savebtn.style.zIndex = "3";
+	canvas.style.zIndex = "1";
+	imgCanvas.style.zIndex = "2";
+	fieldImg.style.display = "none";
+	robotImg.style.display = "none";
+	var drawing;
+	var lifted = false;
+	clearbtn.onclick = function(){
+		context.clearRect(0,0,canvas.width,canvas.height);
+		drawing = false;
+		lifted = false;
+		//fieldImg.style.width = '100%';
+		//fieldImg.style.height = '100%';
+		context.drawImage(fieldImg, 0, 0, canvas.width, canvas.width * fieldImg.height/fieldImg.width);
+	}
+	savebtn.onclick = function(){
+
+	}
+
+	
+	window.onload = window.onresize = function(){
+		canvas.width = canvas.offsetWidth;
+		canvas.height = canvas.offsetHeight;
+		imgCanvas.width = imgCanvas.offsetWidth;
+		imgCanvas.height = imgCanvas.offsetHeight;
+		//fieldImg.style.width = '100%';
+		//fieldImg.style.height = '100%';
+		context.drawImage(fieldImg, 0, 0, canvas.width, canvas.width * fieldImg.height/fieldImg.width);
+	}
+	function circ(x,y,radius,color){
+		imgContext.beginPath();
+		imgContext.arc(x,y,radius,0,Math.PI*2);
+		imgContext.fillStyle = color;
+		imgContext.fill();
+		imgContext.closePath();
+	}
+	function line(x,y,newx,newy){
+		context.beginPath();
+		context.moveTo(x,y);
+		context.lineTo(newx,newy);
+		context.stroke();
+	}
+
+	imgCanvas.onpointerdown = function(event) {
+		console.log(event.button);
+		/*if (event.button != 2 && !lifted) {
+			event.preventDefault();
+			drawing = true;
+			oldx = event.clientX;
+			oldy = event.clientY;
+		}*/
+		//event.preventDefault();
+		newRobot(event.clientX,event.clientY);
+	}
+	
+	canvas.onpointerdown = function(event) {
+		console.log(event.button);
+		/*if (event.button != 2 && !lifted) {
+			event.preventDefault();
+			drawing = true;
+			oldx = event.clientX;
+			oldy = event.clientY;
+		}*/
+		//event.preventDefault();
+		newRobot(event.clientX,event.clientY);
+	}
+
+	canvas.onpointerup = function(event) {
+		if (event.button != 2) {
+			event.preventDefault();
+			drawing = false;
+			lifted = true;
+		}
+	}
+
+ 	var posx, posy;
+ 	var oldx = 0,oldy = 0;
+	canvas.onpointermove = function(event) {
+		if (event.button != 2) {
+			event.preventDefault();
+			posx = event.clientX;
+			posy = event.clientY;
+		}
+	}
+
+	function draw(){
+		if (drawing){
+			line(oldx,oldy,posx,posy)
+			oldx = posx;
+			oldy = posy;
+			console.log(posy);
+		}
+		setTimeout(draw,0)
+	}
+
+	function newRobot(posx, posy) { 
+		imgContext.clearRect(0,0,imgCanvas.width,imgCanvas.height);
+		imgContext.drawImage(robotImg, posx, posy, 70, 70 * fieldImg.height/fieldImg.width);
+	}
+
+	draw()
+	// var dataURL = canvas.toDataURL();
+ //    document.getElementById('canvasImg').src = dataURL;
+
+
+		
+</script>
+
+
+</body></html>
