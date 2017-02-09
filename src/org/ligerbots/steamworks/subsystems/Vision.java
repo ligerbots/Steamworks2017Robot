@@ -156,8 +156,6 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @param enabled Whether image processing should be enabled or not
    */
   public void setVisionEnabled(boolean enabled) {
-    logger.info(String.format("Setting vision enabled=%b", enabled));
-
     gearVision.table.putBoolean("enabled", enabled);
     boilerVision.table.putBoolean("enabled", enabled);
   }
@@ -356,6 +354,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           recvPacket.position(0);
           byte dataCode = recvPacket.get();
           int magic = recvPacket.getInt();
+          
           int length = recvPacket.getInt();
           if (magic == CS_MAGIC_NUMBER) {
             if ((dataCode == DATA_CODE_BOILER && streamType == StreamType.BOILER_CAM)

@@ -55,7 +55,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
       double distance = distanceInMillimeters / RobotMap.MILLIMETERS_PER_INCH;
       buffer[bufferIndex] = distance;
       bufferIndex++;
-      if (bufferIndex > buffer.length) {
+      if (bufferIndex >= buffer.length) {
         bufferIndex = 0;
       }
       

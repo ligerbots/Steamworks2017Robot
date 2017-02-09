@@ -158,6 +158,8 @@ public class Robot extends IterativeRobot {
     final long start = System.nanoTime();
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
+    
+    vision.setVisionEnabled(true);
 
     allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
     long currentNanos = System.nanoTime();

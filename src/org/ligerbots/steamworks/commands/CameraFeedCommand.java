@@ -21,6 +21,7 @@ public class CameraFeedCommand extends Command {
   public CameraFeedCommand(StreamType streamType) {
     super("CameraFeedCommand_" + streamType.toString());
     this.streamType = streamType;
+    setRunWhenDisabled(true);
   }
 
   protected void initialize() {
