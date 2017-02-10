@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+import com.kauailabs.navx.AHRSProtocol.AHRSUpdateBase;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -107,7 +108,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
-    navX = new AHRS(SPI.Port.kMXP);
+    // new firmware supports 200hz
+    navX = new AHRS(SPI.Port.kMXP, (byte) 200);
+    navX.registerCallback(
+        (long systemTimestamp, long sensorTimestamp, AHRSUpdateBase sensorData, Object context) -> {
+          updatePosition(sensorData.yaw);
+        }, new Object());
 
     calibrateYaw();
   }
@@ -148,6 +154,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
   /**
    * Arcade drive but without squared inputs.
+   * 
    * @param throttle is the vertical axis
    * @param turn turn is the horizontal axis
    */
@@ -345,8 +352,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   /**
    * Updates the dead reckoning for our current position.
    */
-  public void updatePosition() {
-    rotation = fixDegrees(navX.getYaw() + rotationOffset);
+  public void updatePosition(double navXYaw) {
+    rotation = fixDegrees(navXYaw + rotationOffset);
 
     double encoderLeft = getEncoderDistance(DriveTrainSide.LEFT);
     double encoderRight = getEncoderDistance(DriveTrainSide.RIGHT);
