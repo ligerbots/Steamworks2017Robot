@@ -33,11 +33,11 @@ public class ClimbCommand extends Command {
 
   protected void end() {
     logger.info("Finished");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void interrupted() {
     logger.info("Interrupted");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 }

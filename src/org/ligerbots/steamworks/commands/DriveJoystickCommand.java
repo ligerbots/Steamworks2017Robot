@@ -24,7 +24,7 @@ public class DriveJoystickCommand extends Command {
 
   protected void execute() {
     Robot.driveTrain.joystickDrive(Robot.operatorInterface.getThrottle(),
-        Robot.operatorInterface.getTurn());
+        Robot.operatorInterface.getTurn(), Robot.operatorInterface.isQuickTurn());
   }
 
   protected boolean isFinished() {
@@ -39,6 +39,6 @@ public class DriveJoystickCommand extends Command {
   protected void interrupted() {
     // not warn because we expect this to be interrupted by auto driving later
     logger.info("Interrupted");
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 }

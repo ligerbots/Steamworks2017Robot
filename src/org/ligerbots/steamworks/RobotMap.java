@@ -69,4 +69,6 @@ public class RobotMap {
   
   public static final double AUTO_DRIVE_RAMP_UP_DIST = 24.0; // in
   public static final double AUTO_DRIVE_RAMP_DOWN_DIST = 60.0;
+
+  public static final double JOYSTICK_DRIVE_TURN_SENSITIVITY = 1.0;
 }

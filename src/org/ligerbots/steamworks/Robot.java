@@ -8,6 +8,7 @@ import ch.qos.logback.classic.net.server.ServerSocketAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.FilterReply;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -128,6 +129,26 @@ public class Robot extends IterativeRobot {
     // chooser.addDefault("Default Auto", new ExampleCommand());
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", chooser);
+
+    // save phone battery
+    // needs to be on a separate thread because robotPeriodic() will stop running when the DS is
+    // disconnected
+    Thread driverStationDisconnectChecker = new Thread(() -> {
+      while (true) {
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+          ex.printStackTrace();
+        }
+
+        if (!DriverStation.getInstance().isDSAttached()) {
+          vision.setVisionEnabled(false);
+        }
+      }
+    });
+    driverStationDisconnectChecker.setDaemon(true);
+    driverStationDisconnectChecker.setName("DS Disconnect Checker");
+    driverStationDisconnectChecker.start();
   }
 
   @Override
@@ -136,7 +157,7 @@ public class Robot extends IterativeRobot {
     final long start = System.nanoTime();
     logger.trace("robotPeriodic()");
     Scheduler.getInstance().run();
-    
+
     vision.setVisionEnabled(true);
 
     allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
@@ -158,7 +179,7 @@ public class Robot extends IterativeRobot {
       Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
     }
   }
-  
+
   /**
    * This function is called once each time the robot enters Disabled mode. You can use it to reset
    * any subsystem information you want to clear when the robot is disabled.
@@ -213,14 +234,14 @@ public class Robot extends IterativeRobot {
   @Override
   public void teleopInit() {
     logger.trace("teleopInit()");
-    
+
     if (RobotMap.IS_ROADKILL) {
       logger.info("Running on roadkill");
       logger.info("Wheel radius: " + RobotMap.WHEEL_RADIUS);
     } else {
       logger.info("Running on production");
     }
-    
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

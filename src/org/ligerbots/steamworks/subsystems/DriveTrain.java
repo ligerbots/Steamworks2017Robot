@@ -142,18 +142,27 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   /**
-   * This method drives the robot using joystick values.
+   * This method drives the robot using joystick values. Squared inputs are enabled, and turning at
+   * high speeds is compensated. Do not use this unless actually passing in joystick values. For
+   * auto drive, use a raw* function
    * 
    * @param throttle is the vertical axis
    * @param turn is the horizontal axis
+   * @param quickTurn true to override constant-curvature turning behavior
    */
-  public void joystickDrive(double throttle, double turn) {
-    logger.trace(String.format("Driving with throttle %f and turn %f", throttle, turn));
-    robotDrive.arcadeDrive(throttle, turn);
+  public void joystickDrive(double throttle, double turn, boolean quickTurn) {
+    logger.trace(String.format("Driving with throttle %f and turn %f quickTurn %b", throttle, turn,
+        quickTurn));
+    if (quickTurn) {
+      robotDrive.arcadeDrive(throttle, turn);
+    } else {
+      robotDrive.arcadeDrive(throttle,
+          Math.abs(throttle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY);
+    }
   }
 
   /**
-   * Arcade drive but without squared inputs.
+   * Arcade drive but without squared inputs or high speed turn compensation.
    * 
    * @param throttle is the vertical axis
    * @param turn turn is the horizontal axis
@@ -221,7 +230,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public void climb() {
     logger.trace("Doing climb");
     shift(ShiftType.DOWN);
-    joystickDrive(1, 0);
+    rawThrottleTurnDrive(1, 0);
   }
 
   public boolean isClimbLimitSwitchPressed() {

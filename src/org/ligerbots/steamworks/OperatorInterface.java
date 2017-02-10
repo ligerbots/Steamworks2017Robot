@@ -104,4 +104,8 @@ public class OperatorInterface {
     return getThrottle() > 0.5 || getThrottle() < -0.5
         || xboxController.getStickButton(GenericHID.Hand.kLeft);
   }
+  
+  public boolean isQuickTurn() {
+    return xboxController.getStickButton(GenericHID.Hand.kRight);
+  }
 }

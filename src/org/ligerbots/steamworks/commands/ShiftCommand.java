@@ -37,7 +37,7 @@ public class ShiftCommand extends Command {
     lastOutputRight = Robot.driveTrain.getLastOutput(DriveTrainSide.RIGHT);
     
     Robot.driveTrain.setBrakeOn(false);
-    Robot.driveTrain.joystickDrive(0, 0);
+    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void execute() {
