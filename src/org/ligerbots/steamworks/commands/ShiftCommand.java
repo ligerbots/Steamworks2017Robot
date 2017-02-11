@@ -19,6 +19,7 @@ public class ShiftCommand extends Command {
   long startTime;
   double lastOutputLeft;
   double lastOutputRight;
+  boolean didShift;
   
   /**
    * Creates a new ShiftCommand.
@@ -38,11 +39,16 @@ public class ShiftCommand extends Command {
     
     Robot.driveTrain.setBrakeOn(false);
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    
+    didShift = false;
   }
 
   protected void execute() {
     if (System.nanoTime() - startTime > NANOS_START_TO_SHIFT) {
-      Robot.driveTrain.shift(shiftType);
+      if (!didShift) {
+        Robot.driveTrain.shift(shiftType);
+        didShift = true;
+      }
     }
   }
 
