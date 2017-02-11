@@ -71,6 +71,7 @@ public class DriveToGearCommand extends Command {
 
     switch (currentState) {
       case INITIAL_WAIT_FOR_VISION:
+        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         if (Robot.vision.isGearVisionDataValid()) {
           // get current vision data
           VisionData data = Robot.vision.getGearVisionData();
@@ -169,6 +170,7 @@ public class DriveToGearCommand extends Command {
         }
         break;
       case WAIT_FOR_VISION:
+        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         // wait a bit for the robot to settle down then get a new vision frame
         if (System.nanoTime() - nanosAtWaitForVisionStart >= WAIT_VISION_NANOS) {
           if (System.nanoTime() - nanosAtWaitForVisionStart >= MAX_WAIT_VISION_NANOS) {
@@ -229,6 +231,7 @@ public class DriveToGearCommand extends Command {
         }
         break;
       case DELIVER_GEAR:
+        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         Robot.gearManipulator.setOpen(true);
         if (System.nanoTime() - nanosAtGearDeliverStart > WAIT_GEAR_NANOS) {
           currentState = State.DRIVE_AWAY;
@@ -251,6 +254,7 @@ public class DriveToGearCommand extends Command {
         }
         break;
       default:
+        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         currentState = State.DONE;
         break;
     }

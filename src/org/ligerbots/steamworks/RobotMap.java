@@ -54,9 +54,9 @@ public class RobotMap {
   public static final double GEARING_FACTOR = 1;
 
   public static final double AUTO_TURN_MAX_SPEED = 0.3;
-  public static final double AUTO_TURN_MIN_SPEED = 0.18;
+  public static final double AUTO_TURN_MIN_SPEED = 0.1;
   public static final double AUTO_TURN_RAMP_ZONE = 80.0;
-  public static final double AUTO_TURN_ACCEPTABLE_ERROR = 3; // Degrees
+  public static final double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
   
   public static final double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
   public static final double AUTO_FINE_DRIVE_ACCEPTABLE_ERROR = 0.5;
