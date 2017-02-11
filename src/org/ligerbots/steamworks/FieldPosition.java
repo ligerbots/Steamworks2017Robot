@@ -22,7 +22,7 @@ public class FieldPosition {
   public static final double ALLIANCE_WALL_TO_BASELINE = 93.25;
   // Distance to launchpad line from alliance wall in inches
   public static final double ALLIANCE_WALL_TO_LAUNCHPAD = ALLIANCE_WALL_TO_BASELINE + AIRSHIP_WIDTH;
-
+  
   /**
    * The X coordinate of the location in inches. +X is closer to the judges than -X. The origin is
    * at the center of the field.
@@ -49,7 +49,4 @@ public class FieldPosition {
   public double getY() {
     return y;
   }
-
-
-
 }
