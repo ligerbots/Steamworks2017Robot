@@ -69,6 +69,9 @@ public class RobotMap {
   
   public static final double VISION_BOILER_CAMERA_ANGLE = 50.8; // degrees
   
+  public static final double ROBOT_LENGTH = 40;
+  public static final double ROBOT_WIDTH = 36;
+  
   @Preference
   public static double GEARMECH_POSITION_CLOSED = 0;
   @Preference
