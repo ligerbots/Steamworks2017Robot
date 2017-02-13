@@ -49,4 +49,8 @@ public class FieldPosition {
   public double getY() {
     return y;
   }
+  
+  public FieldPosition multiply(double mx, double my) {
+    return new FieldPosition(x * mx, y * my);
+  }
 }

@@ -32,4 +32,8 @@ public class FieldLine {
   public FieldPosition getEnd() {
     return end;
   }
+  
+  public FieldLine multiply(double mx, double my) {
+    return new FieldLine(start.multiply(mx, my), end.multiply(mx, my));
+  }
 }
