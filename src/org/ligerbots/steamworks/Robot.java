@@ -107,6 +107,9 @@ public class Robot extends IterativeRobot {
     } else {
       logger.info("Running on production");
     }
+    
+    RobotMap.initialize();
+    
     deviceFinder = new CanDeviceFinder();
     deviceFinder.findDevices();
 
