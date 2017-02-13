@@ -15,7 +15,11 @@ public class FieldMap {
     // 1: boiler side
     // 2: middle
     // 3: feeder side
+    // robot starting positions are in the middle of the alliance station
     red = new FieldMap();
+    red.starting1 = new FieldPosition(-325.688, 89.060);
+    red.starting2 = new FieldPosition(-325.688, 16.475);
+    red.starting3 = new FieldPosition(-325.688, -87.003);
     red.boiler = new FieldPosition(-320.133, 155.743);
     red.loadingStationInner = new FieldPosition(311.673, -130.640);
     red.loadingStationOuter = new FieldPosition(268.352, -152.109);
@@ -37,6 +41,9 @@ public class FieldMap {
     red.ropeStation3 = new FieldPosition(-146.602, -52.411);
 
     blue = new FieldMap();
+    blue.starting1 = red.starting1.multiply(-1, 1);
+    blue.starting2 = red.starting2.multiply(-1, 1);
+    blue.starting3 = red.starting3.multiply(-1, 1);
     blue.boiler = red.boiler.multiply(-1, 1);
     blue.loadingStationInner = red.loadingStationInner.multiply(-1, 1);
     blue.loadingStationOuter = red.loadingStationOuter.multiply(-1, 1);
@@ -66,6 +73,9 @@ public class FieldMap {
 
   private FieldMap() {}
 
+  FieldPosition starting1;
+  FieldPosition starting2;
+  FieldPosition starting3;
   FieldPosition boiler;
   FieldPosition loadingStationInner;
   FieldPosition loadingStationOuter;
