@@ -282,6 +282,19 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           continue;
         }
 
+        // TODO: test and verify
+        if (code == DATA_CODE_BOILER && RobotMap.VISION_BOILER_AUTO_CORRECT) {
+          ITable boilerTarget = boilerVision.table.getSubTable("target");
+          double boilerTargetWidth = boilerTarget.getNumber("width", DEFAULT_BOILER_TARGET_WIDTH);
+          if (rvecPitch > RobotMap.VISION_BOILER_CAMERA_ANGLE) {
+            // the target is too wide, causing us to think we are more pitched than we are
+            boilerTarget.putNumber("width", boilerTargetWidth - 0.01);
+          } else if (rvecPitch < RobotMap.VISION_BOILER_CAMERA_ANGLE) {
+            // other way around
+            boilerTarget.putNumber("width", boilerTargetWidth + 0.01);
+          }
+        }
+
         notCurrentData.rvecPitch = rvecPitch;
         notCurrentData.rvecYaw = rvecYaw;
         notCurrentData.rvecRoll = rvecRoll;

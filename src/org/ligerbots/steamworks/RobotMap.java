@@ -67,6 +67,8 @@ public class RobotMap {
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
   public static final double GEARING_FACTOR = IS_ROADKILL ? 1 : 1; // TODO: add
   
+  public static final double VISION_BOILER_CAMERA_ANGLE = 50.8; // degrees
+  
   @Preference
   public static double GEARMECH_POSITION_CLOSED = 0;
   @Preference
@@ -108,6 +110,9 @@ public class RobotMap {
   public static double SHOOTER_RPM_PERCENT_TOLERANCE = 0.05;
   @Preference
   public static long AUTO_SHOOTER_WAIT_NANOS = 5_000_000_000L;
+  
+  @Preference
+  public static boolean VISION_BOILER_AUTO_CORRECT = false;
   
   /**
    * Sets up Preferences variables. Must be called first in robotInit().
@@ -153,6 +158,9 @@ public class RobotMap {
       public void valueChanged(ITable source, String key, Object value, boolean isNew) {
         try {
           Field field = RobotMap.class.getDeclaredField(key);
+          if (!field.isAnnotationPresent(Preference.class)) {
+            throw new IllegalArgumentException("Field does not have @Preference");
+          }
           Preferences prefs = Preferences.getInstance();
           Class<?> type = field.getType();
           if (type == Integer.TYPE) {
