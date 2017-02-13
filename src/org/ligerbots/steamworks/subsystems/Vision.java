@@ -74,6 +74,11 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final byte DATA_CODE_GEAR = (byte) 0x93;
   private static final byte DATA_CODE_BOILER = (byte) 0xB0;
 
+  private static final double DEFAULT_GEAR_TARGET_WIDTH = 10.25; // in
+  private static final double DEFAULT_GEAR_TARGET_HEIGHT = 5.0; // in
+  private static final double DEFAULT_BOILER_TARGET_WIDTH = 0.82 * 15; // in
+  private static final double DEFAULT_BOILER_TARGET_HEIGHT = 6.0; // in
+
   Relay ledRing;
 
   // buffer vision data for multithreaded access
@@ -105,8 +110,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     gearVision.table = NetworkTable.getTable("Vision_Gear");
     boilerVision.table = NetworkTable.getTable("Vision_Boiler");
 
-    initHsvRange(gearVision);
-    initHsvRange(boilerVision);
+    initPhoneVars(gearVision, DEFAULT_GEAR_TARGET_WIDTH, DEFAULT_GEAR_TARGET_HEIGHT);
+    initPhoneVars(boilerVision, DEFAULT_BOILER_TARGET_WIDTH, DEFAULT_BOILER_TARGET_HEIGHT);
 
     Thread forwardThread = new Thread(this::packetForwardingThread);
     forwardThread.setDaemon(true);
@@ -119,7 +124,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     dataThread.start();
   }
 
-  private void initHsvRange(VisionContainer container) {
+  private void initPhoneVars(VisionContainer container, double defaultTargetWidth,
+      double defaultTargetHeight) {
     ITable range = container.table.getSubTable("colorRange");
     if (!range.containsKey("lower")) {
       range.putNumberArray("lower", new double[] {0, 0, 0});
@@ -129,6 +135,16 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     }
     range.setPersistent("lower");
     range.setPersistent("upper");
+
+    ITable target = container.table.getSubTable("target");
+    if (!target.containsKey("width")) {
+      target.putNumber("width", defaultTargetWidth);
+    }
+    if (!target.containsKey("height")) {
+      target.putNumber("height", defaultTargetHeight);
+    }
+    target.setPersistent("width");
+    target.setPersistent("height");
   }
 
   /**
@@ -354,7 +370,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           recvPacket.position(0);
           byte dataCode = recvPacket.get();
           int magic = recvPacket.getInt();
-          
+
           int length = recvPacket.getInt();
           if (magic == CS_MAGIC_NUMBER) {
             if ((dataCode == DATA_CODE_BOILER && streamType == StreamType.BOILER_CAM)
