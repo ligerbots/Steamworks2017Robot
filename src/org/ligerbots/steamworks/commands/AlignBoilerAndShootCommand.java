@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * This command automatically gets vision data, begins to spin up shooter while aligning, and then
  * shoots when everything is ready.
  */
-public class AlignBoilerAndShootCommand extends Command {
+public class AlignBoilerAndShootCommand extends StatefulCommand {
   private static final Logger logger = LoggerFactory.getLogger(AlignBoilerAndShootCommand.class);
 
   private static final long WAIT_NANOS = 250_000_000;
@@ -20,7 +19,7 @@ public class AlignBoilerAndShootCommand extends Command {
     WAIT_FOR_VISION, TURN, WAIT, SHOOT, DONE, ABORTED
   }
 
-  State state;
+  State currentState;
   TurnCommand turnCommand;
   ShooterFeederCommand shooterFeederCommand;
   long nanosStartOfWait;
@@ -31,7 +30,6 @@ public class AlignBoilerAndShootCommand extends Command {
    * Creates a new AlignBoilerAndShootCommand.
    */
   public AlignBoilerAndShootCommand() {
-    super("AlignBoilerAndShootCommand");
     requires(Robot.driveTrain);
     requires(Robot.shooter);
   }
@@ -39,7 +37,7 @@ public class AlignBoilerAndShootCommand extends Command {
   @Override
   protected void initialize() {
     logger.info("Initialize, state=WAIT_FOR_VISION");
-    state = State.WAIT_FOR_VISION;
+    currentState = State.WAIT_FOR_VISION;
 
     shooterFeederCommand = new ShooterFeederCommand(0);
     shooterFeederCommand.initialize();
@@ -48,14 +46,15 @@ public class AlignBoilerAndShootCommand extends Command {
 
   @Override
   protected void execute() {
+    super.execute();
     shooterFeederCommand.execute();
     if (shooterFeederCommand.isFinished()) {
       logger.error(
           String.format("ShooterFeederCommand died! aborted=%b", shooterFeederCommand.isAborted()));
-      state = State.DONE;
+      currentState = State.DONE;
     }
 
-    switch (state) {
+    switch (currentState) {
       case WAIT_FOR_VISION:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         if (Robot.vision.isBoilerVisionDataValid()) {
@@ -73,7 +72,7 @@ public class AlignBoilerAndShootCommand extends Command {
 
           turnCommand = new TurnCommand(angle);
           turnCommand.initialize();
-          state = State.TURN;
+          currentState = State.TURN;
         }
         break;
       case TURN:
@@ -83,18 +82,18 @@ public class AlignBoilerAndShootCommand extends Command {
 
           if (!turnCommand.succeeded) {
             logger.warn("turn command failed, state=ABORTED");
-            state = State.ABORTED;
+            currentState = State.ABORTED;
           } else {
             logger.info("state=WAIT");
             nanosStartOfWait = System.nanoTime();
-            state = State.WAIT;
+            currentState = State.WAIT;
           }
         }
 
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
           logger.info("Lost vision, state=WAIT_FOR_VISION");
-          state = State.WAIT_FOR_VISION;
+          currentState = State.WAIT_FOR_VISION;
         }
         break;
       case WAIT:
@@ -114,12 +113,12 @@ public class AlignBoilerAndShootCommand extends Command {
 
           if (Math.abs(angle) < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR) {
             shooterFeederCommand.setWithholdShooting(false);
-            state = State.SHOOT;
+            currentState = State.SHOOT;
             logger.info("state=SHOOT");
           } else {
             turnCommand = new TurnCommand(angle);
             turnCommand.initialize();
-            state = State.TURN;
+            currentState = State.TURN;
             logger.info("state=TURN");
           }
         }
@@ -133,15 +132,17 @@ public class AlignBoilerAndShootCommand extends Command {
   @Override
   protected boolean isFinished() {
     if (Robot.operatorInterface.isCancelled()) {
-      state = State.ABORTED;
+      currentState = State.ABORTED;
       return true;
     }
 
-    return state == State.DONE || state == State.ABORTED;
+    return currentState == State.DONE || currentState == State.ABORTED;
   }
 
   @Override
   protected void end() {
+    super.end();
+    
     logger.info("Finish");
     shooterFeederCommand.end();
 
@@ -150,9 +151,16 @@ public class AlignBoilerAndShootCommand extends Command {
 
   @Override
   protected void interrupted() {
+    super.interrupted();
+    
     logger.warn("Interrupted");
     shooterFeederCommand.interrupted();
 
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+  }
+
+  @Override
+  protected String getState() {
+    return currentState.toString();
   }
 }

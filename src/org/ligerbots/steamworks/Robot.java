@@ -124,6 +124,8 @@ public class Robot extends IterativeRobot {
 
     driveJoystickCommand = new DriveJoystickCommand();
     operatorInterface = new OperatorInterface();
+    
+    SmartDashboard.putData(Scheduler.getInstance());
 
     chooser = new SendableChooser<>();
     // chooser.addDefault("Default Auto", new ExampleCommand());

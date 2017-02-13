@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * back from the target first, then drives up. This ensures the robot is square to the lift when
  * delivering gears.
  */
-public class DriveToGearCommand extends Command {
+public class DriveToGearCommand extends StatefulCommand {
   private static final Logger logger = LoggerFactory.getLogger(DriveToGearCommand.class);
 
   private static final long WAIT_VISION_NANOS = 500_000_000;
@@ -48,7 +47,6 @@ public class DriveToGearCommand extends Command {
    * Creates a new DriveToGearCommand.
    */
   public DriveToGearCommand() {
-    super("DriveToGearCommand");
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
 
@@ -61,6 +59,8 @@ public class DriveToGearCommand extends Command {
   }
 
   protected void execute() {
+    super.execute();
+    
     // procedure
     // 1. Find where the target is (initialize)
     // 2. Turn to the place 48 inches back from target
@@ -270,12 +270,21 @@ public class DriveToGearCommand extends Command {
   }
 
   protected void end() {
+    super.end();
+    
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void interrupted() {
+    super.interrupted();
+    
     logger.info("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+  }
+
+  @Override
+  protected String getState() {
+    return currentState.toString();
   }
 }

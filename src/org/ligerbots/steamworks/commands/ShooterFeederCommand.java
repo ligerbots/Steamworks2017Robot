@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
@@ -9,7 +8,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This command spins up the shooter, then starts feeding once the shooter is up to speed.
  */
-public class ShooterFeederCommand extends Command {
+public class ShooterFeederCommand extends StatefulCommand {
   private static final Logger logger = LoggerFactory.getLogger(ShooterFeederCommand.class);
 
   double desiredShooterRpm = 0.0;
@@ -74,6 +73,8 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void execute() {
+    super.execute();
+    
     if (!Double.isNaN(desiredShooterRpm)) {
       Robot.shooter.setShooterRpm(desiredShooterRpm);
       double currentShooterRpm = Robot.shooter.getShooterRpm();
@@ -103,14 +104,31 @@ public class ShooterFeederCommand extends Command {
   }
 
   protected void end() {
+    super.end();
+    
     logger.info("finish");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
   }
 
   protected void interrupted() {
+    super.interrupted();
+    
     logger.info("Interrupted, spinning down shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
+  }
+
+  @Override
+  protected String getState() {
+    if (Robot.shooter.isShooterFault()) {
+      return "Shooter fault";
+    } else if (!readyToStartFeeder) {
+      return "Spinning up";
+    } else if (withholdShooting) {
+      return "Withhold shooting";
+    } else {
+      return "Shooting";
+    }
   }
 }
