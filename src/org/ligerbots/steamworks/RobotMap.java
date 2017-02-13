@@ -73,4 +73,5 @@ public class RobotMap {
   public static final double JOYSTICK_DRIVE_TURN_SENSITIVITY = 1.0;
 
   public static final double SHOOTER_RPM_PERCENT_TOLERANCE = 0.05;
+  public static final long AUTO_SHOOTER_WAIT_NANOS = 5_000_000_000L;
 }

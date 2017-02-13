@@ -17,6 +17,9 @@ public class ShooterFeederCommand extends StatefulCommand {
   boolean aborted;
 
   boolean withholdShooting;
+  
+  boolean rpmInRange;
+  long nanosAtRpmSpike;
 
   /**
    * Creates a new ShooterFeederCommand with a not-yet-known rpm.
@@ -70,6 +73,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     readyToStartFeeder = false;
     aborted = false;
     withholdShooting = false;
+    rpmInRange = false;
   }
 
   protected void execute() {
@@ -81,7 +85,10 @@ public class ShooterFeederCommand extends StatefulCommand {
       if (Math.abs((currentShooterRpm - desiredShooterRpm)
           / desiredShooterRpm) < RobotMap.SHOOTER_RPM_PERCENT_TOLERANCE) {
         readyToStartFeeder = true;
+        rpmInRange = true;
         logger.info("Shooter spun up, feeding");
+      } else {
+        rpmInRange = false;
       }
     }
 
@@ -93,11 +100,23 @@ public class ShooterFeederCommand extends StatefulCommand {
   protected boolean isFinished() {
     // we want to finish by a JoystickButton.isHeld calling cancel()
     // or a parent command unless there's a fault
-
+    
     if (Robot.shooter.isShooterFault()) {
       logger.warn("Shooter fault, disabling");
       aborted = true;
       return true;
+    }
+    
+    // detect when there are no more RPM spikes
+    if (readyToStartFeeder && !withholdShooting) {
+      if (!rpmInRange) {
+        nanosAtRpmSpike = System.nanoTime();
+      }
+      
+      if (System.nanoTime() - nanosAtRpmSpike > RobotMap.AUTO_SHOOTER_WAIT_NANOS) {
+        logger.info("No more fuel, ending");
+        return true;
+      }
     }
 
     return false;

@@ -391,6 +391,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     }
 
     SmartDashboard.putBoolean("VisionGearLift", gearLiftPhone);
+    SmartDashboard.putBoolean("VisionGearLift_data", isGearVisionDataValid());
     SmartDashboard.putBoolean("VisionBoiler", boilerPhone);
+    SmartDashboard.putBoolean("VisionBoiler_data", isBoilerVisionDataValid());
   }
 }

@@ -49,8 +49,12 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     super.execute();
     shooterFeederCommand.execute();
     if (shooterFeederCommand.isFinished()) {
-      logger.error(
-          String.format("ShooterFeederCommand died! aborted=%b", shooterFeederCommand.isAborted()));
+      if (shooterFeederCommand.aborted) {
+        logger.error("ShooterFeederCommand aborted!");
+      } else {
+        logger.info("ShooterFeederCommand ended");
+      }
+      
       currentState = State.DONE;
     }
 
