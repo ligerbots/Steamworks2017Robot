@@ -101,6 +101,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         }
         break;
       case WAIT:
+        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         if (System.nanoTime() - nanosStartOfWait >= WAIT_NANOS
             && Robot.vision.isBoilerVisionDataValid()) {
           VisionData data = Robot.vision.getBoilerVisionData();

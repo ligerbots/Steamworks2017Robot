@@ -59,6 +59,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double lastOutputLeft = 0;
   double lastOutputRight = 0;
 
+  long navxUpdateNanos;
+  
   /**
    * Creates a new drive train instance.
    */
@@ -334,8 +336,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
     SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
 
-    SmartDashboard.putNumber("Corrected_Yaw", rotation);
-
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
 
@@ -347,6 +347,11 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
     SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
         shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
+    
+    // dead reckoning
+    SmartDashboard.putNumber("Robot_x", positionX);
+    SmartDashboard.putNumber("Robot_y", positionY);
+    SmartDashboard.putNumber("Robot_yaw", rotation);
   }
 
   public RobotPosition getRobotPosition() {

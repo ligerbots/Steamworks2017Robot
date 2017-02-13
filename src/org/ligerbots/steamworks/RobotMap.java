@@ -164,17 +164,17 @@ public class RobotMap {
           Preferences prefs = Preferences.getInstance();
           Class<?> type = field.getType();
           if (type == Integer.TYPE) {
-            field.setInt(null, prefs.getInt(key, (Integer) value));
+            field.setInt(null, prefs.getInt(key, 0));
           } else if (type == Long.TYPE) {
-            field.setLong(null, prefs.getLong(key, (Long) value));
+            field.setLong(null, prefs.getLong(key, 0));
           } else if (type == Float.TYPE) {
-            field.setFloat(null, prefs.getFloat(key, (Float) value));
+            field.setFloat(null, prefs.getFloat(key, 0));
           } else if (type == Double.TYPE) {
-            field.setDouble(null, prefs.getDouble(key, (Double) value));
+            field.setDouble(null, prefs.getDouble(key, 0));
           } else if (type == Boolean.TYPE) {
-            field.setBoolean(null, prefs.getBoolean(key, (Boolean) value));
+            field.setBoolean(null, prefs.getBoolean(key, false));
           } else if (type == String.class) {
-            field.set(null, prefs.getString(key, value.toString()));
+            field.set(null, prefs.getString(key, ""));
           } else {
             throw new IllegalArgumentException("Invalid field type: " + type);
           }
