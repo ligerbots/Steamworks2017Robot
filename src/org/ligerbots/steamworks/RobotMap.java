@@ -69,7 +69,7 @@ public class RobotMap {
   
   public static final double VISION_BOILER_CAMERA_ANGLE = 50.8; // degrees
   
-  public static final double CAMERA_HEIGHT = 16; //I MADE THIS UP! PLEASE CHANGE! inches?
+  public static final double BOILER_CAMERA_HEIGHT = 16; //I MADE THIS UP! PLEASE CHANGE! inches?
   
   public static final double ROBOT_LENGTH = 40;
   public static final double ROBOT_WIDTH = 36;

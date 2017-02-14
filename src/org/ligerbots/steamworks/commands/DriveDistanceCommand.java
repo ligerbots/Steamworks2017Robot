@@ -117,12 +117,14 @@ public class DriveDistanceCommand extends AccessibleCommand {
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     Robot.gearManipulator.setOpen(false);
+    ended = true;
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     Robot.gearManipulator.setOpen(false);
+    ended = true;
   }
   
   protected boolean isFailedToComplete() {

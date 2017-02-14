@@ -88,11 +88,13 @@ public class TurnCommand extends AccessibleCommand {
   protected void end() {
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    ended = true;
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    ended = true;
   }
   
   protected boolean isFailedToComplete() {

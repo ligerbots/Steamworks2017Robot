@@ -287,4 +287,8 @@ public class DriveToGearCommand extends StatefulCommand {
   protected String getState() {
     return currentState.toString();
   }
+  
+  protected boolean isFailedToComplete() {
+    return currentState == State.ABORTED;
+  }
 }

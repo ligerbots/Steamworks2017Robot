@@ -15,6 +15,7 @@ public class ShooterFeederCommand extends StatefulCommand {
   boolean readyToStartFeeder = false;
 
   boolean aborted;
+  boolean ended;
 
   boolean withholdShooting;
   
@@ -74,6 +75,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     aborted = false;
     withholdShooting = false;
     rpmInRange = false;
+    ended = false;
   }
 
   protected void execute() {
@@ -104,6 +106,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     if (Robot.shooter.isShooterFault()) {
       logger.warn("Shooter fault, disabling");
       aborted = true;
+      ended = true;
       return true;
     }
     
@@ -115,6 +118,7 @@ public class ShooterFeederCommand extends StatefulCommand {
       
       if (System.nanoTime() - nanosAtRpmSpike > RobotMap.AUTO_SHOOTER_WAIT_NANOS) {
         logger.info("No more fuel, ending");
+        ended = true;
         return true;
       }
     }
@@ -128,6 +132,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     logger.info("finish");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
+    ended = true;
   }
 
   protected void interrupted() {
@@ -136,6 +141,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     logger.info("Interrupted, spinning down shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
+    ended = true;
   }
 
   @Override
@@ -149,5 +155,9 @@ public class ShooterFeederCommand extends StatefulCommand {
     } else {
       return "Shooting";
     }
+  }
+  
+  protected boolean isFailedToComplete() {
+    return ended && aborted;
   }
 }
