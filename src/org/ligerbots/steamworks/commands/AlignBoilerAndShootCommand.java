@@ -16,12 +16,18 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   private static final long WAIT_NANOS = 250_000_000;
 
   enum State {
-    WAIT_FOR_VISION, TURN, WAIT, SHOOT, DONE, ABORTED
+    WAIT_FOR_VISION, TURN, WAIT, SHOOT, DONE, ABORTED, DRIVE_TO_RANGE
   }
 
   State currentState;
   TurnCommand turnCommand;
   ShooterFeederCommand shooterFeederCommand;
+  DriveDistanceCommand driveDistanceCommand;
+
+  double distanceFromCameraToBoiler;
+  double horizontalDistanceFromCameraToBoiler;
+
+
   long nanosStartOfWait;
 
   double currentAngle;
@@ -54,7 +60,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
       } else {
         logger.info("ShooterFeederCommand ended");
       }
-      
+
       currentState = State.DONE;
     }
 
@@ -107,6 +113,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           VisionData data = Robot.vision.getBoilerVisionData();
           double tx = data.getTvecX();
           double tz = data.getTvecZ();
+          double ty = data.getTvecY();
           double angle = 90 - Math.toDegrees(Math.atan2(tz, tx));
           currentAngle = angle;
           logger.info(String.format("Got data: tx=%f, tz=%f, angle=%f, state=TURN", tx, tz, angle));
@@ -117,9 +124,18 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           shooterFeederCommand.setRpm(calculatedRpm);
 
           if (Math.abs(angle) < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR) {
-            shooterFeederCommand.setWithholdShooting(false);
-            currentState = State.SHOOT;
-            logger.info("state=SHOOT");
+            distanceFromCameraToBoiler = Math.sqrt(tz * tz + ty * ty);
+            horizontalDistanceFromCameraToBoiler =
+                Math.cos(RobotMap.VISION_BOILER_CAMERA_ANGLE) * distanceFromCameraToBoiler;
+            if (horizontalDistanceFromCameraToBoiler > RobotMap.MAXIMUM_SHOOTING_DISTANCE
+                || horizontalDistanceFromCameraToBoiler < RobotMap.MINIMUM_SHOOTING_DISTANCE) {
+              currentState = State.DRIVE_TO_RANGE;
+              logger.info("state=DRIVE_TO_RANGE");
+            } else {
+              shooterFeederCommand.setWithholdShooting(false);
+              currentState = State.SHOOT;
+              logger.info("state=SHOOT");
+            }
           } else {
             turnCommand = new TurnCommand(angle);
             turnCommand.initialize();
@@ -128,6 +144,18 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           }
         }
         break;
+      case DRIVE_TO_RANGE:
+        if (horizontalDistanceFromCameraToBoiler > RobotMap.MAXIMUM_SHOOTING_DISTANCE) {
+          driveDistanceCommand = new DriveDistanceCommand(
+              horizontalDistanceFromCameraToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10);
+        } else {
+          driveDistanceCommand = new DriveDistanceCommand(
+              horizontalDistanceFromCameraToBoiler - RobotMap.MINIMUM_SHOOTING_DISTANCE - 10);
+        }
+        break;
+
+
+
       default:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         break;
@@ -147,7 +175,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   @Override
   protected void end() {
     super.end();
-    
+
     logger.info("Finish");
     shooterFeederCommand.end();
 
@@ -157,7 +185,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   @Override
   protected void interrupted() {
     super.interrupted();
-    
+
     logger.warn("Interrupted");
     shooterFeederCommand.interrupted();
 
