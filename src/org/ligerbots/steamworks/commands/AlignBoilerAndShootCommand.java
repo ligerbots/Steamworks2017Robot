@@ -32,6 +32,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   public AlignBoilerAndShootCommand() {
     requires(Robot.driveTrain);
     requires(Robot.shooter);
+    requires(Robot.feeder);
   }
 
   @Override

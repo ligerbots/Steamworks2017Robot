@@ -51,6 +51,6 @@ public class FieldLine {
     FieldPosition l2 = other.toVector();
     
     double dotProduct = l2.dot(l1);
-    return Math.acos(dotProduct / (l1.magnitude() * l2.magnitude())) * 180 / Math.PI;
+    return Math.toDegrees(Math.acos(dotProduct / (l1.magnitude() * l2.magnitude())));
   }
 }

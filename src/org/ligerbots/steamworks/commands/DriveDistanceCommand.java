@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
@@ -10,7 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Drives straight a certain distance (in inches).
  */
-public class DriveDistanceCommand extends Command {
+public class DriveDistanceCommand extends AccessibleCommand {
   private static final Logger logger = LoggerFactory.getLogger(DriveDistanceCommand.class);
 
   double offsetInches;
@@ -21,7 +20,8 @@ public class DriveDistanceCommand extends Command {
 
   double delta;
   double error;
-  
+
+  boolean ended;
   boolean succeeded;
 
   /**
@@ -40,6 +40,7 @@ public class DriveDistanceCommand extends Command {
     startRightEncoderValue = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT);
     startYaw = Robot.driveTrain.getYaw();
     succeeded = false;
+    ended = false;
     logger.info(String.format("Initialize, distance=%f", offsetInches));
   }
 
@@ -95,16 +96,19 @@ public class DriveDistanceCommand extends Command {
     // if we passed the target, just stop
     if ((offsetInches < 0 && delta < offsetInches) || (offsetInches > 0 && delta > offsetInches)) {
       succeeded = true;
+      ended = true;
       return true;
     }
 
     if (Robot.operatorInterface.isCancelled()) {
+      ended = true;
       return true;
     }
 
     boolean onTarget = error < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
     if (onTarget) {
       succeeded = true;
+      ended = true;
     }
     return onTarget;
   }
@@ -119,5 +123,9 @@ public class DriveDistanceCommand extends Command {
     logger.warn("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     Robot.gearManipulator.setOpen(false);
+  }
+  
+  protected boolean isFailedToComplete() {
+    return ended && !succeeded;
   }
 }

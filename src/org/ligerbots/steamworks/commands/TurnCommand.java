@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
@@ -11,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * This command turns the robot by a certain number of degrees. Clockwise is positive (NavX
  * convention)
  */
-public class TurnCommand extends Command {
+public class TurnCommand extends AccessibleCommand {
   private static final Logger logger = LoggerFactory.getLogger(TurnCommand.class);
 
   double offsetDegrees;
@@ -25,6 +24,7 @@ public class TurnCommand extends Command {
 
   // did we end up where we want or was it aborted?
   boolean succeeded;
+  boolean ended;
 
   /**
    * Create a new TurnCommand.
@@ -50,6 +50,7 @@ public class TurnCommand extends Command {
     targetRotation = DriveTrain.fixDegrees(startingRotation + offsetDegrees);
     logger.debug(String.format("Start %f, target %f", startingRotation, targetRotation));
     succeeded = false;
+    ended = false;
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -80,7 +81,8 @@ public class TurnCommand extends Command {
     if (onTarget) {
       succeeded = true;
     }
-    return outOfTime || onTarget || Robot.operatorInterface.isCancelled();
+    ended = outOfTime || onTarget || Robot.operatorInterface.isCancelled();
+    return ended;
   }
 
   protected void end() {
@@ -91,5 +93,9 @@ public class TurnCommand extends Command {
   protected void interrupted() {
     logger.warn("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+  }
+  
+  protected boolean isFailedToComplete() {
+    return ended && !succeeded;
   }
 }
