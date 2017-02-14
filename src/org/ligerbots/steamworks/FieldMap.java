@@ -1,9 +1,18 @@
 package org.ligerbots.steamworks;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.LinkedList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A map of the field, complete with useful locations and obstacles.
  */
 public class FieldMap {
+  private static final Logger logger = LoggerFactory.getLogger(FieldMap.class);
+  
   private static FieldMap red;
   private static FieldMap blue;
 
@@ -70,6 +79,22 @@ public class FieldMap {
   public FieldMap getBlue() {
     return blue;
   }
+  
+  /**
+   * Gets the current alliance FieldMap.
+   * @return Either red map or blue map
+   */
+  public FieldMap getAllianceMap() {
+    Alliance alliance = DriverStation.getInstance().getAlliance();
+    if (alliance == Alliance.Blue) {
+      return getBlue();
+    } else if (alliance == Alliance.Red) {
+      return getRed();
+    } else {
+      logger.error("Invalid alliance reported by DS!");
+      return getBlue();
+    }
+  }
 
   private FieldMap() {}
 
@@ -93,4 +118,16 @@ public class FieldMap {
   FieldPosition ropeStation1;
   FieldPosition ropeStation2;
   FieldPosition ropeStation3;
+  
+  /**
+   * Autonomous navigation calculation.
+   * @param start The start position
+   * @param end The end position
+   * @return The list of lines to follow
+   */
+  public static List<FieldLine> navigate(FieldPosition start, FieldPosition end) {
+    List<FieldLine> path = new LinkedList<>();
+    
+    return path;
+  }
 }

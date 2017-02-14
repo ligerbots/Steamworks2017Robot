@@ -1,13 +1,6 @@
 package org.ligerbots.steamworks;
 
 public class FieldPosition {
-  /**
-   * Which driver station we are starting from. The first driver station is toward the
-   */
-  public enum StartingPositions {
-    POS_STATION_1, POS_STATION_2, POS_STATION_3
-  }
-
   public static final double FIELD_WIDTH = 654.0;// In inches
   public static final double BOILER_WIDTH = 42.0;// In inches
   public static final double BOILER_HEIGHT = 97.0;// In inches
@@ -50,7 +43,19 @@ public class FieldPosition {
     return y;
   }
   
+  public FieldPosition add(double dx, double dy) {
+    return new FieldPosition(x + dx, y + dy);
+  }
+  
   public FieldPosition multiply(double mx, double my) {
     return new FieldPosition(x * mx, y * my);
+  }
+  
+  public double dot(FieldPosition other) {
+    return x * other.getX() + y * other.getY();
+  }
+  
+  public double magnitude() {
+    return Math.sqrt(x * x + y * y);
   }
 }

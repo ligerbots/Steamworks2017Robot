@@ -71,6 +71,9 @@ public class RobotMap {
   
   public static final double CAMERA_HEIGHT = 16; //I MADE THIS UP! PLEASE CHANGE! inches?
   
+  public static final double ROBOT_LENGTH = 40;
+  public static final double ROBOT_WIDTH = 36;
+  
   @Preference
   public static double MINIMUM_SHOOTING_DISTANCE = 36; // inches
   
