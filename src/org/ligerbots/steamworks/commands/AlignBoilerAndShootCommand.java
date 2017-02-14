@@ -152,6 +152,9 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           driveDistanceCommand = new DriveDistanceCommand(
               horizontalDistanceFromCameraToBoiler - RobotMap.MINIMUM_SHOOTING_DISTANCE - 10);
         }
+        currentState = State.WAIT;
+        logger.info("state=WAIT");
+        
         break;
 
 
