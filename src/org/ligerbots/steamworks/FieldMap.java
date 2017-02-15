@@ -124,6 +124,77 @@ public class FieldMap {
   public FieldPosition ropeStation2;
   public FieldPosition ropeStation3;
 
+  /**
+   * Generates a Catmull-Rom spline for smooth navigation across a set of control points.
+   * 
+   * @param controlPoints The control points
+   * @return The points on the spline
+   */
+  public static List<FieldPosition> generateCatmullRomSpline(List<FieldPosition> controlPoints) {
+    LinkedList<FieldPosition> output = new LinkedList<>();
+
+    for (int i = 1; i < controlPoints.size() - 2; i++) {
+      FieldPosition p0 = controlPoints.get(i - 1);
+      FieldPosition p1 = controlPoints.get(i);
+      FieldPosition p2 = controlPoints.get(i + 1);
+      FieldPosition p3 = controlPoints.get(i + 2);
+
+      generateSegment(p0, p1, p2, p3, output, i == 1);
+    }
+
+    return output;
+  }
+
+  /**
+   * Generates a Catmull-Rom spline segment.
+   * 
+   * @param p0 Control point
+   * @param p1 Control point
+   * @param p2 Control point
+   * @param p3 Control point
+   * @param output The list to add points to
+   */
+  private static void generateSegment(FieldPosition p0, FieldPosition p1, FieldPosition p2,
+      FieldPosition p3, List<FieldPosition> output, boolean isFirst) {
+    int numPoints = (int) Math.ceil(p1.distanceTo(p2) / 4.0);
+    if (numPoints < 5) {
+      numPoints = 5;
+    }
+
+    double t0 = 0;
+    double t1 = calculateT(t0, p0, p1);
+    double t2 = calculateT(t1, p1, p2);
+    double t3 = calculateT(t2, p2, p3);
+
+    double deltaT = Math.abs(t2 - t1) / (numPoints - 1);
+
+    for (int i = isFirst ? 0 : 1; i < numPoints; i++) {
+      double ti = i * deltaT + t1;
+      FieldPosition a1 = p0.multiply((t1 - ti) / (t1 - t0)).add(p1.multiply((ti - t0) / (t1 - t0)));
+      FieldPosition a2 = p1.multiply((t2 - ti) / (t2 - t1)).add(p2.multiply((ti - t1) / (t2 - t1)));
+      FieldPosition a3 = p2.multiply((t3 - ti) / (t3 - t2)).add(p3.multiply((ti - t2) / (t3 - t2)));
+
+      FieldPosition b1 = a1.multiply((t2 - ti) / (t2 - t0)).add(a2.multiply((ti - t0) / (t2 - t0)));
+      FieldPosition b2 = a2.multiply((t3 - ti) / (t3 - t1)).add(a3.multiply((ti - t1) / (t3 - t1)));
+
+      output.add(b1.multiply((t2 - ti) / (t2 - t1)).add(b2.multiply((ti - t1) / (t2 - t1))));
+    }
+  }
+
+  private static final double alpha = 0.5;
+
+  private static double calculateT(double ti, FieldPosition p0, FieldPosition p1) {
+    double x0 = p0.x;
+    double y0 = p0.y;
+    double x1 = p1.x;
+    double y1 = p1.y;
+
+    double dx = x1 - x0;
+    double dy = y1 - y0;
+
+    return Math.pow(Math.sqrt(dx * dx + dy * dy), alpha) + ti;
+  }
+  
   public static class Navigation {
     public List<AccessibleCommand> commands = new LinkedList<>();
     public int commandIndex = 0;

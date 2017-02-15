@@ -42,9 +42,17 @@ public class FieldPosition {
   public double getY() {
     return y;
   }
+  
+  public FieldPosition add(FieldPosition other) {
+    return add(other.x, other.y);
+  }
 
   public FieldPosition add(double dx, double dy) {
     return new FieldPosition(x + dx, y + dy);
+  }
+  
+  public FieldPosition multiply(double mxy) {
+    return multiply(mxy, mxy);
   }
 
   public FieldPosition multiply(double mx, double my) {

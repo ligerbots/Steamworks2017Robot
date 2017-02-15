@@ -52,7 +52,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double positionX;
   double positionY;
   double rotation;
-
+  double absoluteDistanceTraveled;
+  
   double prevEncoderLeft;
   double prevEncoderRight;
   DriverStation driverStation;
@@ -385,12 +386,18 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     double deltaEncoderRight = encoderRight - prevEncoderRight;
 
     double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2;
+    
+    absoluteDistanceTraveled += Math.abs(deltaInches);
 
     positionX = positionX + Math.cos(Math.toRadians(rotation)) * deltaInches;
     positionY = positionY + Math.sin(Math.toRadians(rotation)) * deltaInches;
     
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;
+  }
+  
+  public double getAbsoluteDistanceTraveled() {
+    return absoluteDistanceTraveled;
   }
 
   public double getYaw() {
@@ -419,6 +426,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         FieldMap.getAllianceMap().startingPositions[Robot.operatorInterface
             .getStartingPositionId()];
     setPosition(currentPosition);
+    
+    absoluteDistanceTraveled = 0;
     
     updatePosition(navX.getYaw());
   }
