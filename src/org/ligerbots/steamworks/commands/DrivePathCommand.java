@@ -29,6 +29,7 @@ public class DrivePathCommand extends AccessibleCommand {
   double autoDriveMaxSpeed;
   double autoDriveMinSpeed;
   double autoDriveStartSpeed;
+  double autoTurnMaxSpeed;
 
   /**
    * Creates a new PathDrivingCommand.
@@ -61,6 +62,7 @@ public class DrivePathCommand extends AccessibleCommand {
       autoDriveMaxSpeed = RobotMap.AUTO_DRIVE_MAX_SPEED_HIGH;
       autoDriveMinSpeed = RobotMap.AUTO_DRIVE_MIN_SPEED_HIGH;
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_HIGH;
+      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_HIGH;
     } else {
       Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
       autoDriveRampUpDist = RobotMap.AUTO_DRIVE_RAMP_UP_DIST_LOW;
@@ -69,6 +71,7 @@ public class DrivePathCommand extends AccessibleCommand {
       autoDriveMaxSpeed = RobotMap.AUTO_DRIVE_MAX_SPEED_LOW;
       autoDriveMinSpeed = RobotMap.AUTO_DRIVE_MIN_SPEED_LOW;
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_LOW;
+      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_LOW;
     }
   }
 
@@ -85,27 +88,31 @@ public class DrivePathCommand extends AccessibleCommand {
         minDistPointIndex = i;
       }
     }
-    
+
     if (minDist < Double.MAX_VALUE) {
-      waypointIndex = minDistPointIndex + 1;
+      waypointIndex = minDistPointIndex + 5;
       if (waypointIndex >= waypoints.size()) {
         waypointIndex = waypoints.size() - 1;
       }
     }
-    
+
     FieldPosition currentWaypoint = waypoints.get(waypointIndex);
-    
-    double angleToWaypoint = currentPosition.angleTo(currentWaypoint);
+
+    double angleToWaypoint = 90 - currentPosition.angleTo(currentWaypoint);
     double angleError = (angleToWaypoint - currentPosition.getDirection() + 360) % 360;
     if (angleError > 180) {
       angleError -= 360;
     }
 
-    double turn = autoDriveTurnP * angleError;
-    if (turn > 1.0) {
-      turn = 1.0;
-    } else if (turn < -1.0) {
-      turn = -1.0;
+    logger.debug(String.format("angleTo=%f current=%f error=%f currentPos=%s waypoints[%d]=%s",
+        angleToWaypoint, currentPosition.getDirection(), angleError, currentPosition.toString(),
+        waypointIndex, currentWaypoint.toString()));
+
+    double turn = -autoDriveTurnP * angleError;
+    if (turn > autoTurnMaxSpeed) {
+      turn = autoTurnMaxSpeed;
+    } else if (turn < -autoTurnMaxSpeed) {
+      turn = -autoTurnMaxSpeed;
     }
 
     double rampUpDelta = Robot.driveTrain.getAbsoluteDistanceTraveled() - startAbsDistance;
@@ -141,7 +148,7 @@ public class DrivePathCommand extends AccessibleCommand {
       }
     }
   }
-  
+
   protected boolean isFinished() {
     return waypointIndex >= waypoints.size() - 1 && currentPosition
         .distanceTo(waypoints.get(waypoints.size() - 1)) < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;

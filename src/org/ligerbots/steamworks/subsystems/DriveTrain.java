@@ -389,8 +389,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     
     absoluteDistanceTraveled += Math.abs(deltaInches);
 
-    positionX = positionX + Math.cos(Math.toRadians(rotation)) * deltaInches;
-    positionY = positionY + Math.sin(Math.toRadians(rotation)) * deltaInches;
+    positionX = positionX + Math.cos(Math.toRadians(90 - rotation)) * deltaInches;
+    positionY = positionY + Math.sin(Math.toRadians(90 - rotation)) * deltaInches;
     
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;

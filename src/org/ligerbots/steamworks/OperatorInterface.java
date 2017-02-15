@@ -7,11 +7,14 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Arrays;
+import java.util.List;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
 import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
+import org.ligerbots.steamworks.commands.DrivePathCommand;
 import org.ligerbots.steamworks.commands.DriveToGearCommand;
 import org.ligerbots.steamworks.commands.DriveUltrasonicCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
@@ -101,7 +104,14 @@ public class OperatorInterface {
     
     SmartDashboard.putData(new AlignBoilerAndShootCommand());
     
-    SmartDashboard.putData(new InstantCommand("ResetYaw") {
+    FieldPosition startPosition = FieldMap.getRed().startingPositions[0];
+    List<FieldPosition> testCtrl =
+        Arrays.asList(startPosition.add(-1, 0), startPosition, startPosition.add(60, 0),
+            startPosition.add(60, -60), startPosition.add(120, -60), startPosition.add(121, -60));
+    List<FieldPosition> testWaypoint = FieldMap.generateCatmullRomSpline(testCtrl);
+    SmartDashboard.putData(new DrivePathCommand(testWaypoint));
+    
+    SmartDashboard.putData(new InstantCommand("ZeroSensors") {
       {
         setRunWhenDisabled(true);
       }
