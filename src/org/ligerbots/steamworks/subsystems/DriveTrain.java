@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
+import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
@@ -60,13 +61,13 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double lastOutputRight = 0;
 
   long navxUpdateNanos;
-  
+
   /**
    * Creates a new drive train instance.
    */
   public DriveTrain() {
     logger.info("Initialize");
-
+    
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
       configureMaster(leftMaster);
@@ -110,6 +111,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
+    // restore X and Y in case of crash
+    if (SmartDashboard.containsKey("Robot_x")) {
+      positionX = SmartDashboard.getNumber("Robot_x", positionX);
+    }
+    if (SmartDashboard.containsKey("Robot_y")) {
+      positionY = SmartDashboard.getNumber("Robot_y", positionY);
+    }
+    
     // new firmware supports 200hz
     navX = new AHRS(SPI.Port.kMXP, (byte) 200);
     navX.registerCallback(
@@ -347,7 +356,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
     SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
         shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
-    
+
     // dead reckoning
     SmartDashboard.putNumber("Robot_x", positionX);
     SmartDashboard.putNumber("Robot_y", positionY);
@@ -379,7 +388,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     positionX = positionX + Math.cos(Math.toRadians(rotation)) * deltaInches;
     positionY = positionY + Math.sin(Math.toRadians(rotation)) * deltaInches;
-
+    
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;
   }
@@ -402,9 +411,16 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   /**
    * Zeroes the NavX.
    */
-  public void resetNavX() {
+  public void zeroSensors() {
     navX.reset();
     navX.resetDisplacement();
+    
+    FieldPosition currentPosition =
+        FieldMap.getAllianceMap().startingPositions[Robot.operatorInterface
+            .getStartingPositionId()];
+    setPosition(currentPosition);
+    
+    updatePosition(navX.getYaw());
   }
 
   public static double fixDegrees(double angle) {

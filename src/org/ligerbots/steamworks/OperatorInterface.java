@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.InstantCommand;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
@@ -23,18 +24,45 @@ import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is the glue that binds the controls on the physical operator interface to the commands
  * and command groups that allow control of the robot.
  */
 public class OperatorInterface {
+  public static final int AUTO_MODE_GEAR_SHOOT = 0;
+  public static final int AUTO_MODE_HOPPER_SHOOT = 1;
+  public static final int AUTO_MODE_NONE = 2;
+  
   XboxController xboxController;
+  
+  SendableChooser<Integer> autoMode;
+  SendableChooser<Integer> startingPosition;
+  SendableChooser<Integer> gearLiftPosition;
 
   /**
    * This is where we set up the operator interface.
    */
   public OperatorInterface() {
+    autoMode = new SendableChooser<>();
+    autoMode.addDefault("Gear + Shoot", AUTO_MODE_GEAR_SHOOT);
+    autoMode.addObject("Hopper + Shoot", AUTO_MODE_HOPPER_SHOOT);
+    autoMode.addObject("NO AUTONOMOUS", AUTO_MODE_NONE);
+    SmartDashboard.putData("Auto mode", autoMode);
+    
+    startingPosition = new SendableChooser<>();
+    startingPosition.addDefault("Boiler side", FieldMap.FIELD_SIDE_BOILER);
+    startingPosition.addObject("Center", FieldMap.FIELD_SIDE_CENTER);
+    startingPosition.addObject("Feeder side", FieldMap.FIELD_SIDE_FEEDER);
+    SmartDashboard.putData("Auto start position", startingPosition);
+    
+    gearLiftPosition = new SendableChooser<>();
+    gearLiftPosition.addDefault("Boiler side", FieldMap.FIELD_SIDE_BOILER);
+    gearLiftPosition.addObject("Center", FieldMap.FIELD_SIDE_CENTER);
+    gearLiftPosition.addObject("Feeder side", FieldMap.FIELD_SIDE_FEEDER);
+    SmartDashboard.putData("Auto gear lift position", gearLiftPosition);
+    
     xboxController = new XboxController(0);
 
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
@@ -74,9 +102,25 @@ public class OperatorInterface {
     SmartDashboard.putData(new AlignBoilerAndShootCommand());
     
     SmartDashboard.putData(new InstantCommand("ResetYaw") {
+      {
+        setRunWhenDisabled(true);
+      }
+      
       @Override
       public void execute() {
-        Robot.driveTrain.resetNavX();
+        Robot.driveTrain.zeroSensors();
+      }
+    });
+    
+    SmartDashboard.putData(new InstantCommand("Auto Calculations") {
+      {
+        setRunWhenDisabled(true);
+      }
+      
+      @Override
+      public void execute() {
+        LoggerFactory.getLogger(OperatorInterface.class).info("Auto calc test");
+        FieldMap.navigateStartToGearLift(getStartingPositionId(), getGearLiftPositionId());
       }
     });
   }
@@ -110,5 +154,17 @@ public class OperatorInterface {
   
   public boolean isQuickTurn() {
     return xboxController.getStickButton(GenericHID.Hand.kRight);
+  }
+  
+  public int getAutoMode() {
+    return autoMode.getSelected();
+  }
+  
+  public int getStartingPositionId() {
+    return startingPosition.getSelected();
+  }
+  
+  public int getGearLiftPositionId() {
+    return gearLiftPosition.getSelected();
   }
 }

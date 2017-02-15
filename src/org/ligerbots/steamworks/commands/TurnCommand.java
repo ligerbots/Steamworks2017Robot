@@ -25,6 +25,12 @@ public class TurnCommand extends AccessibleCommand {
   // did we end up where we want or was it aborted?
   boolean succeeded;
   boolean ended;
+  
+  boolean isHighGear;
+  
+  double autoTurnRampZone;
+  double autoTurnMaxSpeed;
+  double autoTurnMinSpeed;
 
   /**
    * Create a new TurnCommand.
@@ -51,8 +57,20 @@ public class TurnCommand extends AccessibleCommand {
     logger.debug(String.format("Start %f, target %f", startingRotation, targetRotation));
     succeeded = false;
     ended = false;
+    Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
+    isHighGear = false;
+    
+    if (isHighGear) {
+      autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_HIGH;
+      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_HIGH;
+      autoTurnMinSpeed = RobotMap.AUTO_TURN_MIN_SPEED_HIGH;
+    } else {
+      autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_LOW;
+      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_LOW;
+      autoTurnMinSpeed = RobotMap.AUTO_TURN_MIN_SPEED_LOW;
+    }
   }
-
+  
   // Called repeatedly when this Command is scheduled to run
   protected void execute() {
     // We could be turning clockwise or counterclockwise, so an "error" of 350deg for example, is
@@ -60,15 +78,15 @@ public class TurnCommand extends AccessibleCommand {
     error1 = Math.abs(targetRotation - Robot.driveTrain.getYaw());
     error2 = Math.abs(360 - error1);
     double actualError = Math.min(error1, error2);
-    if (actualError <= RobotMap.AUTO_TURN_RAMP_ZONE) {
-      double driveSpeed = RobotMap.AUTO_TURN_MAX_SPEED * actualError / RobotMap.AUTO_TURN_RAMP_ZONE;
-      if (driveSpeed < RobotMap.AUTO_TURN_MIN_SPEED) {
-        driveSpeed = RobotMap.AUTO_TURN_MIN_SPEED;
+    if (actualError <= autoTurnRampZone) {
+      double driveSpeed = autoTurnMaxSpeed * actualError / autoTurnRampZone;
+      if (driveSpeed < autoTurnMinSpeed) {
+        driveSpeed = autoTurnMinSpeed;
       }
       Robot.driveTrain.rawThrottleTurnDrive(0, isClockwise ? -driveSpeed : driveSpeed);
     } else {
       Robot.driveTrain.rawThrottleTurnDrive(0,
-          isClockwise ? -RobotMap.AUTO_TURN_MAX_SPEED : RobotMap.AUTO_TURN_MAX_SPEED);
+          isClockwise ? -autoTurnMaxSpeed : autoTurnMaxSpeed);
     }
   }
 

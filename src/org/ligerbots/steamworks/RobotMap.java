@@ -86,33 +86,53 @@ public class RobotMap {
   public static double GEARMECH_POSITION_OPEN = 1;
 
   @Preference
-  public static double AUTO_TURN_MAX_SPEED = 0.3;
+  public static double AUTO_TURN_MAX_SPEED_HIGH = 0.3;
   @Preference
-  public static double AUTO_TURN_MIN_SPEED = 0.1;
+  public static double AUTO_TURN_MAX_SPEED_LOW = 0.3;
   @Preference
-  public static double AUTO_TURN_RAMP_ZONE = 80.0;
+  public static double AUTO_TURN_MIN_SPEED_HIGH = 0.1;
+  @Preference
+  public static double AUTO_TURN_MIN_SPEED_LOW = 0.1;
+  @Preference
+  public static double AUTO_TURN_RAMP_ZONE_HIGH = 80.0;
+  @Preference
+  public static double AUTO_TURN_RAMP_ZONE_LOW = 80.0;
   @Preference
   public static double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
   
   @Preference
   public static double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
   @Preference
+  public static double AUTO_DRIVE_SHIFT_THRESHOLD = 36.0; // in
+  @Preference
   public static double AUTO_FINE_DRIVE_ACCEPTABLE_ERROR = 0.5;
   
   @Preference
-  public static double AUTO_DRIVE_TURN_P = 0.02;
+  public static double AUTO_DRIVE_TURN_P_HIGH = 0.02;
+  @Preference
+  public static double AUTO_DRIVE_TURN_P_LOW = 0.02;
   
   @Preference
-  public static double AUTO_DRIVE_MIN_SPEED = 0.1; // percent voltage from 12.5V
+  public static double AUTO_DRIVE_MIN_SPEED_HIGH = 0.1; // percent voltage from 12.5V
   @Preference
-  public static double AUTO_DRIVE_START_SPEED = 0.3;
+  public static double AUTO_DRIVE_MIN_SPEED_LOW = 0.1;
   @Preference
-  public static double AUTO_DRIVE_MAX_SPEED = 0.5;
+  public static double AUTO_DRIVE_START_SPEED_HIGH = 0.3;
+  @Preference
+  public static double AUTO_DRIVE_START_SPEED_LOW = 0.3;
+  @Preference
+  public static double AUTO_DRIVE_MAX_SPEED_HIGH = 0.5;
+  @Preference
+  public static double AUTO_DRIVE_MAX_SPEED_LOW = 0.5;
   
   @Preference
-  public static double AUTO_DRIVE_RAMP_UP_DIST = 24.0; // in
+  public static double AUTO_DRIVE_RAMP_UP_DIST_HIGH = 24.0; // in
   @Preference
-  public static double AUTO_DRIVE_RAMP_DOWN_DIST = 60.0;
+  public static double AUTO_DRIVE_RAMP_UP_DIST_LOW = 24.0;
+  @Preference
+  public static double AUTO_DRIVE_RAMP_DOWN_DIST_HIGH = 60.0;
+  @Preference
+  public static double AUTO_DRIVE_RAMP_DOWN_DIST_LOW = 60.0;
 
   @Preference
   public static double JOYSTICK_DRIVE_TURN_SENSITIVITY = 1.0;

@@ -21,13 +21,13 @@ public class FieldPosition {
    * at the center of the field.
    */
   @SuppressWarnings("membername")
-  private final double x;
+  protected final double x;
   /**
    * The y coordinate of the location in inches. +Y is closer to the blue alliance stations. The
    * origin is at the center of the field.
    */
   @SuppressWarnings("membername")
-  private final double y;
+  protected final double y;
 
   @SuppressWarnings("parametername")
   public FieldPosition(double x, double y) {
@@ -72,5 +72,10 @@ public class FieldPosition {
     double dx = other.x - x;
     double dy = other.y - y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  @Override
+  public String toString() {
+    return "FieldPosition [x=" + x + ", y=" + y + "]";
   }
 }

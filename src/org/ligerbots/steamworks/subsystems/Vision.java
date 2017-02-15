@@ -412,10 +412,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     boolean boilerPhone = false;
     ConnectionInfo[] connections = NetworkTablesJNI.getConnections();
     for (ConnectionInfo connInfo : connections) {
-      if (connInfo.remote_id.equals("Android_GEAR_LIFT")) {
-        gearLiftPhone = true;
-      } else if (connInfo.remote_id.equals("Android_BOILER")) {
-        boilerPhone = true;
+      if (System.currentTimeMillis() - connInfo.last_update < 100) {
+        if (connInfo.remote_id.equals("Android_GEAR_LIFT")) {
+          gearLiftPhone = true;
+        } else if (connInfo.remote_id.equals("Android_BOILER")) {
+          boilerPhone = true;
+        }
       }
     }
 

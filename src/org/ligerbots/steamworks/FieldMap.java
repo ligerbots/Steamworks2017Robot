@@ -7,6 +7,7 @@ import java.util.List;
 import org.ligerbots.steamworks.commands.AccessibleCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.TurnCommand;
+import org.ligerbots.steamworks.commands.WaitCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,10 @@ import org.slf4j.LoggerFactory;
  */
 public class FieldMap {
   private static final Logger logger = LoggerFactory.getLogger(FieldMap.class);
+
+  public static final int FIELD_SIDE_BOILER = 0;
+  public static final int FIELD_SIDE_CENTER = 1;
+  public static final int FIELD_SIDE_FEEDER = 2;
 
   private static FieldMap red;
   private static FieldMap blue;
@@ -102,38 +107,41 @@ public class FieldMap {
 
   private FieldMap() {}
 
-  FieldPosition[] startingPositions = new FieldPosition[3];
-  FieldPosition boiler;
-  FieldPosition loadingStationInner;
-  FieldPosition loadingStationOuter;
-  FieldPosition loadingStationOverflow;
-  FieldPosition hopperBoilerRed;
-  FieldPosition hopperBoilerCenter;
-  FieldPosition hopperBoilerBlue;
-  FieldPosition hopperLoadingRed;
-  FieldPosition hopperLoadingBlue;
-  FieldPosition[] gearLiftPositions = new FieldPosition[3];
-  FieldLine dividerLift12;
-  FieldLine dividerLift23;
-  FieldPosition ropeStation1;
-  FieldPosition ropeStation2;
-  FieldPosition ropeStation3;
+  public FieldPosition[] startingPositions = new FieldPosition[3];
+  public FieldPosition boiler;
+  public FieldPosition loadingStationInner;
+  public FieldPosition loadingStationOuter;
+  public FieldPosition loadingStationOverflow;
+  public FieldPosition hopperBoilerRed;
+  public FieldPosition hopperBoilerCenter;
+  public FieldPosition hopperBoilerBlue;
+  public FieldPosition hopperLoadingRed;
+  public FieldPosition hopperLoadingBlue;
+  public FieldPosition[] gearLiftPositions = new FieldPosition[3];
+  public FieldLine dividerLift12;
+  public FieldLine dividerLift23;
+  public FieldPosition ropeStation1;
+  public FieldPosition ropeStation2;
+  public FieldPosition ropeStation3;
 
   public static class Navigation {
     public List<AccessibleCommand> commands = new LinkedList<>();
     public int commandIndex = 0;
   }
-  
+
   /**
    * Calculates the navigation steps to go to the gear lift.
+   * 
    * @param startingPositionId The starting position ID (see comment at top of file), 0-2
    * @param gearLiftPositionId The gear lift position ID, 0-2
    * @return A Navigation object with the steps required
    */
   public static Navigation navigateStartToGearLift(int startingPositionId, int gearLiftPositionId) {
+    logger.info(String.format("Calculating path, start=%d, gear=%d", startingPositionId,
+        gearLiftPositionId));
     FieldMap map = getAllianceMap();
 
-    Alliance alliance = DriverStation.getInstance().getAlliance();
+    final Alliance alliance = DriverStation.getInstance().getAlliance();
 
     if (startingPositionId < 0 || startingPositionId >= map.startingPositions.length) {
       startingPositionId = 0;
@@ -146,23 +154,35 @@ public class FieldMap {
     }
 
     FieldPosition startingPosition = map.startingPositions[startingPositionId];
-    // FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftPositionId];
+    logger.debug(String.format("Starting position %s", startingPosition));
+    FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftPositionId];
 
     // drive forward 2 feet
     FieldPosition initialForwardPosition =
         startingPosition.add(alliance == Alliance.Red ? 24 : -24, 0);
+    logger.debug(String.format("2ft forward position %s", initialForwardPosition));
 
     double initialDriveToX;
     double initialDriveToY;
     if (gearLiftPositionId == 1) {
       initialDriveToX = alliance == Alliance.Red ? -276 : 276;
       initialDriveToY = 0;
+    } else if (gearLiftPositionId == 0) {
+      double angle = alliance == Alliance.Red ? 120 : 60;
+      double dx = 77 * Math.cos(Math.toRadians(angle));
+      double dy = 77 * Math.sin(Math.toRadians(angle));
+      initialDriveToX = gearLiftPosition.getX() + dx;
+      initialDriveToY = gearLiftPosition.getY() + dy;
     } else {
-      initialDriveToX = alliance == Alliance.Red ? -260 : 260;
-      initialDriveToY = gearLiftPositionId == 0 ? 87 : -87;
+      double angle = alliance == Alliance.Red ? 240 : 300;
+      double dx = 77 * Math.cos(Math.toRadians(angle));
+      double dy = 77 * Math.sin(Math.toRadians(angle));
+      initialDriveToX = gearLiftPosition.getX() + dx;
+      initialDriveToY = gearLiftPosition.getY() + dy;
     }
 
     FieldPosition initialDriveToPosition = new FieldPosition(initialDriveToX, initialDriveToY);
+    logger.debug(String.format("Drive to position %s", initialDriveToPosition));
 
     final DriveDistanceCommand driveForward = new DriveDistanceCommand(24.0);
     double angleTo = initialForwardPosition.angleTo(initialDriveToPosition);
@@ -177,11 +197,13 @@ public class FieldMap {
     } else {
       turnAngle = 180 - angleTo;
     }
+    logger.debug(String.format("Turn angle %f", turnAngle));
     final TurnCommand turnToPosition = new TurnCommand(turnAngle);
 
-    final DriveDistanceCommand driveToPosition =
-        new DriveDistanceCommand(initialForwardPosition.distanceTo(initialDriveToPosition));
-    
+    double distance = initialForwardPosition.distanceTo(initialDriveToPosition);
+    final DriveDistanceCommand driveToPosition = new DriveDistanceCommand(distance);
+    logger.debug(String.format("Distance %f", distance));
+
     double resetTurnAngle = -turnAngle;
     if (gearLiftPositionId == 0) {
       resetTurnAngle += 60;
@@ -189,14 +211,50 @@ public class FieldMap {
     if (gearLiftPositionId == 2) {
       resetTurnAngle -= 60;
     }
-    
+
+    logger.debug(String.format("Back turn angle %f", resetTurnAngle));
+
     final TurnCommand turnToTarget = new TurnCommand(resetTurnAngle);
-    
+
     Navigation navigation = new Navigation();
     navigation.commands.add(driveForward);
     navigation.commands.add(turnToPosition);
     navigation.commands.add(driveToPosition);
     navigation.commands.add(turnToTarget);
+    navigation.commands.add(new WaitCommand(250_000_000L));
+    return navigation;
+  }
+
+  /**
+   * Given a current dead reckoned position, navigates to the boiler.
+   * @param currentPosition The current robot position
+   * @return A Navigation object with the steps required
+   */
+  public static Navigation navigateToBoiler(RobotPosition currentPosition) {
+    logger.info(String.format("Calculating path, start=%s", currentPosition));
+    FieldMap map = getAllianceMap();
+
+    FieldPosition boiler = map.boiler;
+
+    double absoluteAngle = currentPosition.angleTo(boiler);
+    double relativeAngle = (absoluteAngle - currentPosition.direction + 360) % 360;
+    if (relativeAngle > 180) {
+      relativeAngle = relativeAngle - 360;
+    }
+
+    TurnCommand turnToBoiler = new TurnCommand(relativeAngle);
+
+    double distanceToBoiler = currentPosition.distanceTo(boiler);
+
+    Navigation navigation = new Navigation();
+    navigation.commands.add(turnToBoiler);
+
+    if (distanceToBoiler > 15 * 60) {
+      navigation.commands.add(
+          new DriveDistanceCommand(distanceToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10.0));
+    }
+
+    navigation.commands.add(new WaitCommand(250_000_000L));
     return navigation;
   }
 }

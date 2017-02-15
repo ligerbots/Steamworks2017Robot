@@ -53,4 +53,9 @@ public class FieldLine {
     double dotProduct = l2.dot(l1);
     return Math.toDegrees(Math.acos(dotProduct / (l1.magnitude() * l2.magnitude())));
   }
+
+  @Override
+  public String toString() {
+    return "FieldLine [start=" + start + ", end=" + end + "]";
+  }
 }

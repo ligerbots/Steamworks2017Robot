@@ -4,7 +4,7 @@ public class RobotPosition extends FieldPosition {
   /**
    * The direction the robot is facing in degrees clockwise, where 0.0 degrees is facing the judges.
    */
-  private final double direction;
+  protected final double direction;
 
   @SuppressWarnings("parametername")
   public RobotPosition(double x, double y, double direction) {
@@ -14,5 +14,10 @@ public class RobotPosition extends FieldPosition {
 
   public double getDirection() {
     return direction;
+  }
+
+  @Override
+  public String toString() {
+    return "RobotPosition [direction=" + direction + ", x=" + x + ", y=" + y + "]";
   }
 }

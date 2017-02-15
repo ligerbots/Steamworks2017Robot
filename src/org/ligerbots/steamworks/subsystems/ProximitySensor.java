@@ -1,6 +1,5 @@
 package org.ligerbots.steamworks.subsystems;
 
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,8 +13,6 @@ import org.slf4j.LoggerFactory;
  * feeder station.
  */
 public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
-  AnalogInput ai;
-
   Ultrasonic pulseWidthUltrasonic;
 
   double[] buffer;
@@ -23,7 +20,6 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   int bufferIndex;
   
   double adjustedDistance;
-  double currentVoltage;
 
   private static final Logger logger = LoggerFactory.getLogger(ProximitySensor.class);
 
@@ -32,8 +28,6 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
    */
   public ProximitySensor() {
     logger.trace("Initializing proximity sensor");
-
-    ai = new AnalogInput(RobotMap.ANALOG_INPUT_PROXIMITY_SENSOR);
 
     pulseWidthUltrasonic = new Ultrasonic(RobotMap.ULTRASONIC_TRIGGER, RobotMap.ULTRASONIC_ECHO);
     pulseWidthUltrasonic.setAutomaticMode(true);
@@ -50,9 +44,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
 
   private void averagingThread() {
     while (true) {
-      currentVoltage = ai.getVoltage();
-      double distanceInMillimeters = currentVoltage / 1000 / RobotMap.MILLIVOLTS_PER_MILLIMETER;
-      double distance = distanceInMillimeters / RobotMap.MILLIMETERS_PER_INCH;
+      double distance = pulseWidthUltrasonic.getRangeInches();
       buffer[bufferIndex] = distance;
       bufferIndex++;
       if (bufferIndex >= buffer.length) {
@@ -94,10 +86,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
    * Sends sensor data to the dashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("PWUltrasonic", pulseWidthUltrasonic.getRangeInches());
-
-    SmartDashboard.putNumber("Proximity_Sensor_Voltage", currentVoltage);
-    SmartDashboard.putNumber("Proximity_Sensor_Distance", getDistance());
+    SmartDashboard.putNumber("Proximity_Sensor_Distance", adjustedDistance);
   }
 }
 

@@ -10,14 +10,13 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.ligerbots.steamworks.commands.AutoGearAndShootCommand;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
@@ -92,9 +91,6 @@ public class Robot extends IterativeRobot {
 
   long prevNanos = System.nanoTime();
 
-  Command autonomousCommand;
-  SendableChooser<Command> chooser;
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -129,11 +125,6 @@ public class Robot extends IterativeRobot {
     operatorInterface = new OperatorInterface();
     
     SmartDashboard.putData(Scheduler.getInstance());
-
-    chooser = new SendableChooser<>();
-    // chooser.addDefault("Default Auto", new ExampleCommand());
-    // chooser.addObject("My Auto", new MyAutoCommand());
-    SmartDashboard.putData("Auto mode", chooser);
 
     // save phone battery
     // needs to be on a separate thread because robotPeriodic() will stop running when the DS is
@@ -203,7 +194,6 @@ public class Robot extends IterativeRobot {
   @Override
   public void autonomousInit() {
     logger.trace("autonomousInit()");
-    autonomousCommand = chooser.getSelected();
 
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
@@ -214,12 +204,16 @@ public class Robot extends IterativeRobot {
     // zero the navX for our starting position. Having the call here instead of in robotInit() or
     // the DriveTrain constructor makes sure it is zeroed when the robot is actually physically
     // aligned, but not reset again if the robot code crashes and restarts
-    driveTrain.resetNavX();
+    driveTrain.calibrateYaw();
+    driveTrain.zeroSensors();
 
     // schedule the autonomous command (example)
-    if (autonomousCommand != null) {
-      autonomousCommand.start();
-    }
+    // if (autonomousCommand != null) {
+    // autonomousCommand.start();
+    // }
+    
+    AutoGearAndShootCommand autoGearAndShootCommand = new AutoGearAndShootCommand();
+    autoGearAndShootCommand.start();
   }
 
   /**
@@ -251,9 +245,9 @@ public class Robot extends IterativeRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-    }
+    // if (autonomousCommand != null) {
+    // autonomousCommand.cancel();
+    // }
 
     driveJoystickCommand.start();
   }

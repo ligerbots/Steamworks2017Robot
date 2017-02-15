@@ -3,6 +3,7 @@ package org.ligerbots.steamworks.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,8 @@ public class DriveUltrasonicCommand extends Command {
     logger.info(String.format("Init, target=%f", targetDistance));
 
     startYaw = Robot.driveTrain.getYaw();
+    
+    Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
   }
 
   protected void execute() {
@@ -39,7 +42,7 @@ public class DriveUltrasonicCommand extends Command {
         yawDifference = -yawDifference;
       }
     }
-    double turn = RobotMap.AUTO_DRIVE_TURN_P * yawDifference;
+    double turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
     if (turn > 1.0) {
       turn = 1.0;
     } else if (turn < -1.0) {
@@ -51,7 +54,7 @@ public class DriveUltrasonicCommand extends Command {
     logger.debug(String.format("current=%f, target=%f, yawError=%f", currentDistance,
         targetDistance, yawDifference));
 
-    double speed = RobotMap.AUTO_DRIVE_MIN_SPEED;
+    double speed = RobotMap.AUTO_DRIVE_MIN_SPEED_LOW;
     Robot.driveTrain.rawThrottleTurnDrive(currentDistance > targetDistance ? speed : -speed, turn);
   }
 
