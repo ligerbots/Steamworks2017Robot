@@ -99,7 +99,8 @@ public class RobotMap {
   public static double AUTO_TURN_RAMP_ZONE_LOW = 80.0;
   @Preference
   public static double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
-  
+  @Preference
+  public static double SMARTDASHBOARD_UPDATE_RATE = 0.1; //Seconds per update
   @Preference
   public static double AUTO_DRIVE_ACCEPTABLE_ERROR = 2.0; // in
   @Preference
