@@ -25,35 +25,35 @@ public class FieldMap {
   static {
     // +x: blue
     // -x: red
-    // +y: boiler
-    // -y: feeder
+    // +y: feeder side
+    // -y: boiler side
     // 0: boiler side
     // 1: middle
     // 2: feeder side
     // robot starting positions are in the middle of the alliance station
     red = new FieldMap();
-    red.startingPositions[0] = new FieldPosition(-325.688, 89.060);
-    red.startingPositions[1] = new FieldPosition(-325.688, 16.475);
-    red.startingPositions[2] = new FieldPosition(-325.688, -87.003);
-    red.boiler = new FieldPosition(-320.133, 155.743);
-    red.loadingStationInner = new FieldPosition(311.673, -130.640);
-    red.loadingStationOuter = new FieldPosition(268.352, -152.109);
-    red.loadingStationOverflow = new FieldPosition(-325.778, -34.191);
-    red.hopperBoilerRed = new FieldPosition(-205.203, 157.660);
-    red.hopperBoilerCenter = new FieldPosition(0.000, 157.660);
-    red.hopperBoilerBlue = new FieldPosition(205.203, 157.600);
-    red.hopperLoadingRed = new FieldPosition(-119.243, -157.660);
-    red.hopperLoadingBlue = new FieldPosition(119.243, -157.660);
-    red.gearLiftPositions[0] = new FieldPosition(-196.685, 30.000);
+    red.startingPositions[0] = new FieldPosition(-325.688, -89.060);
+    red.startingPositions[1] = new FieldPosition(-325.688, -16.475);
+    red.startingPositions[2] = new FieldPosition(-325.688, 87.003);
+    red.boiler = new FieldPosition(-320.133, -155.743);
+    red.loadingStationInner = new FieldPosition(311.673, 130.640);
+    red.loadingStationOuter = new FieldPosition(268.352, 152.109);
+    red.loadingStationOverflow = new FieldPosition(-325.778, 34.191);
+    red.hopperBoilerRed = new FieldPosition(-205.203, -157.660);
+    red.hopperBoilerCenter = new FieldPosition(0.000, -157.660);
+    red.hopperBoilerBlue = new FieldPosition(205.203, -157.600);
+    red.hopperLoadingRed = new FieldPosition(-119.243, 157.660);
+    red.hopperLoadingBlue = new FieldPosition(119.243, 157.660);
+    red.gearLiftPositions[0] = new FieldPosition(-196.685, -30.000);
     red.gearLiftPositions[1] = new FieldPosition(-213.171, 0.000);
-    red.gearLiftPositions[2] = new FieldPosition(-196.685, -30.000);
+    red.gearLiftPositions[2] = new FieldPosition(-196.685, 30.000);
     red.dividerLift12 =
-        new FieldLine(new FieldPosition(-212.015, 20.216), new FieldPosition(-232.883, 32.071));
-    red.dividerLift23 =
         new FieldLine(new FieldPosition(-212.015, -20.216), new FieldPosition(-232.883, -32.071));
-    red.ropeStation1 = new FieldPosition(-146.602, 52.411);
-    red.ropeStation2 = new FieldPosition(-237.683, 0);
-    red.ropeStation3 = new FieldPosition(-146.602, -52.411);
+    red.dividerLift23 =
+        new FieldLine(new FieldPosition(-212.015, 20.216), new FieldPosition(-232.883, 32.071));
+    red.ropeStations[0] = new FieldPosition(-146.602, -52.411);
+    red.ropeStations[1] = new FieldPosition(-237.683, 0);
+    red.ropeStations[2] = new FieldPosition(-146.602, 52.411);
 
     blue = new FieldMap();
     blue.startingPositions[0] = red.startingPositions[0].multiply(-1, 1);
@@ -73,9 +73,9 @@ public class FieldMap {
     blue.gearLiftPositions[2] = red.gearLiftPositions[2].multiply(-1, 1);
     blue.dividerLift12 = red.dividerLift12.multiply(-1, 1);
     blue.dividerLift23 = red.dividerLift23.multiply(-1, 1);
-    blue.ropeStation1 = red.ropeStation1.multiply(-1, 1);
-    blue.ropeStation2 = red.ropeStation2.multiply(-1, 1);
-    blue.ropeStation3 = red.ropeStation3.multiply(-1, 1);
+    blue.ropeStations[0] = red.ropeStations[0].multiply(-1, 1);
+    blue.ropeStations[1] = red.ropeStations[1].multiply(-1, 1);
+    blue.ropeStations[2] = red.ropeStations[2].multiply(-1, 1);
   }
 
   public static FieldMap getRed() {
@@ -118,9 +118,7 @@ public class FieldMap {
   public FieldPosition[] gearLiftPositions = new FieldPosition[3];
   public FieldLine dividerLift12;
   public FieldLine dividerLift23;
-  public FieldPosition ropeStation1;
-  public FieldPosition ropeStation2;
-  public FieldPosition ropeStation3;
+  public FieldPosition[] ropeStations = new FieldPosition[3];
 
   /**
    * Generates a Catmull-Rom spline for smooth navigation across a set of control points.
