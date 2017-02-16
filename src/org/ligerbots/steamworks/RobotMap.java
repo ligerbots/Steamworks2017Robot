@@ -22,16 +22,16 @@ public class RobotMap {
   
   public static final int PCM_CAN_ID = 7;
 
-  public static final int CT_ID_LEFT_1 = 1;
-  public static final int CT_ID_LEFT_2 = 3;
-  public static final int CT_ID_RIGHT_1 = 2;
-  public static final int CT_ID_RIGHT_2 = 4;
+  public static final int CT_ID_LEFT_1 = IS_ROADKILL ? 1 : 2;
+  public static final int CT_ID_LEFT_2 = IS_ROADKILL ? 3 : 1;
+  public static final int CT_ID_RIGHT_1 = IS_ROADKILL ? 2 : 7;
+  public static final int CT_ID_RIGHT_2 = IS_ROADKILL ? 4 : 6;
 
-  public static final int CT_ID_SHOOTER_MASTER = 5;
-  public static final int CT_ID_SHOOTER_SLAVE = 6;
+  public static final int CT_ID_SHOOTER_MASTER = IS_ROADKILL ? 5 : 3;
+  public static final int CT_ID_SHOOTER_SLAVE = IS_ROADKILL ? 6 : 4;
 
-  public static final int CT_ID_INTAKE = 7;
-  public static final int CT_ID_FEEDER = 8;
+  public static final int CT_ID_INTAKE = IS_ROADKILL ? 7 : 8;
+  public static final int CT_ID_FEEDER = IS_ROADKILL ? 8 : 5;
   
   public static final int ANALOG_INPUT_PROXIMITY_SENSOR = 0;
 
