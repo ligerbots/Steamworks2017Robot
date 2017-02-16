@@ -11,14 +11,19 @@
 		}
 		canvas {
 			position: absolute;
-			top: 0;
-			left: 0;
+			
 			width: 100%;
 			height: 100%;
 		}
-		img { 
+		#fieldImg { 
 			width: 100%;
 			height: "auto";
+		}
+		#robot {
+			width: 40px;
+			height: 40px;
+			pointer-events: none;
+			-webkit-pointer-events: none;
 		}
 	
 	</style>
@@ -29,11 +34,10 @@
 <canvas id="ImageCanvas"></canvas>
 <br>
 <img id="fieldImg" src="steamworksField.png"></img>
-<img id="robot" src="spaceship.png"></img>
+<img id="robot" src="spaceship.png" style="position:relative"></img>
 <button id="clear" style="top:0px;left:0px;width:50px;height:30px;position:absolute">Clear</button>
 <button id="save" style="top:0px;left:50px;width:50px;height:30px;position:absolute">Save</button>
 <canvas class="canvas" id="DrawingBoard"></canvas>
-<canvas class="canvas" id="ImageCanvas"></canvas>
 
 <script>
 
@@ -43,16 +47,13 @@
 	var savebtn = document.getElementById("save");
 	var fieldImg = document.getElementById("fieldImg");
 	var robotImg = document.getElementById("robot");
-	var imgCanvas = document.getElementById("ImageCanvas");
-	var imgContext = imgCanvas.getContext("2d");
 	var canvas = document.getElementById("DrawingBoard");
 	var context = canvas.getContext("2d");
 	clearbtn.style.zIndex = "3";
 	savebtn.style.zIndex = "3";
-	canvas.style.zIndex = "1";
-	imgCanvas.style.zIndex = "2";
+	canvas.style.zIndex = "2";
 	fieldImg.style.display = "none";
-	robotImg.style.display = "none";
+	robotImg.style.zIndex = "4";
 	var drawing;
 	var lifted = false;
 	clearbtn.onclick = function(){
@@ -71,18 +72,18 @@
 	window.onload = window.onresize = function(){
 		canvas.width = canvas.offsetWidth;
 		canvas.height = canvas.offsetHeight;
-		imgCanvas.width = imgCanvas.offsetWidth;
-		imgCanvas.height = imgCanvas.offsetHeight;
+		//imgCanvas.width = 5;
+		//imgCanvas.height = 5;
 		//fieldImg.style.width = '100%';
 		//fieldImg.style.height = '100%';
 		context.drawImage(fieldImg, 0, 0, canvas.width, canvas.width * fieldImg.height/fieldImg.width);
 	}
 	function circ(x,y,radius,color){
-		imgContext.beginPath();
-		imgContext.arc(x,y,radius,0,Math.PI*2);
-		imgContext.fillStyle = color;
-		imgContext.fill();
-		imgContext.closePath();
+		context.beginPath();
+		context.arc(x,y,radius,0,Math.PI*2);
+		context.fillStyle = color;
+		context.fill();
+		context.closePath();
 	}
 	function line(x,y,newx,newy){
 		context.beginPath();
@@ -91,17 +92,17 @@
 		context.stroke();
 	}
 
-	imgCanvas.onpointerdown = function(event) {
+	/*imgCanvas.onpointerdown = function(event) {
 		console.log(event.button);
 		/*if (event.button != 2 && !lifted) {
 			event.preventDefault();
 			drawing = true;
 			oldx = event.clientX;
 			oldy = event.clientY;
-		}*/
-		//event.preventDefault();
+		}
+		event.preventDefault();
 		newRobot(event.clientX,event.clientY);
-	}
+	}*/
 	
 	canvas.onpointerdown = function(event) {
 		console.log(event.button);
@@ -111,7 +112,7 @@
 			oldx = event.clientX;
 			oldy = event.clientY;
 		}*/
-		//event.preventDefault();
+		event.preventDefault();
 		newRobot(event.clientX,event.clientY);
 	}
 
@@ -143,9 +144,10 @@
 		setTimeout(draw,0)
 	}
 
-	function newRobot(posx, posy) { 
-		imgContext.clearRect(0,0,imgCanvas.width,imgCanvas.height);
-		imgContext.drawImage(robotImg, posx, posy, 70, 70 * fieldImg.height/fieldImg.width);
+	function newRobot(posx, posy) {
+		robotImg.style.top = (posy - 30) + "px";
+		robotImg.style.left = (posx - 20) + "px";
+		robotImg.style.transform = 'rotate(' + (Math.random()*180) + 'deg)';
 	}
 
 	draw()
