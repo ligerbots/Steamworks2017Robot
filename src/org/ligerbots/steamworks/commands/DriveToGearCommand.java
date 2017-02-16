@@ -78,10 +78,23 @@ public class DriveToGearCommand extends StatefulCommand {
           double ry = data.getRvecYaw();
 
           logger.debug(String.format("tx: %f, tz: %f, ry: %f", tx, tz, ry));
+          
+          double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
+          
+          double distanceBack;
+          
+          if (distanceToGearLift > 60.0) {
+            distanceBack = 48.0;
+          } else {
+            distanceBack = 0.3 * distanceToGearLift;
+            if (distanceBack < 25.0) {
+              distanceBack = 25.0;
+            }
+          }
 
           // calculate the location that is 48 inches back from the target in the robot frame
-          double dx = -60.0 * Math.sin(Math.toRadians(ry));
-          double dz = -60.0 * Math.cos(Math.toRadians(ry));
+          double dx = -distanceBack * Math.sin(Math.toRadians(ry));
+          double dz = -distanceBack * Math.cos(Math.toRadians(ry));
 
           logger.debug(String.format("dx: %f/dz: %f", dx, dz));
 

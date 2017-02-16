@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.LinkedList;
 import java.util.List;
 import org.ligerbots.steamworks.commands.DrivePathCommand;
-import org.ligerbots.steamworks.commands.TurnCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -284,34 +283,36 @@ public class FieldMap {
   }
 
   /**
-   * Given a current dead reckoned position, navigates to the boiler.
+   * Generates navigation to the boiler from the far side gear lift.
    * @param currentPosition The current robot position
    */
-  public static void navigateToBoiler(RobotPosition currentPosition) {
+  public static DrivePathCommand navigateFeederSideLiftToBoiler(RobotPosition currentPosition) {
     logger.info(String.format("Calculating path, start=%s", currentPosition));
     FieldMap map = getAllianceMap();
 
     FieldPosition boiler = map.boiler;
+    Alliance alliance = DriverStation.getInstance().getAlliance();
+    
+    FieldPosition spline0 = currentPosition.add(alliance == Alliance.Red ? 1 : -1, 0);
+    final double clearX = 282;
+    FieldPosition clearOfDividersPosition =
+        new FieldPosition(alliance == Alliance.Red ? -clearX : clearX, currentPosition.y);
 
-    double absoluteAngle = currentPosition.angleTo(boiler);
-    double relativeAngle = (absoluteAngle - currentPosition.direction + 360) % 360;
-    if (relativeAngle > 180) {
-      relativeAngle = relativeAngle - 360;
-    }
+    double distanceToBoiler = clearOfDividersPosition.distanceTo(boiler);
 
-    TurnCommand turnToBoiler = new TurnCommand(relativeAngle);
-
-    double distanceToBoiler = currentPosition.distanceTo(boiler);
-
-    // Navigation navigation = new Navigation();
-    // navigation.commands.add(turnToBoiler);
-    //
-    // if (distanceToBoiler > 15 * 60) {
-    // navigation.commands.add(
-    // new DriveDistanceCommand(distanceToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10.0));
-    // }
-    //
-    // navigation.commands.add(new WaitCommand(250_000_000L));
-    // return navigation;
+    List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
+    controlPoints.add(spline0);
+    controlPoints.add(currentPosition);
+    controlPoints.add(clearOfDividersPosition);
+    
+    double ratio = ((RobotMap.MAXIMUM_SHOOTING_DISTANCE + RobotMap.MINIMUM_SHOOTING_DISTANCE) / 2)
+        / distanceToBoiler;
+    
+    controlPoints.add(clearOfDividersPosition.multiply(1 - ratio).add(boiler.multiply(ratio)));
+    
+    controlPoints.add(boiler);
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
   }
 }
