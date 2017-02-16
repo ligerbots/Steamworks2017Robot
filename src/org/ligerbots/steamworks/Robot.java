@@ -88,7 +88,8 @@ public class Robot extends IterativeRobot {
   public static CanDeviceFinder deviceFinder;
 
   private static final Logger logger = LoggerFactory.getLogger(Robot.class);
-
+  private static long nanosAtLastUpdate = 0;
+  
   long prevNanos = System.nanoTime();
 
   /**
@@ -149,6 +150,7 @@ public class Robot extends IterativeRobot {
 
   @Override
   public void robotPeriodic() {
+
     // measure total cycle time, time we take during robotPeriodic, and WPIlib overhead
     final long start = System.nanoTime();
     logger.trace("robotPeriodic()");
@@ -156,8 +158,13 @@ public class Robot extends IterativeRobot {
 
     vision.setVisionEnabled(true);
 
-    allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
     long currentNanos = System.nanoTime();
+    
+    if (currentNanos- nanosAtLastUpdate > RobotMap.SMARTDASHBOARD_UPDATE_RATE * 1000000000) {
+        allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
+        nanosAtLastUpdate = currentNanos;
+    }
+    
     SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000000.0);
     SmartDashboard.putNumber("ourTime", (currentNanos - start) / 1000000.0);
     prevNanos = currentNanos;
