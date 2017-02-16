@@ -41,14 +41,19 @@
 
 <script>
 
+	var robotX = 0;
+	var robotY = 0;
 	var oldX;
 	var oldY;
+	var currentRotation = 90;
 	var clearbtn = document.getElementById("clear");
 	var savebtn = document.getElementById("save");
 	var fieldImg = document.getElementById("fieldImg");
 	var robotImg = document.getElementById("robot");
 	var canvas = document.getElementById("DrawingBoard");
 	var context = canvas.getContext("2d");
+	var nextPointX = 1;
+	var nextPointY = 1;
 	clearbtn.style.zIndex = "3";
 	savebtn.style.zIndex = "3";
 	canvas.style.zIndex = "2";
@@ -77,6 +82,9 @@
 		//fieldImg.style.width = '100%';
 		//fieldImg.style.height = '100%';
 		context.drawImage(fieldImg, 0, 0, canvas.width, canvas.width * fieldImg.height/fieldImg.width);
+		//robotX = 0;
+		//robotY = 0;
+		placeRobotOnField(0,0);
 	}
 	function circ(x,y,radius,color){
 		context.beginPath();
@@ -113,7 +121,8 @@
 			oldy = event.clientY;
 		}*/
 		event.preventDefault();
-		newRobot(event.clientX,event.clientY);
+		//newRobot(event.clientX,event.clientY);
+		setNextControlPoint(event.clientX - 20, event.clientY - 30);
 	}
 
 	canvas.onpointerup = function(event) {
@@ -145,12 +154,61 @@
 	}
 
 	function newRobot(posx, posy) {
-		robotImg.style.top = (posy - 30) + "px";
-		robotImg.style.left = (posx - 20) + "px";
-		robotImg.style.transform = 'rotate(' + (Math.random()*180) + 'deg)';
+		//robotY = (posy - 30);
+		//robotX = (posx - 20);
+		//robotImg.style.transform = 'rotate(' + (Math.random()*180) + 'deg)';
 	}
 
-	draw()
+	function getX(){
+		return Math.random()*canvas.width;
+	}
+	function getY(){
+		return Math.random()*canvas.height;
+	}
+	function getRotation(){
+		return Math.random*360;
+	}
+	var xPos = 0;
+	var turnAngle;
+	function showRobot(){
+
+		if(nextPointY -robotY >= 0) {
+			turnAngle = Math.acos((nextPointX - robotX) / Math.sqrt(Math.pow((nextPointX -robotX), 2) + 
+			Math.pow((nextPointY - robotY), 2)))*180/Math.PI;
+		}
+		else {
+			turnAngle = Math.acos((nextPointX - robotX) / Math.sqrt(Math.pow((nextPointX - robotX), 2) + 
+			Math.pow((nextPointY - robotY), 2)))*-180/Math.PI;
+		}
+		
+		robotImg.style.transform = 'rotate(' + (turnAngle) + 'deg)';
+		moveForward();
+		//console.log(getX());
+		//console.log(getX());
+		xPos += 1;
+		setTimeout(showRobot, 0);
+	}
+
+	function setNextControlPoint(xPos, yPos) {
+		nextPointX = xPos;
+		nextPointY = yPos;
+	}
+	function moveForward() {
+		robotX = robotX + Math.cos((90-turnAngle)*Math.PI/180) * 10;
+		robotY = robotY + Math.sin((90-turnAngle)*Math.PI/180) * 10;
+		robotImg.style.top = robotY + "px";
+		robotImg.style.left = robotX + "px";
+		//console.log(robotX);
+		//console.log(robotY);
+	}
+	
+	function placeRobotOnField(posX, posY) {
+		robotX = ???;
+		robotY = ???;
+		robotImg.style.left = robotX + "px";
+		robotImg.style.top = robotY + "px";
+	}
+	//showRobot();
 	// var dataURL = canvas.toDataURL();
  //    document.getElementById('canvasImg').src = dataURL;
 
