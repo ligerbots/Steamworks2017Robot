@@ -4,10 +4,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.LinkedList;
 import java.util.List;
-import org.ligerbots.steamworks.commands.AccessibleCommand;
-import org.ligerbots.steamworks.commands.DriveDistanceCommand;
+import org.ligerbots.steamworks.commands.DrivePathCommand;
 import org.ligerbots.steamworks.commands.TurnCommand;
-import org.ligerbots.steamworks.commands.WaitCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,19 +193,15 @@ public class FieldMap {
     return Math.pow(Math.sqrt(dx * dx + dy * dy), alpha) + ti;
   }
   
-  public static class Navigation {
-    public List<AccessibleCommand> commands = new LinkedList<>();
-    public int commandIndex = 0;
-  }
-
   /**
    * Calculates the navigation steps to go to the gear lift.
    * 
    * @param startingPositionId The starting position ID (see comment at top of file), 0-2
    * @param gearLiftPositionId The gear lift position ID, 0-2
-   * @return A Navigation object with the steps required
+   * @return A DrivePathCommand to do the driving
    */
-  public static Navigation navigateStartToGearLift(int startingPositionId, int gearLiftPositionId) {
+  public static DrivePathCommand navigateStartToGearLift(int startingPositionId,
+      int gearLiftPositionId) {
     logger.info(String.format("Calculating path, start=%d, gear=%d", startingPositionId,
         gearLiftPositionId));
     FieldMap map = getAllianceMap();
@@ -223,85 +217,79 @@ public class FieldMap {
       gearLiftPositionId = 0;
       logger.error("Bad gear lift position: " + gearLiftPositionId);
     }
+    
+    final List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
 
     FieldPosition startingPosition = map.startingPositions[startingPositionId];
     logger.debug(String.format("Starting position %s", startingPosition));
     FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftPositionId];
+    
+    // add a point behind us so the C-R spline generates correctly
+    controlPoints.add(startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0));
 
     // drive forward 2 feet
     FieldPosition initialForwardPosition =
         startingPosition.add(alliance == Alliance.Red ? 24 : -24, 0);
     logger.debug(String.format("2ft forward position %s", initialForwardPosition));
+    
+    controlPoints.add(initialForwardPosition);
 
     double initialDriveToX;
     double initialDriveToY;
+    double splinePointX;
+    double splinePointY;
     if (gearLiftPositionId == 1) {
       initialDriveToX = alliance == Alliance.Red ? -276 : 276;
       initialDriveToY = 0;
+      splinePointX = alliance == Alliance.Red ? -266 : 266;
+      splinePointY = 0;
     } else if (gearLiftPositionId == 0) {
       double angle = alliance == Alliance.Red ? 120 : 60;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
+      
+      dx = 67 * Math.cos(Math.toRadians(angle));
+      dy = 67 * Math.sin(Math.toRadians(angle));
+      splinePointX = gearLiftPosition.getX() + dx;
+      splinePointY = gearLiftPosition.getY() + dy;
     } else {
       double angle = alliance == Alliance.Red ? 240 : 300;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
+      
+      dx = 67 * Math.cos(Math.toRadians(angle));
+      dy = 67 * Math.sin(Math.toRadians(angle));
+      splinePointX = gearLiftPosition.getX() + dx;
+      splinePointY = gearLiftPosition.getY() + dy;
     }
 
     FieldPosition initialDriveToPosition = new FieldPosition(initialDriveToX, initialDriveToY);
     logger.debug(String.format("Drive to position %s", initialDriveToPosition));
-
-    final DriveDistanceCommand driveForward = new DriveDistanceCommand(24.0);
-    double angleTo = initialForwardPosition.angleTo(initialDriveToPosition);
-    double turnAngle;
-
-    if (alliance == Alliance.Red) {
-      if (angleTo > 180) {
-        turnAngle = 360 - angleTo;
-      } else {
-        turnAngle = -angleTo;
-      }
-    } else {
-      turnAngle = 180 - angleTo;
-    }
-    logger.debug(String.format("Turn angle %f", turnAngle));
-    final TurnCommand turnToPosition = new TurnCommand(turnAngle);
-
-    double distance = initialForwardPosition.distanceTo(initialDriveToPosition);
-    final DriveDistanceCommand driveToPosition = new DriveDistanceCommand(distance);
-    logger.debug(String.format("Distance %f", distance));
-
-    double resetTurnAngle = -turnAngle;
-    if (gearLiftPositionId == 0) {
-      resetTurnAngle += 60;
-    }
-    if (gearLiftPositionId == 2) {
-      resetTurnAngle -= 60;
-    }
-
-    logger.debug(String.format("Back turn angle %f", resetTurnAngle));
-
-    final TurnCommand turnToTarget = new TurnCommand(resetTurnAngle);
-
-    Navigation navigation = new Navigation();
-    navigation.commands.add(driveForward);
-    navigation.commands.add(turnToPosition);
-    navigation.commands.add(driveToPosition);
-    navigation.commands.add(turnToTarget);
-    navigation.commands.add(new WaitCommand(250_000_000L));
-    return navigation;
+    controlPoints.add(initialDriveToPosition);
+    
+    FieldPosition splinePoint = new FieldPosition(splinePointX, splinePointY);
+    logger.debug(String.format("Spline point %s", splinePoint));
+    controlPoints.add(splinePoint);
+    
+    controlPoints.add(gearLiftPosition);
+    
+    logger.info(controlPoints.toString());
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    logger.info(splinePoints.toString());
+    
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
   }
 
   /**
    * Given a current dead reckoned position, navigates to the boiler.
    * @param currentPosition The current robot position
-   * @return A Navigation object with the steps required
    */
-  public static Navigation navigateToBoiler(RobotPosition currentPosition) {
+  public static void navigateToBoiler(RobotPosition currentPosition) {
     logger.info(String.format("Calculating path, start=%s", currentPosition));
     FieldMap map = getAllianceMap();
 
@@ -317,15 +305,15 @@ public class FieldMap {
 
     double distanceToBoiler = currentPosition.distanceTo(boiler);
 
-    Navigation navigation = new Navigation();
-    navigation.commands.add(turnToBoiler);
-
-    if (distanceToBoiler > 15 * 60) {
-      navigation.commands.add(
-          new DriveDistanceCommand(distanceToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10.0));
-    }
-
-    navigation.commands.add(new WaitCommand(250_000_000L));
-    return navigation;
+    // Navigation navigation = new Navigation();
+    // navigation.commands.add(turnToBoiler);
+    //
+    // if (distanceToBoiler > 15 * 60) {
+    // navigation.commands.add(
+    // new DriveDistanceCommand(distanceToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10.0));
+    // }
+    //
+    // navigation.commands.add(new WaitCommand(250_000_000L));
+    // return navigation;
   }
 }
