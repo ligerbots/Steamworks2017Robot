@@ -1,7 +1,9 @@
 package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.FieldMap;
+import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.RobotPosition;
 import org.ligerbots.steamworks.subsystems.Vision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,15 +14,27 @@ import org.slf4j.LoggerFactory;
 public class AutoGearAndShootCommand extends StatefulCommand {
   private static final Logger logger = LoggerFactory.getLogger(AutoGearAndShootCommand.class);
 
+  // @formatter:off
   enum State {
-    GEAR_NAVIGATION, GEAR_DELIVERY, BOILER_NAVIGATION, BOILER_SHOOT, DONE, ABORTED
+    GEAR_NAVIGATION,
+    GEAR_ALIGN,
+    GEAR_DELIVERY,
+    BOILER_NAVIGATION,
+    BOILER_ALIGN,
+    BOILER_SHOOT,
+    DONE,
+    ABORTED
   }
+  // @formatter:on
 
   State currentState;
-  FieldMap.Navigation gearNavigation;
-  FieldMap.Navigation boilerNavigation;
   DriveToGearCommand gearCommand;
+  TurnCommand gearAlign;
+  TurnCommand boilerAlign;
   AlignBoilerAndShootCommand boilerCommand;
+
+  DrivePathCommand driveToGear;
+  DrivePathCommand driveToBoiler;
 
   /**
    * Creates a new AutoGearAndShootCommand.
@@ -39,41 +53,41 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     logger.info("Initialize, state=GEAR_NAVIGATION");
     currentState = State.GEAR_NAVIGATION;
 
-    gearNavigation =
-        FieldMap.navigateStartToGearLift(Robot.operatorInterface.getGearLiftPositionId(),
-            Robot.operatorInterface.getGearLiftPositionId());
-    gearNavigation.commandIndex = 0;
-    gearNavigation.commands.get(0).initialize();
+    driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getGearLiftPositionId(),
+        Robot.operatorInterface.getGearLiftPositionId());
+    driveToGear.initialize();
     Robot.vision.setLedRingOn(Vision.LedState.ON);
   }
 
   protected void execute() {
     super.execute();
 
-    AccessibleCommand currentCommand;
-    
     switch (currentState) {
       case GEAR_NAVIGATION:
-        currentCommand = gearNavigation.commands.get(gearNavigation.commandIndex);
-        currentCommand.execute();
-        if (currentCommand.isFinished()) {
-          currentCommand.end();
+        driveToGear.execute();
+        if (driveToGear.isFinished()) {
+          driveToGear.end();
 
-          if (currentCommand.isFailedToComplete()) {
-            // do something
-          }
+          currentState = State.GEAR_ALIGN;
+          logger.info("state=GEAR_ALIGN");
 
-          gearNavigation.commandIndex++;
-          
-          logger.info(
-              String.format("Executing gear navigation command: %d", gearNavigation.commandIndex));
-          if (gearNavigation.commandIndex >= gearNavigation.commands.size()) {
-            currentState = State.GEAR_DELIVERY;
-            logger.info("state=GEAR_DELIVERY");
+          generateGearAlign();
+          gearAlign.initialize();
+        }
+        break;
+      case GEAR_ALIGN:
+        gearAlign.execute();
+        if (gearAlign.isFinished()) {
+          gearAlign.end();
 
-            gearCommand.initialize();
+          if (gearAlign.isFailedToComplete()) {
+            logger.warn("Gear align failed! Recalculating turn");
+            generateGearAlign();
+            gearAlign.initialize();
           } else {
-            gearNavigation.commands.get(gearNavigation.commandIndex).initialize();
+            logger.info("state=GEAR_DELIVERY");
+            currentState = State.GEAR_DELIVERY;
+            gearCommand.initialize();
           }
         }
         break;
@@ -82,34 +96,44 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (gearCommand.isFinished()) {
           gearCommand.end();
 
-          logger.info("state=BOILER_NAVIGATION");
-          currentState = State.BOILER_NAVIGATION;
-          boilerNavigation = FieldMap.navigateToBoiler(Robot.driveTrain.getRobotPosition());
-          boilerNavigation.commandIndex = 0;
-          boilerNavigation.commands.get(0).initialize();
+          if (Robot.operatorInterface.getGearLiftPositionId() == 2) {
+            driveToBoiler =
+                FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
+            driveToBoiler.initialize();
+            logger.info("state=BOILER_NAVIGATION");
+            currentState = State.BOILER_NAVIGATION;
+          } else {
+            generateBoilerAlign();
+            boilerAlign.initialize();
+            logger.info("state=BOILER_ALIGN");
+            currentState = State.BOILER_ALIGN;
+          }
         }
         break;
       case BOILER_NAVIGATION:
-        currentCommand = boilerNavigation.commands.get(boilerNavigation.commandIndex);
-        currentCommand.execute();
-        if (currentCommand.isFinished()) {
-          currentCommand.end();
+        driveToBoiler.execute();
+        if (driveToBoiler.isFinished()) {
+          driveToBoiler.end();
 
-          if (currentCommand.isFailedToComplete()) {
-            // do something
-          }
+          generateBoilerAlign();
+          boilerAlign.initialize();
+          logger.info("state=BOILER_ALIGN");
+          currentState = State.BOILER_ALIGN;
+        }
+        break;
+      case BOILER_ALIGN:
+        boilerAlign.execute();
+        if (boilerAlign.isFinished()) {
+          boilerAlign.end();
 
-          boilerNavigation.commandIndex++;
-          
-          logger.info(String.format("Executing boiler navigation command: %d",
-              boilerNavigation.commandIndex));
-          if (boilerNavigation.commandIndex >= boilerNavigation.commands.size()) {
-            currentState = State.BOILER_SHOOT;
-            logger.info("state=BOILER_SHOOT");
-
-            boilerCommand.initialize();
+          if (boilerAlign.isFailedToComplete()) {
+            logger.warn("Boiler align failed! Recalculating turn");
+            generateBoilerAlign();
+            boilerAlign.initialize();
           } else {
-            boilerNavigation.commands.get(boilerNavigation.commandIndex).initialize();
+            logger.info("state=BOILER_SHOOT");
+            currentState = State.BOILER_SHOOT;
+            boilerCommand.initialize();
           }
         }
         break;
@@ -117,7 +141,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         boilerCommand.execute();
         if (boilerCommand.isFinished()) {
           boilerCommand.end();
-          
+
           logger.info("State=DONE");
           currentState = State.DONE;
         }
@@ -125,6 +149,23 @@ public class AutoGearAndShootCommand extends StatefulCommand {
       default:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     }
+  }
+  
+  private TurnCommand generateAlign(FieldPosition targetPosition) {
+    RobotPosition pos = Robot.driveTrain.getRobotPosition();
+    double angle = 90 - pos.angleTo(targetPosition);
+    return new TurnCommand(angle - pos.getDirection());
+  }
+  
+  private void generateGearAlign() {
+    FieldMap map = FieldMap.getAllianceMap();
+    gearAlign =
+        generateAlign(map.gearLiftPositions[Robot.operatorInterface.getGearLiftPositionId()]);
+  }
+  
+  private void generateBoilerAlign() {
+    FieldMap map = FieldMap.getAllianceMap();
+    boilerAlign = generateAlign(map.boiler);
   }
 
   protected boolean isFinished() {

@@ -98,76 +98,85 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void robotInit() {
-    logger.info("robotInit()");
-    if (RobotMap.IS_ROADKILL) {
-      logger.info("Running on roadkill");
-    } else {
-      logger.info("Running on production");
-    }
-    
-    RobotMap.initialize();
-    
-    deviceFinder = new CanDeviceFinder();
-    deviceFinder.findDevices();
-
-    driveTrain = new DriveTrain();
-    vision = new Vision();
-    shooter = new Shooter();
-    feeder = new Feeder();
-    gearManipulator = new GearManipulator();
-    intake = new Intake();
-    pneumatics = new Pneumatics();
-    proximitySensor = new ProximitySensor();
-    pdpSubsystem = new PdpSubsystem();
-    allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake,
-        pneumatics, proximitySensor, pdpSubsystem);
-
-    driveJoystickCommand = new DriveJoystickCommand();
-    operatorInterface = new OperatorInterface();
-    
-    SmartDashboard.putData(Scheduler.getInstance());
-
-    // save phone battery
-    // needs to be on a separate thread because robotPeriodic() will stop running when the DS is
-    // disconnected
-    Thread driverStationDisconnectChecker = new Thread(() -> {
-      while (true) {
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-          ex.printStackTrace();
-        }
-
-        if (!DriverStation.getInstance().isDSAttached()) {
-          vision.setVisionEnabled(false);
-        }
+    try {
+      logger.info("robotInit()");
+      if (RobotMap.IS_ROADKILL) {
+        logger.info("Running on roadkill");
+      } else {
+        logger.info("Running on production");
       }
-    });
-    driverStationDisconnectChecker.setDaemon(true);
-    driverStationDisconnectChecker.setName("DS Disconnect Checker");
-    driverStationDisconnectChecker.start();
+      
+      RobotMap.initialize();
+      
+      deviceFinder = new CanDeviceFinder();
+      deviceFinder.findDevices();
+  
+      driveTrain = new DriveTrain();
+      vision = new Vision();
+      shooter = new Shooter();
+      feeder = new Feeder();
+      gearManipulator = new GearManipulator();
+      intake = new Intake();
+      pneumatics = new Pneumatics();
+      proximitySensor = new ProximitySensor();
+      pdpSubsystem = new PdpSubsystem();
+      allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake,
+          pneumatics, proximitySensor, pdpSubsystem);
+  
+      driveJoystickCommand = new DriveJoystickCommand();
+      operatorInterface = new OperatorInterface();
+      
+      SmartDashboard.putData(Scheduler.getInstance());
+  
+      // save phone battery
+      // needs to be on a separate thread because robotPeriodic() will stop running when the DS is
+      // disconnected
+      Thread driverStationDisconnectChecker = new Thread(() -> {
+        while (true) {
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException ex) {
+            ex.printStackTrace();
+          }
+  
+          if (!DriverStation.getInstance().isDSAttached()) {
+            vision.setVisionEnabled(false);
+          }
+        }
+      });
+      driverStationDisconnectChecker.setDaemon(true);
+      driverStationDisconnectChecker.setName("DS Disconnect Checker");
+      driverStationDisconnectChecker.start();
+    } catch (Throwable ex) {
+      logger.error("robotInit error", ex);
+      ex.printStackTrace();
+    }
   }
 
   @Override
   public void robotPeriodic() {
-
-    // measure total cycle time, time we take during robotPeriodic, and WPIlib overhead
-    final long start = System.nanoTime();
-    logger.trace("robotPeriodic()");
-    Scheduler.getInstance().run();
-
-    vision.setVisionEnabled(true);
-
-    long currentNanos = System.nanoTime();
-    
-    if (currentNanos- nanosAtLastUpdate > RobotMap.SMARTDASHBOARD_UPDATE_RATE * 1000000000) {
+    try {
+      // measure total cycle time, time we take during robotPeriodic, and WPIlib overhead
+      final long start = System.nanoTime();
+      logger.trace("robotPeriodic()");
+      Scheduler.getInstance().run();
+  
+      vision.setVisionEnabled(true);
+  
+      long currentNanos = System.nanoTime();
+      
+      if (currentNanos - nanosAtLastUpdate > RobotMap.SMARTDASHBOARD_UPDATE_RATE * 1000000000) {
         allSubsystems.forEach(this::tryToSendDataToSmartDashboard);
         nanosAtLastUpdate = currentNanos;
+      }
+      
+      SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000000.0);
+      SmartDashboard.putNumber("ourTime", (currentNanos - start) / 1000000.0);
+      prevNanos = currentNanos;
+    } catch (Throwable ex) {
+      logger.error("robotPeriodic error", ex);
+      ex.printStackTrace();
     }
-    
-    SmartDashboard.putNumber("cycleMillis", (currentNanos - prevNanos) / 1000000.0);
-    SmartDashboard.putNumber("ourTime", (currentNanos - start) / 1000000.0);
-    prevNanos = currentNanos;
   }
 
   /**
@@ -180,6 +189,7 @@ public class Robot extends IterativeRobot {
       logger.sendDataToSmartDashboard();
     } catch (Throwable ex) {
       Robot.logger.debug("Error in tryToSendDataToSmartDashboard", ex);
+      ex.printStackTrace();
     }
   }
 
@@ -189,38 +199,53 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void disabledInit() {
-    logger.trace("disabledInit()");
+    try {
+      logger.trace("disabledInit()");
+    } catch (Throwable ex) {
+      logger.error("disabledInit error", ex);
+      ex.printStackTrace();
+    }
   }
 
   @Override
   public void disabledPeriodic() {
-    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
-    logger.trace("disabledPeriodic()");
+    try {
+      SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+      logger.trace("disabledPeriodic()");
+    } catch (Throwable ex) {
+      logger.error("disabledPeriodic error", ex);
+      ex.printStackTrace();
+    }
   }
 
   @Override
   public void autonomousInit() {
-    logger.trace("autonomousInit()");
-
-    /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
-     * switch(autoSelected) { case "My Auto": autonomousCommand = new MyAutoCommand(); break; case
-     * "Default Auto": default: autonomousCommand = new ExampleCommand(); break; }
-     */
-
-    // zero the navX for our starting position. Having the call here instead of in robotInit() or
-    // the DriveTrain constructor makes sure it is zeroed when the robot is actually physically
-    // aligned, but not reset again if the robot code crashes and restarts
-    driveTrain.calibrateYaw();
-    driveTrain.zeroSensors();
-
-    // schedule the autonomous command (example)
-    // if (autonomousCommand != null) {
-    // autonomousCommand.start();
-    // }
-    
-    AutoGearAndShootCommand autoGearAndShootCommand = new AutoGearAndShootCommand();
-    autoGearAndShootCommand.start();
+    try {
+      logger.trace("autonomousInit()");
+  
+      /*
+       * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
+       * switch(autoSelected) { case "My Auto": autonomousCommand = new MyAutoCommand(); break; case
+       * "Default Auto": default: autonomousCommand = new ExampleCommand(); break; }
+       */
+  
+      // zero the navX for our starting position. Having the call here instead of in robotInit() or
+      // the DriveTrain constructor makes sure it is zeroed when the robot is actually physically
+      // aligned, but not reset again if the robot code crashes and restarts
+      driveTrain.calibrateYaw();
+      driveTrain.zeroSensors();
+  
+      // schedule the autonomous command (example)
+      // if (autonomousCommand != null) {
+      // autonomousCommand.start();
+      // }
+      
+      AutoGearAndShootCommand autoGearAndShootCommand = new AutoGearAndShootCommand();
+      autoGearAndShootCommand.start();
+    } catch (Throwable ex) {
+      logger.error("autonomousInit error", ex);
+      ex.printStackTrace();
+    }
   }
 
   /**
@@ -228,35 +253,45 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    // measure wpilib overhead between robotPeriodic and specific *perodic methods
-    // calling order is
-    // 1. m_ds.waitForData()
-    // 2. (auto|teleop|disabled)Periodic
-    // 3. robotPeriodic()
-    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
-    logger.trace("autonomousPeriodic()");
+    try {
+      // measure wpilib overhead between robotPeriodic and specific *perodic methods
+      // calling order is
+      // 1. m_ds.waitForData()
+      // 2. (auto|teleop|disabled)Periodic
+      // 3. robotPeriodic()
+      SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+      logger.trace("autonomousPeriodic()");
+    } catch (Throwable ex) {
+      logger.error("autonomousPeriodic error", ex);
+      ex.printStackTrace();
+    }
   }
 
   @Override
   public void teleopInit() {
-    logger.trace("teleopInit()");
-
-    if (RobotMap.IS_ROADKILL) {
-      logger.info("Running on roadkill");
-      logger.info("Wheel radius: " + RobotMap.WHEEL_RADIUS);
-    } else {
-      logger.info("Running on production");
+    try {
+      logger.trace("teleopInit()");
+  
+      if (RobotMap.IS_ROADKILL) {
+        logger.info("Running on roadkill");
+        logger.info("Wheel radius: " + RobotMap.WHEEL_RADIUS);
+      } else {
+        logger.info("Running on production");
+      }
+  
+      // This makes sure that the autonomous stops running when
+      // teleop starts running. If you want the autonomous to
+      // continue until interrupted by another command, remove
+      // this line or comment it out.
+      // if (autonomousCommand != null) {
+      // autonomousCommand.cancel();
+      // }
+  
+      driveJoystickCommand.start();
+    } catch (Throwable ex) {
+      logger.error("teleopInit error", ex);
+      ex.printStackTrace();
     }
-
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    // if (autonomousCommand != null) {
-    // autonomousCommand.cancel();
-    // }
-
-    driveJoystickCommand.start();
   }
 
   /**
@@ -264,8 +299,13 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void teleopPeriodic() {
-    SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
-    logger.trace("teleopPeriodic()");
+    try {
+      SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+      logger.trace("teleopPeriodic()");
+    } catch (Throwable ex) {
+      logger.error("teleopPeriodic error", ex);
+      ex.printStackTrace();
+    }
   }
 
   /**
@@ -273,7 +313,12 @@ public class Robot extends IterativeRobot {
    */
   @Override
   public void testPeriodic() {
-    logger.trace("testPeriodic()");
-    LiveWindow.run();
+    try {
+      logger.trace("testPeriodic()");
+      LiveWindow.run();
+    } catch (Throwable ex) {
+      logger.error("testPeriodic error", ex);
+      ex.printStackTrace();
+    }
   }
 }

@@ -124,7 +124,7 @@ public class DrivePathCommand extends AccessibleCommand {
           (rampDownDelta * (autoDriveMaxSpeed - autoDriveMinSpeed) / autoDriveRampDownDist)
               + autoDriveMinSpeed;
 
-      if (Math.abs(angleError) > 45) {
+      if (Math.abs(angleError) > 30) {
         driveSpeed = 0;
       }
 
@@ -134,13 +134,13 @@ public class DrivePathCommand extends AccessibleCommand {
           (Math.abs(rampUpDelta) * (autoDriveMaxSpeed - autoDriveStartSpeed) / autoDriveRampUpDist)
               + autoDriveStartSpeed;
 
-      if (Math.abs(angleError) > 45) {
+      if (Math.abs(angleError) > 30) {
         driveSpeed = 0;
       }
 
       Robot.driveTrain.rawThrottleTurnDrive(driveForward ? driveSpeed : -driveSpeed, turn);
     } else {
-      if (Math.abs(angleError) > 45) {
+      if (Math.abs(angleError) > 30) {
         Robot.driveTrain.rawThrottleTurnDrive(0, turn);
       } else {
         Robot.driveTrain.rawThrottleTurnDrive(driveForward ? autoDriveMaxSpeed : -autoDriveMaxSpeed,

@@ -1,6 +1,11 @@
 package org.ligerbots.steamworks.commands;
 
+import java.util.LinkedList;
+import java.util.List;
+import org.ligerbots.steamworks.FieldMap;
+import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.RobotPosition;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,32 +20,22 @@ public class DriveToGearCommand extends StatefulCommand {
 
   private static final long WAIT_VISION_NANOS = 500_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
-
   private static final long WAIT_GEAR_NANOS = 500_000_000;
 
   enum State {
     INITIAL_WAIT_FOR_VISION,
-    INITIAL_TURN,
     INITIAL_DRIVE,
-    ALIGNMENT_TURN,
-    WAIT_FOR_VISION,
-    FINE_ALIGNMENT_TURN,
-    FINAL_DRIVE,
     DELIVER_GEAR,
     DRIVE_AWAY,
     DONE,
     ABORTED
   }
 
-  State currentState = State.INITIAL_TURN;
+  State currentState = State.INITIAL_WAIT_FOR_VISION;
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
 
-  TurnCommand initialTurnCommand;
-  DriveDistanceCommand initialDriveCommand;
-  TurnCommand alignmentTurnCommand;
-  TurnCommand fineAlignmentTurnCommand;
-  DriveDistanceCommand finalDriveCommand;
+  DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
 
   /**
@@ -56,6 +51,7 @@ public class DriveToGearCommand extends StatefulCommand {
   protected void initialize() {
     logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
     currentState = State.INITIAL_WAIT_FOR_VISION;
+    nanosAtWaitForVisionStart = System.nanoTime();
   }
 
   protected void execute() {
@@ -72,7 +68,8 @@ public class DriveToGearCommand extends StatefulCommand {
     switch (currentState) {
       case INITIAL_WAIT_FOR_VISION:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
-        if (Robot.vision.isGearVisionDataValid()) {
+        if (System.nanoTime() - nanosAtWaitForVisionStart >= WAIT_VISION_NANOS
+            && Robot.vision.isGearVisionDataValid()) {
           // get current vision data
           VisionData data = Robot.vision.getGearVisionData();
 
@@ -81,10 +78,23 @@ public class DriveToGearCommand extends StatefulCommand {
           double ry = data.getRvecYaw();
 
           logger.debug(String.format("tx: %f, tz: %f, ry: %f", tx, tz, ry));
+          
+          double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
+          
+          double distanceBack;
+          
+          if (distanceToGearLift > 60.0) {
+            distanceBack = 48.0;
+          } else {
+            distanceBack = 0.3 * distanceToGearLift;
+            if (distanceBack < 25.0) {
+              distanceBack = 25.0;
+            }
+          }
 
           // calculate the location that is 48 inches back from the target in the robot frame
-          double dx = -48.0 * Math.sin(Math.toRadians(ry));
-          double dz = -48.0 * Math.cos(Math.toRadians(ry));
+          double dx = -distanceBack * Math.sin(Math.toRadians(ry));
+          double dz = -distanceBack * Math.cos(Math.toRadians(ry));
 
           logger.debug(String.format("dx: %f/dz: %f", dx, dz));
 
@@ -97,44 +107,55 @@ public class DriveToGearCommand extends StatefulCommand {
 
           // calculate turn. Convert conventional counterclockwise positive from +x to our/NavX
           // convention of clockwise positive from +y
-          double initialTurn = 90 - Math.toDegrees(Math.atan2(pz, px));
-          double initialDist = Math.sqrt(px * px + pz * pz);
 
-          if (Math.abs(initialTurn) > 90) {
-            initialTurn = Math.signum(initialTurn) * (Math.abs(initialTurn) - 180);
-            initialDist = -initialDist;
-          }
+          RobotPosition currentPosition = Robot.driveTrain.getRobotPosition();
+          double oppositeDirectionConventionalAngle =
+              Math.toRadians(90 - (currentPosition.getDirection() + 180));
+          
+          final FieldPosition backFromCurrentPosition =
+              currentPosition.add(60 * Math.cos(oppositeDirectionConventionalAngle),
+                  60 * Math.sin(oppositeDirectionConventionalAngle));
+          
+          double deltaAngle = 90 - Math.toDegrees(Math.atan2(pz, px));
+          double targetAngle = currentPosition.getDirection() + deltaAngle;
+          double targetConventionalAngle = Math.toRadians(90 - targetAngle);
+          double targetDistance = Math.sqrt(px * px + pz * pz);
+          
+          final FieldPosition midDestination =
+              currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
+                  targetDistance * Math.sin(targetConventionalAngle));
 
-          // calculate turn back toward target after we drive to target - 48
-          double finalTurn = -initialTurn + ry;
+          deltaAngle = 90 - Math.toDegrees(Math.atan2(tz, tx));
+          targetAngle = currentPosition.getDirection() + deltaAngle;
+          targetConventionalAngle = Math.toRadians(90 - targetAngle);
+          targetDistance = Math.sqrt(tx * tx + tz * tz);
+          
+          double gearLiftConventionalAngle =
+              Math.toRadians(90 - (currentPosition.getDirection() + ry));
+          
+          FieldPosition destination =
+              currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
+                  targetDistance * Math.sin(targetConventionalAngle));
+          
+          final FieldPosition splineFinalControl = destination.add(
+              24 * Math.cos(gearLiftConventionalAngle), 24 * Math.sin(gearLiftConventionalAngle));
+          
+          List<FieldPosition> ctrlPoints = new LinkedList<>();
+          ctrlPoints.add(backFromCurrentPosition);
+          ctrlPoints.add(currentPosition);
+          ctrlPoints.add(midDestination);
+          ctrlPoints.add(destination.add(-24 * Math.cos(gearLiftConventionalAngle),
+              -24 * Math.sin(gearLiftConventionalAngle)));
+          ctrlPoints.add(splineFinalControl);
 
-          logger.debug(String.format("initialTurn: %f / initialDist: %f / finalTurn: %f",
-              initialTurn, initialDist, finalTurn));
-
-          initialTurnCommand = new TurnCommand(initialTurn);
-          initialDriveCommand = new DriveDistanceCommand(initialDist);
-          alignmentTurnCommand = new TurnCommand(finalTurn);
-
-          initialTurnCommand.initialize();
-
-          currentState = State.INITIAL_TURN;
-          logger.info("state=INITIAL_TURN");
-        }
-        break;
-      case INITIAL_TURN:
-        initialTurnCommand.execute();
-        if (initialTurnCommand.isFinished()) {
-          initialTurnCommand.end();
-
-          if (!initialTurnCommand.succeeded) {
-            logger.warn("Initial turn command aborted!");
-            currentState = State.ABORTED;
-            return;
-          }
+          initialDriveCommand = new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
+          initialDriveCommand.initialize();
 
           currentState = State.INITIAL_DRIVE;
-          initialDriveCommand.initialize();
           logger.info("state=INITIAL_DRIVE");
+        } else if (System.nanoTime() - nanosAtWaitForVisionStart >= MAX_WAIT_VISION_NANOS) {
+          logger.info("state=ABORTED");
+          currentState = State.ABORTED;
         }
         break;
       case INITIAL_DRIVE:
@@ -142,88 +163,11 @@ public class DriveToGearCommand extends StatefulCommand {
         if (initialDriveCommand.isFinished()) {
           initialDriveCommand.end();
 
-          if (!initialDriveCommand.succeeded) {
-            logger.warn("Initial drive command aborted!");
-            currentState = State.ABORTED;
-            return;
-          }
-
-          currentState = State.ALIGNMENT_TURN;
-          alignmentTurnCommand.initialize();
-          logger.info("state=ALIGNMENT_TURN");
-        }
-        break;
-      case ALIGNMENT_TURN:
-        alignmentTurnCommand.execute();
-        if (alignmentTurnCommand.isFinished()) {
-          alignmentTurnCommand.end();
-
-          if (!alignmentTurnCommand.succeeded) {
-            logger.warn("Alignment turn command aborted!");
-            currentState = State.ABORTED;
-            return;
-          }
-
-          currentState = State.WAIT_FOR_VISION;
-          logger.info("state=WAIT_FOR_VISION");
-          nanosAtWaitForVisionStart = System.nanoTime();
-        }
-        break;
-      case WAIT_FOR_VISION:
-        Robot.driveTrain.rawThrottleTurnDrive(0, 0);
-        // wait a bit for the robot to settle down then get a new vision frame
-        if (System.nanoTime() - nanosAtWaitForVisionStart >= WAIT_VISION_NANOS) {
-          if (System.nanoTime() - nanosAtWaitForVisionStart >= MAX_WAIT_VISION_NANOS) {
-            logger.warn("Timeout while waiting for vision");
-            currentState = State.ABORTED;
-          }
-
-          if (Robot.vision.isGearVisionDataValid()) {
-            VisionData data = Robot.vision.getGearVisionData();
-            double tx = data.getTvecX();
-            double tz = data.getTvecZ();
-            double ry = data.getRvecYaw();
-  
-            logger.debug(String.format("tx: %f, tz: %f, ry: %f", tx, tz, ry));
-  
-            // find where the target actually is now
-            double fineAngle = 90 - Math.toDegrees(Math.atan2(tz, tx));
-            double fineDist = Math.sqrt(tx * tx + tz * tz) - 24.0;
-            logger.info(String.format("fineAngle: %f, fineDist: %f", fineAngle, fineDist));
-            fineAlignmentTurnCommand = new TurnCommand(fineAngle);
-            finalDriveCommand = new DriveDistanceCommand(fineDist);
-            currentState = State.FINE_ALIGNMENT_TURN;
-            fineAlignmentTurnCommand.initialize();
-            logger.debug("state=FINE_ALIGNMENT_TURN");
-          }
-        }
-        break;
-      case FINE_ALIGNMENT_TURN:
-        fineAlignmentTurnCommand.execute();
-        if (fineAlignmentTurnCommand.isFinished()) {
-          fineAlignmentTurnCommand.end();
-
-          if (!fineAlignmentTurnCommand.succeeded) {
-            logger.warn("Fine alignment turn command aborted!");
-            currentState = State.ABORTED;
-            return;
-          }
-
-          currentState = State.FINAL_DRIVE;
-          finalDriveCommand.initialize();
-          logger.info("state=FINAL_DRIVE");
-        }
-        break;
-      case FINAL_DRIVE:
-        finalDriveCommand.execute();
-        if (finalDriveCommand.isFinished()) {
-          finalDriveCommand.end();
-
-          if (!finalDriveCommand.succeeded) {
-            logger.warn("Final drive command aborted!");
-            currentState = State.ABORTED;
-            return;
-          }
+          // if (!initialDriveCommand.succeeded) {
+          // logger.warn("Initial drive command aborted!");
+          // currentState = State.ABORTED;
+          // return;
+          // }
 
           currentState = State.DELIVER_GEAR;
           nanosAtGearDeliverStart = System.nanoTime();
@@ -245,7 +189,7 @@ public class DriveToGearCommand extends StatefulCommand {
           driveAwayCommand.end();
           logger.info("DONE");
 
-          if (!finalDriveCommand.succeeded) {
+          if (!driveAwayCommand.succeeded) {
             logger.warn("Drive away command aborted!");
             // we'll count this as "gear delivered" and not set state to ABORTED
           }

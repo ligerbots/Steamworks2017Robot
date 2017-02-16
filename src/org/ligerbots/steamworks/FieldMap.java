@@ -4,10 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.LinkedList;
 import java.util.List;
-import org.ligerbots.steamworks.commands.AccessibleCommand;
-import org.ligerbots.steamworks.commands.DriveDistanceCommand;
-import org.ligerbots.steamworks.commands.TurnCommand;
-import org.ligerbots.steamworks.commands.WaitCommand;
+import org.ligerbots.steamworks.commands.DrivePathCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,35 +24,35 @@ public class FieldMap {
   static {
     // +x: blue
     // -x: red
-    // +y: boiler
-    // -y: feeder
+    // +y: feeder side
+    // -y: boiler side
     // 0: boiler side
     // 1: middle
     // 2: feeder side
     // robot starting positions are in the middle of the alliance station
     red = new FieldMap();
-    red.startingPositions[0] = new FieldPosition(-325.688, 89.060);
-    red.startingPositions[1] = new FieldPosition(-325.688, 16.475);
-    red.startingPositions[2] = new FieldPosition(-325.688, -87.003);
-    red.boiler = new FieldPosition(-320.133, 155.743);
-    red.loadingStationInner = new FieldPosition(311.673, -130.640);
-    red.loadingStationOuter = new FieldPosition(268.352, -152.109);
-    red.loadingStationOverflow = new FieldPosition(-325.778, -34.191);
-    red.hopperBoilerRed = new FieldPosition(-205.203, 157.660);
-    red.hopperBoilerCenter = new FieldPosition(0.000, 157.660);
-    red.hopperBoilerBlue = new FieldPosition(205.203, 157.600);
-    red.hopperLoadingRed = new FieldPosition(-119.243, -157.660);
-    red.hopperLoadingBlue = new FieldPosition(119.243, -157.660);
-    red.gearLiftPositions[0] = new FieldPosition(-196.685, 30.000);
+    red.startingPositions[0] = new FieldPosition(-325.688, -89.060);
+    red.startingPositions[1] = new FieldPosition(-325.688, -16.475);
+    red.startingPositions[2] = new FieldPosition(-325.688, 87.003);
+    red.boiler = new FieldPosition(-320.133, -155.743);
+    red.loadingStationInner = new FieldPosition(311.673, 130.640);
+    red.loadingStationOuter = new FieldPosition(268.352, 152.109);
+    red.loadingStationOverflow = new FieldPosition(-325.778, 34.191);
+    red.hopperBoilerRed = new FieldPosition(-205.203, -157.660);
+    red.hopperBoilerCenter = new FieldPosition(0.000, -157.660);
+    red.hopperBoilerBlue = new FieldPosition(205.203, -157.600);
+    red.hopperLoadingRed = new FieldPosition(-119.243, 157.660);
+    red.hopperLoadingBlue = new FieldPosition(119.243, 157.660);
+    red.gearLiftPositions[0] = new FieldPosition(-196.685, -30.000);
     red.gearLiftPositions[1] = new FieldPosition(-213.171, 0.000);
-    red.gearLiftPositions[2] = new FieldPosition(-196.685, -30.000);
+    red.gearLiftPositions[2] = new FieldPosition(-196.685, 30.000);
     red.dividerLift12 =
-        new FieldLine(new FieldPosition(-212.015, 20.216), new FieldPosition(-232.883, 32.071));
-    red.dividerLift23 =
         new FieldLine(new FieldPosition(-212.015, -20.216), new FieldPosition(-232.883, -32.071));
-    red.ropeStation1 = new FieldPosition(-146.602, 52.411);
-    red.ropeStation2 = new FieldPosition(-237.683, 0);
-    red.ropeStation3 = new FieldPosition(-146.602, -52.411);
+    red.dividerLift23 =
+        new FieldLine(new FieldPosition(-212.015, 20.216), new FieldPosition(-232.883, 32.071));
+    red.ropeStations[0] = new FieldPosition(-146.602, -52.411);
+    red.ropeStations[1] = new FieldPosition(-237.683, 0);
+    red.ropeStations[2] = new FieldPosition(-146.602, 52.411);
 
     blue = new FieldMap();
     blue.startingPositions[0] = red.startingPositions[0].multiply(-1, 1);
@@ -75,9 +72,9 @@ public class FieldMap {
     blue.gearLiftPositions[2] = red.gearLiftPositions[2].multiply(-1, 1);
     blue.dividerLift12 = red.dividerLift12.multiply(-1, 1);
     blue.dividerLift23 = red.dividerLift23.multiply(-1, 1);
-    blue.ropeStation1 = red.ropeStation1.multiply(-1, 1);
-    blue.ropeStation2 = red.ropeStation2.multiply(-1, 1);
-    blue.ropeStation3 = red.ropeStation3.multiply(-1, 1);
+    blue.ropeStations[0] = red.ropeStations[0].multiply(-1, 1);
+    blue.ropeStations[1] = red.ropeStations[1].multiply(-1, 1);
+    blue.ropeStations[2] = red.ropeStations[2].multiply(-1, 1);
   }
 
   public static FieldMap getRed() {
@@ -120,9 +117,7 @@ public class FieldMap {
   public FieldPosition[] gearLiftPositions = new FieldPosition[3];
   public FieldLine dividerLift12;
   public FieldLine dividerLift23;
-  public FieldPosition ropeStation1;
-  public FieldPosition ropeStation2;
-  public FieldPosition ropeStation3;
+  public FieldPosition[] ropeStations = new FieldPosition[3];
 
   /**
    * Generates a Catmull-Rom spline for smooth navigation across a set of control points.
@@ -195,19 +190,15 @@ public class FieldMap {
     return Math.pow(Math.sqrt(dx * dx + dy * dy), alpha) + ti;
   }
   
-  public static class Navigation {
-    public List<AccessibleCommand> commands = new LinkedList<>();
-    public int commandIndex = 0;
-  }
-
   /**
    * Calculates the navigation steps to go to the gear lift.
    * 
    * @param startingPositionId The starting position ID (see comment at top of file), 0-2
    * @param gearLiftPositionId The gear lift position ID, 0-2
-   * @return A Navigation object with the steps required
+   * @return A DrivePathCommand to do the driving
    */
-  public static Navigation navigateStartToGearLift(int startingPositionId, int gearLiftPositionId) {
+  public static DrivePathCommand navigateStartToGearLift(int startingPositionId,
+      int gearLiftPositionId) {
     logger.info(String.format("Calculating path, start=%d, gear=%d", startingPositionId,
         gearLiftPositionId));
     FieldMap map = getAllianceMap();
@@ -223,109 +214,105 @@ public class FieldMap {
       gearLiftPositionId = 0;
       logger.error("Bad gear lift position: " + gearLiftPositionId);
     }
+    
+    final List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
 
     FieldPosition startingPosition = map.startingPositions[startingPositionId];
     logger.debug(String.format("Starting position %s", startingPosition));
     FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftPositionId];
+    
+    // add a point behind us so the C-R spline generates correctly
+    controlPoints.add(startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0));
 
     // drive forward 2 feet
     FieldPosition initialForwardPosition =
         startingPosition.add(alliance == Alliance.Red ? 24 : -24, 0);
     logger.debug(String.format("2ft forward position %s", initialForwardPosition));
+    
+    controlPoints.add(initialForwardPosition);
 
     double initialDriveToX;
     double initialDriveToY;
+    double splinePointX;
+    double splinePointY;
     if (gearLiftPositionId == 1) {
       initialDriveToX = alliance == Alliance.Red ? -276 : 276;
       initialDriveToY = 0;
+      splinePointX = alliance == Alliance.Red ? -266 : 266;
+      splinePointY = 0;
     } else if (gearLiftPositionId == 0) {
       double angle = alliance == Alliance.Red ? 120 : 60;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
+      
+      dx = 67 * Math.cos(Math.toRadians(angle));
+      dy = 67 * Math.sin(Math.toRadians(angle));
+      splinePointX = gearLiftPosition.getX() + dx;
+      splinePointY = gearLiftPosition.getY() + dy;
     } else {
       double angle = alliance == Alliance.Red ? 240 : 300;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
+      
+      dx = 67 * Math.cos(Math.toRadians(angle));
+      dy = 67 * Math.sin(Math.toRadians(angle));
+      splinePointX = gearLiftPosition.getX() + dx;
+      splinePointY = gearLiftPosition.getY() + dy;
     }
 
     FieldPosition initialDriveToPosition = new FieldPosition(initialDriveToX, initialDriveToY);
     logger.debug(String.format("Drive to position %s", initialDriveToPosition));
-
-    final DriveDistanceCommand driveForward = new DriveDistanceCommand(24.0);
-    double angleTo = initialForwardPosition.angleTo(initialDriveToPosition);
-    double turnAngle;
-
-    if (alliance == Alliance.Red) {
-      if (angleTo > 180) {
-        turnAngle = 360 - angleTo;
-      } else {
-        turnAngle = -angleTo;
-      }
-    } else {
-      turnAngle = 180 - angleTo;
-    }
-    logger.debug(String.format("Turn angle %f", turnAngle));
-    final TurnCommand turnToPosition = new TurnCommand(turnAngle);
-
-    double distance = initialForwardPosition.distanceTo(initialDriveToPosition);
-    final DriveDistanceCommand driveToPosition = new DriveDistanceCommand(distance);
-    logger.debug(String.format("Distance %f", distance));
-
-    double resetTurnAngle = -turnAngle;
-    if (gearLiftPositionId == 0) {
-      resetTurnAngle += 60;
-    }
-    if (gearLiftPositionId == 2) {
-      resetTurnAngle -= 60;
-    }
-
-    logger.debug(String.format("Back turn angle %f", resetTurnAngle));
-
-    final TurnCommand turnToTarget = new TurnCommand(resetTurnAngle);
-
-    Navigation navigation = new Navigation();
-    navigation.commands.add(driveForward);
-    navigation.commands.add(turnToPosition);
-    navigation.commands.add(driveToPosition);
-    navigation.commands.add(turnToTarget);
-    navigation.commands.add(new WaitCommand(250_000_000L));
-    return navigation;
+    controlPoints.add(initialDriveToPosition);
+    
+    FieldPosition splinePoint = new FieldPosition(splinePointX, splinePointY);
+    logger.debug(String.format("Spline point %s", splinePoint));
+    controlPoints.add(splinePoint);
+    
+    controlPoints.add(gearLiftPosition);
+    
+    logger.info(controlPoints.toString());
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    logger.info(splinePoints.toString());
+    
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
   }
 
   /**
-   * Given a current dead reckoned position, navigates to the boiler.
+   * Generates navigation to the boiler from the far side gear lift.
    * @param currentPosition The current robot position
-   * @return A Navigation object with the steps required
    */
-  public static Navigation navigateToBoiler(RobotPosition currentPosition) {
+  public static DrivePathCommand navigateFeederSideLiftToBoiler(RobotPosition currentPosition) {
     logger.info(String.format("Calculating path, start=%s", currentPosition));
     FieldMap map = getAllianceMap();
 
     FieldPosition boiler = map.boiler;
+    Alliance alliance = DriverStation.getInstance().getAlliance();
+    
+    FieldPosition spline0 = currentPosition.add(alliance == Alliance.Red ? 1 : -1, 0);
+    final double clearX = 282;
+    FieldPosition clearOfDividersPosition =
+        new FieldPosition(alliance == Alliance.Red ? -clearX : clearX, currentPosition.y);
 
-    double absoluteAngle = currentPosition.angleTo(boiler);
-    double relativeAngle = (absoluteAngle - currentPosition.direction + 360) % 360;
-    if (relativeAngle > 180) {
-      relativeAngle = relativeAngle - 360;
-    }
+    double distanceToBoiler = clearOfDividersPosition.distanceTo(boiler);
 
-    TurnCommand turnToBoiler = new TurnCommand(relativeAngle);
-
-    double distanceToBoiler = currentPosition.distanceTo(boiler);
-
-    Navigation navigation = new Navigation();
-    navigation.commands.add(turnToBoiler);
-
-    if (distanceToBoiler > 15 * 60) {
-      navigation.commands.add(
-          new DriveDistanceCommand(distanceToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10.0));
-    }
-
-    navigation.commands.add(new WaitCommand(250_000_000L));
-    return navigation;
+    List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
+    controlPoints.add(spline0);
+    controlPoints.add(currentPosition);
+    controlPoints.add(clearOfDividersPosition);
+    
+    double ratio = ((RobotMap.MAXIMUM_SHOOTING_DISTANCE + RobotMap.MINIMUM_SHOOTING_DISTANCE) / 2)
+        / distanceToBoiler;
+    
+    controlPoints.add(clearOfDividersPosition.multiply(1 - ratio).add(boiler.multiply(ratio)));
+    
+    controlPoints.add(boiler);
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
   }
 }
