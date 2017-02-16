@@ -241,7 +241,7 @@ public class FieldMap {
       splinePointX = alliance == Alliance.Red ? -266 : 266;
       splinePointY = 0;
     } else if (gearLiftPositionId == 0) {
-      double angle = alliance == Alliance.Red ? 120 : 60;
+      double angle = alliance == Alliance.Red ? 240 : 300;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
@@ -252,7 +252,7 @@ public class FieldMap {
       splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
     } else {
-      double angle = alliance == Alliance.Red ? 240 : 300;
+      double angle = alliance == Alliance.Red ? 120 : 60;
       double dx = 77 * Math.cos(Math.toRadians(angle));
       double dy = 77 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;

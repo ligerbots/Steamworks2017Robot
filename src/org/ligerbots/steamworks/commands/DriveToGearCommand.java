@@ -25,6 +25,7 @@ public class DriveToGearCommand extends StatefulCommand {
   enum State {
     INITIAL_WAIT_FOR_VISION,
     INITIAL_DRIVE,
+    DRIVE_BACK,
     DELIVER_GEAR,
     DRIVE_AWAY,
     DONE,
@@ -34,6 +35,7 @@ public class DriveToGearCommand extends StatefulCommand {
   State currentState = State.INITIAL_WAIT_FOR_VISION;
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
+  DriveDistanceCommand driveBackCommand;
 
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
@@ -81,81 +83,90 @@ public class DriveToGearCommand extends StatefulCommand {
           
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
-          double distanceBack;
+          double distanceBack = 48.0;
           
-          if (distanceToGearLift > 60.0) {
-            distanceBack = 48.0;
+          if (distanceToGearLift < 60.0) {
+            driveBackCommand = new DriveDistanceCommand(distanceToGearLift - 66);
+            driveBackCommand.initialize();
+            currentState = State.DRIVE_BACK;
+            logger.info("state=DRIVE_BACK");
           } else {
-            distanceBack = 0.3 * distanceToGearLift;
-            if (distanceBack < 25.0) {
-              distanceBack = 25.0;
-            }
+            // calculate the location that is 48 inches back from the target in the robot frame
+            double dx = -distanceBack * Math.sin(Math.toRadians(ry));
+            double dz = -distanceBack * Math.cos(Math.toRadians(ry));
+  
+            logger.debug(String.format("dx: %f/dz: %f", dx, dz));
+  
+            // add target and delta back 48 inches for actual position to go to first (still in
+            // robot frame)
+            double px = dx + tx;
+            double pz = dz + tz;
+  
+            logger.debug(String.format("px: %f/pz: %f", px, pz));
+  
+            // calculate turn. Convert conventional counterclockwise positive from +x to our/NavX
+            // convention of clockwise positive from +y
+  
+            RobotPosition currentPosition = Robot.driveTrain.getRobotPosition();
+            double oppositeDirectionConventionalAngle =
+                Math.toRadians(90 - (currentPosition.getDirection() + 180));
+            
+            final FieldPosition backFromCurrentPosition =
+                currentPosition.add(60 * Math.cos(oppositeDirectionConventionalAngle),
+                    60 * Math.sin(oppositeDirectionConventionalAngle));
+            
+            double deltaAngle = 90 - Math.toDegrees(Math.atan2(pz, px));
+            double targetAngle = currentPosition.getDirection() + deltaAngle;
+            double targetConventionalAngle = Math.toRadians(90 - targetAngle);
+            double targetDistance = Math.sqrt(px * px + pz * pz);
+            
+            final FieldPosition midDestination =
+                currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
+                    targetDistance * Math.sin(targetConventionalAngle));
+  
+            deltaAngle = 90 - Math.toDegrees(Math.atan2(tz, tx));
+            targetAngle = currentPosition.getDirection() + deltaAngle;
+            targetConventionalAngle = Math.toRadians(90 - targetAngle);
+            targetDistance = Math.sqrt(tx * tx + tz * tz);
+            
+            double gearLiftConventionalAngle =
+                Math.toRadians(90 - (currentPosition.getDirection() + ry));
+            
+            FieldPosition destination =
+                currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
+                    targetDistance * Math.sin(targetConventionalAngle));
+            
+            final FieldPosition splineFinalControl = destination.add(
+                24 * Math.cos(gearLiftConventionalAngle), 24 * Math.sin(gearLiftConventionalAngle));
+            
+            List<FieldPosition> ctrlPoints = new LinkedList<>();
+            ctrlPoints.add(backFromCurrentPosition);
+            ctrlPoints.add(currentPosition);
+            ctrlPoints.add(midDestination);
+            ctrlPoints.add(destination.add(-24 * Math.cos(gearLiftConventionalAngle),
+                -24 * Math.sin(gearLiftConventionalAngle)));
+            ctrlPoints.add(splineFinalControl);
+  
+            initialDriveCommand =
+                new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
+            initialDriveCommand.initialize();
+  
+            currentState = State.INITIAL_DRIVE;
+            logger.info("state=INITIAL_DRIVE");
           }
-
-          // calculate the location that is 48 inches back from the target in the robot frame
-          double dx = -distanceBack * Math.sin(Math.toRadians(ry));
-          double dz = -distanceBack * Math.cos(Math.toRadians(ry));
-
-          logger.debug(String.format("dx: %f/dz: %f", dx, dz));
-
-          // add target and delta back 48 inches for actual position to go to first (still in robot
-          // frame)
-          double px = dx + tx;
-          double pz = dz + tz;
-
-          logger.debug(String.format("px: %f/pz: %f", px, pz));
-
-          // calculate turn. Convert conventional counterclockwise positive from +x to our/NavX
-          // convention of clockwise positive from +y
-
-          RobotPosition currentPosition = Robot.driveTrain.getRobotPosition();
-          double oppositeDirectionConventionalAngle =
-              Math.toRadians(90 - (currentPosition.getDirection() + 180));
-          
-          final FieldPosition backFromCurrentPosition =
-              currentPosition.add(60 * Math.cos(oppositeDirectionConventionalAngle),
-                  60 * Math.sin(oppositeDirectionConventionalAngle));
-          
-          double deltaAngle = 90 - Math.toDegrees(Math.atan2(pz, px));
-          double targetAngle = currentPosition.getDirection() + deltaAngle;
-          double targetConventionalAngle = Math.toRadians(90 - targetAngle);
-          double targetDistance = Math.sqrt(px * px + pz * pz);
-          
-          final FieldPosition midDestination =
-              currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
-                  targetDistance * Math.sin(targetConventionalAngle));
-
-          deltaAngle = 90 - Math.toDegrees(Math.atan2(tz, tx));
-          targetAngle = currentPosition.getDirection() + deltaAngle;
-          targetConventionalAngle = Math.toRadians(90 - targetAngle);
-          targetDistance = Math.sqrt(tx * tx + tz * tz);
-          
-          double gearLiftConventionalAngle =
-              Math.toRadians(90 - (currentPosition.getDirection() + ry));
-          
-          FieldPosition destination =
-              currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
-                  targetDistance * Math.sin(targetConventionalAngle));
-          
-          final FieldPosition splineFinalControl = destination.add(
-              24 * Math.cos(gearLiftConventionalAngle), 24 * Math.sin(gearLiftConventionalAngle));
-          
-          List<FieldPosition> ctrlPoints = new LinkedList<>();
-          ctrlPoints.add(backFromCurrentPosition);
-          ctrlPoints.add(currentPosition);
-          ctrlPoints.add(midDestination);
-          ctrlPoints.add(destination.add(-24 * Math.cos(gearLiftConventionalAngle),
-              -24 * Math.sin(gearLiftConventionalAngle)));
-          ctrlPoints.add(splineFinalControl);
-
-          initialDriveCommand = new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
-          initialDriveCommand.initialize();
-
-          currentState = State.INITIAL_DRIVE;
-          logger.info("state=INITIAL_DRIVE");
         } else if (System.nanoTime() - nanosAtWaitForVisionStart >= MAX_WAIT_VISION_NANOS) {
           logger.info("state=ABORTED");
           currentState = State.ABORTED;
+        }
+        break;
+      case DRIVE_BACK:
+        driveBackCommand.execute();
+        if (driveBackCommand.isFinished()) {
+          driveBackCommand.end();
+          
+          logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
+          currentState = State.INITIAL_WAIT_FOR_VISION;
+          nanosAtWaitForVisionStart = System.nanoTime();
         }
         break;
       case INITIAL_DRIVE:

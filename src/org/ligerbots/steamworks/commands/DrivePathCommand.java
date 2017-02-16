@@ -19,6 +19,7 @@ public class DrivePathCommand extends AccessibleCommand {
   int waypointIndex;
   double startAbsDistance;
   boolean driveForward;
+  double angleError;
 
   RobotPosition currentPosition;
 
@@ -41,7 +42,7 @@ public class DrivePathCommand extends AccessibleCommand {
 
     this.waypoints = waypoints;
   }
-
+  
   protected void initialize() {
     logger.info(String.format("Initialize: %s", waypoints.toString()));
 
@@ -99,7 +100,7 @@ public class DrivePathCommand extends AccessibleCommand {
     FieldPosition currentWaypoint = waypoints.get(waypointIndex);
 
     double angleToWaypoint = 90 - currentPosition.angleTo(currentWaypoint);
-    double angleError = (angleToWaypoint - currentPosition.getDirection() + 360) % 360;
+    angleError = (angleToWaypoint - currentPosition.getDirection() + 360) % 360;
     if (angleError > 180) {
       angleError -= 360;
     }
@@ -150,8 +151,9 @@ public class DrivePathCommand extends AccessibleCommand {
   }
 
   protected boolean isFinished() {
-    return waypointIndex >= waypoints.size() - 1 && currentPosition
-        .distanceTo(waypoints.get(waypoints.size() - 1)) < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
+    return waypointIndex >= waypoints.size() - 1
+        && currentPosition
+            .distanceTo(waypoints.get(waypoints.size() - 1)) < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
   }
 
   protected void end() {
