@@ -244,6 +244,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
       udpChannel.configureBlocking(true);
     } catch (Exception ex) {
       logger.error("Data thread init error", ex);
+      ex.printStackTrace();
     }
 
     while (true) {
@@ -307,6 +308,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         container.lastPhoneDataTimestamp = System.nanoTime();
       } catch (IOException ex) {
         logger.error("Data thread communication error", ex);
+        ex.printStackTrace();
       }
     }
   }
@@ -335,6 +337,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
       recvPacket = ByteBuffer.allocateDirect(udpChannel.socket().getReceiveBufferSize());
     } catch (Exception ex) {
       logger.error("Stream thread init error", ex);
+      ex.printStackTrace();
     }
 
     while (true) {
@@ -399,6 +402,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         }
       } catch (Exception ex) {
         logger.error("Stream thread communication error", ex);
+        ex.printStackTrace();
       }
     }
   }

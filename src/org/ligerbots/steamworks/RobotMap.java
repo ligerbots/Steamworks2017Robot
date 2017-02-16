@@ -178,6 +178,7 @@ public class RobotMap {
             }
           } catch (Exception ex) {
             logger.error("RobotMap initialize error", ex);
+            ex.printStackTrace();
           }
         }
       }
