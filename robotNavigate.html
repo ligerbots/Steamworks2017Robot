@@ -9,66 +9,74 @@
 			margin: 0;
 			height: 100%;
 		}
-		canvas {
+		
+		#field-map-container {
+			width: 100%;
+			position: relative;
+			display: block;
+		}
+		
+		#fieldImg { 
+		}
+		
+		#robot {
+			position: absolute;
+			top: 156px;
+			left: 358px;
+			width: 40px;
+			height: 40px;
+			transform: translateX(-50%) translateY(-50%);
+			pointer-events: none;
+			-webkit-pointer-events: none;
+		}
+		
+		/*canvas {
 			position: absolute;
 			
 			width: 100%;
 			height: 100%;
-		}
-		#fieldImg { 
-			width: 100%;
-			height: "auto";
-		}
-		#robot {
-			width: 40px;
-			height: 40px;
-			pointer-events: none;
-			-webkit-pointer-events: none;
-		}
-	
+		}*/
 	</style>
 
 </head>
 <body>
-<canvas id="DrawingBoard"></canvas>
-<canvas id="ImageCanvas"></canvas>
-<br>
-<img id="fieldImg" src="steamworksField.png"></img>
-<img id="robot" src="spaceship.png" style="position:relative"></img>
-<button id="clear" style="top:0px;left:0px;width:50px;height:30px;position:absolute">Clear</button>
-<button id="save" style="top:0px;left:50px;width:50px;height:30px;position:absolute">Save</button>
-<canvas class="canvas" id="DrawingBoard"></canvas>
+<div id="field-map-container">
+	<img id="fieldImg" src="steamworksField.png" />
+	<img id="robot" src="spaceship.png" />
+</div>
+
+<!--<button id="clear" style="top:0px;left:0px;width:50px;height:30px;position:absolute">Clear</button>
+<button id="save" style="top:0px;left:50px;width:50px;height:30px;position:absolute">Save</button>-->
 
 <script>
-
-	var oldX;
-	var oldY;
-	var clearbtn = document.getElementById("clear");
-	var savebtn = document.getElementById("save");
+	const PIXELS_PER_INCH = 494 / (54  * 12);
+	const CENTER_X = 358;
+	const CENTER_Y = 156;
+	
+	//var clearbtn = document.getElementById("clear");
+	//var savebtn = document.getElementById("save");
+	
 	var fieldImg = document.getElementById("fieldImg");
 	var robotImg = document.getElementById("robot");
-	var canvas = document.getElementById("DrawingBoard");
-	var context = canvas.getContext("2d");
-	clearbtn.style.zIndex = "3";
-	savebtn.style.zIndex = "3";
-	canvas.style.zIndex = "2";
-	fieldImg.style.display = "none";
-	robotImg.style.zIndex = "4";
-	var drawing;
+		
+	function positionRobot(xInches, yInches, direction) {
+	    robotImg.style.top = (yInches * PIXELS_PER_INCH + CENTER_Y) + "px";
+		robotImg.style.left = (xInches * PIXELS_PER_INCH + CENTER_X) + "px";
+		robotImg.style.transform = 'translateX(-50%) translateY(-50%) rotate(' + (direction - 90) + 'deg)';
+	}
+	
+	/*var drawing;
 	var lifted = false;
 	clearbtn.onclick = function(){
 		context.clearRect(0,0,canvas.width,canvas.height);
 		drawing = false;
 		lifted = false;
-		//fieldImg.style.width = '100%';
-		//fieldImg.style.height = '100%';
 		context.drawImage(fieldImg, 0, 0, canvas.width, canvas.width * fieldImg.height/fieldImg.width);
 	}
 	savebtn.onclick = function(){
 
 	}
 
-	
 	window.onload = window.onresize = function(){
 		canvas.width = canvas.offsetWidth;
 		canvas.height = canvas.offsetHeight;
@@ -90,11 +98,11 @@
 		context.moveTo(x,y);
 		context.lineTo(newx,newy);
 		context.stroke();
-	}
+	}*/
 
 	/*imgCanvas.onpointerdown = function(event) {
 		console.log(event.button);
-		/*if (event.button != 2 && !lifted) {
+		if (event.button != 2 && !lifted) {
 			event.preventDefault();
 			drawing = true;
 			oldx = event.clientX;
@@ -104,14 +112,14 @@
 		newRobot(event.clientX,event.clientY);
 	}*/
 	
-	canvas.onpointerdown = function(event) {
+	/*canvas.onpointerdown = function(event) {
 		console.log(event.button);
-		/*if (event.button != 2 && !lifted) {
+		if (event.button != 2 && !lifted) {
 			event.preventDefault();
 			drawing = true;
 			oldx = event.clientX;
 			oldy = event.clientY;
-		}*/
+		}
 		event.preventDefault();
 		newRobot(event.clientX,event.clientY);
 	}
@@ -142,20 +150,15 @@
 			console.log(posy);
 		}
 		setTimeout(draw,0)
-	}
+	}*/
 
-	function newRobot(posx, posy) {
+	/*function newRobot(posx, posy) {
 		robotImg.style.top = (posy - 30) + "px";
 		robotImg.style.left = (posx - 20) + "px";
 		robotImg.style.transform = 'rotate(' + (Math.random()*180) + 'deg)';
 	}
 
-	draw()
-	// var dataURL = canvas.toDataURL();
- //    document.getElementById('canvasImg').src = dataURL;
-
-
-		
+	draw();*/
 </script>
 
 

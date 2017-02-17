@@ -131,6 +131,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   private void configureMaster(CANTalon talon) {
+    logger.info("init master: " + talon.getDeviceID());
     talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
     talon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     talon.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
@@ -139,6 +140,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   private void configureSlave(CANTalon talon, int masterId) {
+    logger.info("init slave: " + talon.getDeviceID() + " to master " + masterId);
     talon.changeControlMode(CANTalon.TalonControlMode.Follower);
     talon.set(masterId);
     talon.enableBrakeMode(true);
