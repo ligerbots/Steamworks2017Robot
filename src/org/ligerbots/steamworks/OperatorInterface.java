@@ -69,7 +69,7 @@ public class OperatorInterface {
     xboxController = new XboxController(0);
 
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
-    xboxAButton.whenPressed(new IntakeCommand(!Robot.intake.isIntakeOn()));
+    xboxAButton.whenPressed(new IntakeCommand());
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
     xboxBButton.whenPressed(new ClimbCommand());
