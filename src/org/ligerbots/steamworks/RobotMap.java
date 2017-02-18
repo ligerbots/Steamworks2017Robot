@@ -65,7 +65,7 @@ public class RobotMap {
   public static final double WHEEL_RADIUS = IS_ROADKILL ? 3 : 2; // in
   public static final double WHEEL_DIAMETER = WHEEL_RADIUS * 2;
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
-  public static final double GEARING_FACTOR = IS_ROADKILL ? 1 : 1; // TODO: add
+  public static final double GEARING_FACTOR = IS_ROADKILL ? 1 : 1 / (3 * 54 / 30);
   
   public static final double VISION_BOILER_CAMERA_ANGLE = 50.8; // degrees
   
@@ -73,6 +73,8 @@ public class RobotMap {
   
   public static final double ROBOT_LENGTH = 40;
   public static final double ROBOT_WIDTH = 36;
+
+  public static final double SHOOTER_MAX_RPM = 6000;
   
   @Preference
   public static double INTAKE_SPEED = 1.0;

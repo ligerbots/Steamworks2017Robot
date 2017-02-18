@@ -50,7 +50,7 @@ public class ShooterFeederCommand extends StatefulCommand {
    * @param desiredShooterRpm The rpm we need the shooter at.
    */
   public ShooterFeederCommand(double desiredShooterRpm) {
-    requires(Robot.feeder);
+//    requires(Robot.feeder);
     requires(Robot.shooter);
     this.desiredShooterRpm = desiredShooterRpm;
   }
@@ -86,7 +86,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   protected void initialize() {
     logger.info(String.format("Initialize, desired rpm=%f", desiredShooterRpm));
-    Robot.feeder.setFeeder(0);
+//    Robot.feeder.setFeeder(0);
     readyToStartFeeder = false;
     aborted = false;
     withholdShooting = false;
@@ -115,7 +115,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     }
 
     if (readyToStartFeeder && !withholdShooting) {
-      Robot.feeder.setFeeder(1.0);
+      //Robot.feeder.setFeeder(1.0);
     }
   }
 
@@ -152,7 +152,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     super.end();
 
     logger.info("finish");
-    Robot.feeder.setFeeder(0);
+    //Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }
@@ -161,7 +161,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     super.interrupted();
 
     logger.info("Interrupted, spinning down shooter");
-    Robot.feeder.setFeeder(0);
+    //Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }

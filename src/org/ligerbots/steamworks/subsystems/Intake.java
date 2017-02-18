@@ -50,6 +50,10 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
     }
   }
   
+  public void setIntakeRaw(double value) {
+    intakeTalon.set(value);
+  }
+  
   public boolean isIntakeOn() {
     return intakeOn;
   }

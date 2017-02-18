@@ -11,6 +11,9 @@ import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.hal.HAL;
+import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
+import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
@@ -319,6 +322,98 @@ public class Robot extends IterativeRobot {
     } catch (Throwable ex) {
       logger.error("testPeriodic error", ex);
       ex.printStackTrace();
+    }
+  }
+  
+  private boolean m_disabledInitialized = false;
+  private boolean m_autonomousInitialized = false;
+  private boolean m_teleopInitialized = false;
+  private boolean m_testInitialized = false;
+  
+  public void startCompetition() {
+    HAL.report(tResourceType.kResourceType_Framework,
+                                   tInstances.kFramework_Iterative);
+
+    robotInit();
+
+    // Tell the DS that the robot is ready to be enabled
+    HAL.observeUserProgramStarting();
+
+    // loop forever, calling the appropriate mode-dependent function
+    LiveWindow.setEnabled(false);
+    long start;
+    while (true) {
+      // Wait for new data to arrive
+      start = System.nanoTime();
+//      m_ds.waitForData();
+      // Call the appropriate function depending upon the current robot mode
+      if (isDisabled()) {
+        // call DisabledInit() if we are now just entering disabled mode from
+        // either a different mode or from power-on
+        if (!m_disabledInitialized) {
+          LiveWindow.setEnabled(false);
+          disabledInit();
+          m_disabledInitialized = true;
+          // reset the initialization flags for the other modes
+          m_autonomousInitialized = false;
+          m_teleopInitialized = false;
+          m_testInitialized = false;
+        }
+        HAL.observeUserProgramDisabled();
+        disabledPeriodic();
+      } else if (isTest()) {
+        // call TestInit() if we are now just entering test mode from either
+        // a different mode or from power-on
+        if (!m_testInitialized) {
+          LiveWindow.setEnabled(true);
+          testInit();
+          m_testInitialized = true;
+          m_autonomousInitialized = false;
+          m_teleopInitialized = false;
+          m_disabledInitialized = false;
+        }
+        HAL.observeUserProgramTest();
+        testPeriodic();
+      } else if (isAutonomous()) {
+        // call Autonomous_Init() if this is the first time
+        // we've entered autonomous_mode
+        if (!m_autonomousInitialized) {
+          LiveWindow.setEnabled(false);
+          // KBS NOTE: old code reset all PWMs and relays to "safe values"
+          // whenever entering autonomous mode, before calling
+          // "Autonomous_Init()"
+          autonomousInit();
+          m_autonomousInitialized = true;
+          m_testInitialized = false;
+          m_teleopInitialized = false;
+          m_disabledInitialized = false;
+        }
+        HAL.observeUserProgramAutonomous();
+        autonomousPeriodic();
+      } else {
+        // call Teleop_Init() if this is the first time
+        // we've entered teleop_mode
+        if (!m_teleopInitialized) {
+          LiveWindow.setEnabled(false);
+          teleopInit();
+          m_teleopInitialized = true;
+          m_testInitialized = false;
+          m_autonomousInitialized = false;
+          m_disabledInitialized = false;
+        }
+        HAL.observeUserProgramTeleop();
+        teleopPeriodic();
+      }
+      robotPeriodic();
+      
+      long dt = 20_000_000 - (System.nanoTime() - start);
+      if (dt > 0) {
+        try {
+          Thread.sleep(dt / 1_000_000, (int) (dt % 1_000_000));
+        } catch (InterruptedException ex) {
+          ex.printStackTrace();
+        }
+      }
     }
   }
 }

@@ -21,6 +21,8 @@ import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.LedRingCommand;
+import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
+import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.TurnCommand;
@@ -38,7 +40,7 @@ public class OperatorInterface {
   public static final int AUTO_MODE_HOPPER_SHOOT = 1;
   public static final int AUTO_MODE_NONE = 2;
   
-  XboxController xboxController;
+  public XboxController xboxController;
   
   SendableChooser<Integer> autoMode;
   SendableChooser<Integer> startingPosition;
@@ -110,6 +112,11 @@ public class OperatorInterface {
             startPosition.add(60, -60), startPosition.add(120, -60), startPosition.add(121, -60));
     List<FieldPosition> testWaypoint = FieldMap.generateCatmullRomSpline(testCtrl);
     SmartDashboard.putData(new DrivePathCommand(testWaypoint));
+    
+    for (ManualControlType type : ManualControlWithTriggerCommand.ManualControlType.values()) {
+      SmartDashboard.putData("ManualControl_" + type.toString(),
+          new ManualControlWithTriggerCommand(type));
+    }
     
     SmartDashboard.putData(new InstantCommand("ZeroSensors") {
       {

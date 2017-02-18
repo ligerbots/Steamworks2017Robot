@@ -30,6 +30,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   public Shooter() {
     logger.info("Initialize");
 
+    if (RobotMap.IS_ROADKILL) {
+      return;
+    }
     // account for missing Talons
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_SHOOTER_MASTER)) {
       masterId = RobotMap.CT_ID_SHOOTER_MASTER;
@@ -95,6 +98,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       killShooter();
       return;
     }
+    if (RobotMap.IS_ROADKILL) {
+      return;
+    }
     logger.trace(String.format("Setting rpm=%f", rpm));
     requestedRpm = rpm;
     // seriously not sure why this is necessary. Issue #6
@@ -124,6 +130,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       killShooter();
       return;
     }
+    if (RobotMap.IS_ROADKILL) {
+      return;
+    }
     logger.trace(String.format("Setting percentvbus=%f", percentVbus));
     requestedRpm = -1;
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
@@ -136,6 +145,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   }
 
   public double getShooterRpm() {
+    if (RobotMap.IS_ROADKILL) {
+      return 0;
+    }
     return shooterMaster.getSpeed();
   }
 
@@ -144,6 +156,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   }
   
   private void killShooter() {
+    if (RobotMap.IS_ROADKILL) {
+      return;
+    }
     shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     shooterMaster.set(0);
@@ -182,6 +197,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
    * Sends shooter data to smart dashboard.
    */
   public void sendDataToSmartDashboard() {
+    if (RobotMap.IS_ROADKILL) {
+      return;
+    }
     SmartDashboard.putNumber("Shooter_Master_Talon_Power",
         shooterMaster.getOutputCurrent() * shooterMaster.getOutputVoltage());
     SmartDashboard.putNumber("Shooter_Slave_Talon_Power",

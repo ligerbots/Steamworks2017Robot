@@ -344,23 +344,31 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     // talon output power
     SmartDashboard.putNumber("Left_Master_Power",
         leftMaster.getOutputCurrent() * leftMaster.getOutputVoltage());
-    SmartDashboard.putNumber("Left_Slave_Power",
-        leftSlave.getOutputCurrent() * leftSlave.getOutputVoltage());
+    if (!RobotMap.IS_ROADKILL) {
+      SmartDashboard.putNumber("Left_Slave_Power",
+          leftSlave.getOutputCurrent() * leftSlave.getOutputVoltage());
+    }
     SmartDashboard.putNumber("Right_Master_Power",
         rightMaster.getOutputCurrent() * rightMaster.getOutputVoltage());
-    SmartDashboard.putNumber("Right_Slave_Power",
-        rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
+    if (!RobotMap.IS_ROADKILL) {
+      SmartDashboard.putNumber("Right_Slave_Power",
+          rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
+    }
 
     // talon fault diagnostics
     // we don't care about under voltage because it's already clear when brownouts happen
     SmartDashboard.putNumber("Left_Master_Failure", leftMaster.getFaultHardwareFailure());
     SmartDashboard.putNumber("Left_Master_OverTemp", leftMaster.getStickyFaultOverTemp());
-    SmartDashboard.putNumber("Left_Slave_Failure", leftSlave.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Left_Slave_OverTemp", leftSlave.getStickyFaultOverTemp());
+    if (!RobotMap.IS_ROADKILL) {
+      SmartDashboard.putNumber("Left_Slave_Failure", leftSlave.getFaultHardwareFailure());
+      SmartDashboard.putNumber("Left_Slave_OverTemp", leftSlave.getStickyFaultOverTemp());
+    }
     SmartDashboard.putNumber("Right_Master_Failure", rightMaster.getFaultHardwareFailure());
     SmartDashboard.putNumber("Right_Master_OverTemp", rightMaster.getStickyFaultOverTemp());
-    SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
+    if (!RobotMap.IS_ROADKILL) {
+      SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
+      SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
+    }
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));

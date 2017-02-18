@@ -44,6 +44,10 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     }
   }
   
+  public void setServoRaw(double value) {
+    gearServo.set(value);
+  }
+  
   /**
    * @return Whether the gear mechanism is open or closed.
    */
