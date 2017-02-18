@@ -20,6 +20,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
   int slaveId;
   CANTalon shooterMaster;
   CANTalon shooterSlave;
+  double requestedRpm;
   
   volatile boolean shooterFault = false;
 
@@ -53,8 +54,8 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterMaster.setProfile(0);
     shooterMaster.setF(0);
     shooterMaster.setP(0.05);
-    shooterMaster.setI(0.0003);
-    shooterMaster.setD(0.1);
+    shooterMaster.setI(0.0002);
+    shooterMaster.setD(1.0);
     // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Master", shooterMaster);
 
@@ -95,6 +96,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       return;
     }
     logger.trace(String.format("Setting rpm=%f", rpm));
+    requestedRpm = rpm;
     // seriously not sure why this is necessary. Issue #6
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(masterId);
@@ -123,6 +125,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
       return;
     }
     logger.trace(String.format("Setting percentvbus=%f", percentVbus));
+    requestedRpm = -1;
     shooterSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
     shooterSlave.set(masterId);
     shooterSlave.enableControl();
@@ -183,6 +186,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         shooterMaster.getOutputCurrent() * shooterMaster.getOutputVoltage());
     SmartDashboard.putNumber("Shooter_Slave_Talon_Power",
         shooterSlave.getOutputCurrent() * shooterSlave.getOutputVoltage());
+    SmartDashboard.putNumber("Shooter_RPM_Requested", requestedRpm);
     SmartDashboard.putNumber("Shooter_RPM_Real", getShooterRpm());
     SmartDashboard.putNumber("Shooter_PID_error", shooterMaster.getClosedLoopError());
     

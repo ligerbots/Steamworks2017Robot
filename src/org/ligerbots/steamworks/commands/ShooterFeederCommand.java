@@ -1,5 +1,6 @@
 package org.ligerbots.steamworks.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
@@ -13,12 +14,13 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   double desiredShooterRpm = 0.0;
   boolean readyToStartFeeder = false;
+  boolean getFromDashboard = false;
 
   boolean aborted;
   boolean ended;
 
   boolean withholdShooting;
-  
+
   boolean rpmInRange;
   long nanosAtRpmSpike;
 
@@ -27,6 +29,19 @@ public class ShooterFeederCommand extends StatefulCommand {
    */
   public ShooterFeederCommand() {
     this(Double.NaN);
+  }
+
+  /**
+   * Initializes a shooterfeedercommand that can get its shooter speed from the dashboard.
+   * 
+   * @param getFromDashboard Whether to get shooter rpm from dashboard
+   */
+  public ShooterFeederCommand(boolean getFromDashboard) {
+    this(Double.NaN);
+    this.getFromDashboard = getFromDashboard;
+    if (!SmartDashboard.containsKey("Shooter_Test_Rpm")) {
+      SmartDashboard.putNumber("Shooter_Test_Rpm", 4000);
+    }
   }
 
   /**
@@ -59,9 +74,10 @@ public class ShooterFeederCommand extends StatefulCommand {
   public void setRpm(double desiredShooterRpm) {
     this.desiredShooterRpm = desiredShooterRpm;
   }
-  
+
   /**
    * Determines whether shooting was aborted because of a shooter fault.
+   * 
    * @return true if aborted
    */
   public boolean isAborted() {
@@ -80,7 +96,11 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   protected void execute() {
     super.execute();
-    
+
+    if (getFromDashboard) {
+      desiredShooterRpm = SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
+    }
+
     if (!Double.isNaN(desiredShooterRpm)) {
       Robot.shooter.setShooterRpm(desiredShooterRpm);
       double currentShooterRpm = Robot.shooter.getShooterRpm();
@@ -102,24 +122,26 @@ public class ShooterFeederCommand extends StatefulCommand {
   protected boolean isFinished() {
     // we want to finish by a JoystickButton.isHeld calling cancel()
     // or a parent command unless there's a fault
-    
+
     if (Robot.shooter.isShooterFault()) {
       logger.warn("Shooter fault, disabling");
       aborted = true;
       ended = true;
       return true;
     }
-    
+
     // detect when there are no more RPM spikes
     if (readyToStartFeeder && !withholdShooting) {
       if (!rpmInRange) {
         nanosAtRpmSpike = System.nanoTime();
       }
-      
-      if (System.nanoTime() - nanosAtRpmSpike > RobotMap.AUTO_SHOOTER_WAIT_NANOS) {
-        logger.info("No more fuel, ending");
-        ended = true;
-        return true;
+
+      if (RobotMap.SHOOTER_AUTO_STOP) {
+        if (System.nanoTime() - nanosAtRpmSpike > RobotMap.AUTO_SHOOTER_WAIT_NANOS) {
+          logger.info("No more fuel, ending");
+          ended = true;
+          return true;
+        }
       }
     }
 
@@ -128,7 +150,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   protected void end() {
     super.end();
-    
+
     logger.info("finish");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
@@ -137,7 +159,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   protected void interrupted() {
     super.interrupted();
-    
+
     logger.info("Interrupted, spinning down shooter");
     Robot.feeder.setFeeder(0);
     Robot.shooter.setShooterRpm(0);
@@ -156,7 +178,7 @@ public class ShooterFeederCommand extends StatefulCommand {
       return "Shooting";
     }
   }
-  
+
   protected boolean isFailedToComplete() {
     return ended && aborted;
   }

@@ -8,8 +8,8 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ALLOW_TERMINATE" value="true"/>
 <mapAttribute key="org.eclipse.jdt.launching.CONNECT_MAP">
-<mapEntry key="hostname" value="localhost"/>
-<mapEntry key="port" value="8000"/>
+<mapEntry key="hostname" value="10.28.77.2"/>
+<mapEntry key="port" value="8348"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Steamworks2017Robot"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_CONNECTOR_ID" value="org.eclipse.jdt.launching.socketAttachConnector"/>

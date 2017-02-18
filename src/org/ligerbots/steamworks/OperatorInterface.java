@@ -75,7 +75,7 @@ public class OperatorInterface {
     xboxBButton.whenPressed(new ClimbCommand());
 
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
-    xboxXButton.whileHeld(new ShooterFeederCommand(4000));
+    xboxXButton.whileHeld(new ShooterFeederCommand(true));
 
     JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
     xboxYButton.whileHeld(new GearCommand(true, true));
@@ -92,7 +92,7 @@ public class OperatorInterface {
     JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
     xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
 
-    SmartDashboard.putData(new TurnCommand(180));
+    SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveToGearCommand());
     

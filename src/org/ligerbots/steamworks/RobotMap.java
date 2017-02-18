@@ -75,6 +75,12 @@ public class RobotMap {
   public static final double ROBOT_WIDTH = 36;
   
   @Preference
+  public static double INTAKE_SPEED = 1.0;
+  
+  @Preference
+  public static boolean SHOOTER_AUTO_STOP = false;
+  
+  @Preference
   public static double MINIMUM_SHOOTING_DISTANCE = 36; // inches
   
   @Preference

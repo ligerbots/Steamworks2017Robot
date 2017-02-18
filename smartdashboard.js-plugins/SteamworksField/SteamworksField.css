@@ -1,0 +1,14 @@
+.widget-SteamworksField .field-container {
+	position: relative;
+}
+		
+.widget-SteamworksField .robot {
+  position: absolute;
+  transform: translateX(-50%) translateY(-50%);
+  top: 100px;
+  left: 100px;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  -webkit-pointer-events: none;
+}

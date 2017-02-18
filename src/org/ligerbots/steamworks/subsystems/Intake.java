@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Intake extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Intake.class);
-  static final double INTAKE_SPEED = 0.7;
   
   boolean intakeOn;
   CANTalon intakeTalon;
@@ -46,7 +45,7 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
   public void setIntakeOn(boolean intakeOn) {
     if (intakeTalon != null) {
       logger.info(String.format("Setting intake, on=%b", intakeOn));
-      intakeTalon.set(intakeOn ? INTAKE_SPEED : 0.0);
+      intakeTalon.set(intakeOn ? RobotMap.INTAKE_SPEED : 0.0);
       this.intakeOn = intakeOn;
     }
   }

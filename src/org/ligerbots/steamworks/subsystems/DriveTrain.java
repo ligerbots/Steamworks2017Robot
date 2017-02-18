@@ -9,7 +9,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.tables.ITable;
 import java.util.Arrays;
 import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
@@ -53,7 +55,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double positionY;
   double rotation;
   double absoluteDistanceTraveled;
-  
+
   double prevEncoderLeft;
   double prevEncoderRight;
   DriverStation driverStation;
@@ -62,12 +64,15 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   double lastOutputRight = 0;
 
   long navxUpdateNanos;
+  ITable swFieldDisplay;
 
   /**
    * Creates a new drive train instance.
    */
   public DriveTrain() {
     logger.info("Initialize");
+
+    swFieldDisplay = NetworkTable.getTable("SmartDashboard/SwField");
     
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
@@ -119,7 +124,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (SmartDashboard.containsKey("Robot_y")) {
       positionY = SmartDashboard.getNumber("Robot_y", positionY);
     }
-    
+
     // new firmware supports 200hz
     navX = new AHRS(SPI.Port.kMXP, (byte) 200);
     navX.registerCallback(
@@ -158,13 +163,17 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   /**
    * This method drives the robot using joystick values. Squared inputs are enabled, and turning at
    * high speeds is compensated. Do not use this unless actually passing in joystick values. For
-   * auto drive, use a raw* function
+   * auto drive, use a raw* function. Flips direction for production robot.
    * 
    * @param throttle is the vertical axis
    * @param turn is the horizontal axis
    * @param quickTurn true to override constant-curvature turning behavior
    */
   public void joystickDrive(double throttle, double turn, boolean quickTurn) {
+    if (!RobotMap.IS_ROADKILL) {
+      throttle = -throttle;
+      turn = -turn;
+    }
     logger.trace(String.format("Driving with throttle %f and turn %f quickTurn %b", throttle, turn,
         quickTurn));
     if (quickTurn) {
@@ -176,19 +185,24 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   /**
-   * Arcade drive but without squared inputs or high speed turn compensation.
+   * Arcade drive but without squared inputs or high speed turn compensation. Flips direction for
+   * production robot
    * 
    * @param throttle is the vertical axis
    * @param turn turn is the horizontal axis
    */
   public void rawThrottleTurnDrive(double throttle, double turn) {
+    if (!RobotMap.IS_ROADKILL) {
+      throttle = -throttle;
+      turn = -turn;
+    }
     logger.trace(
         String.format("Driving no squared inputs with throttle %f and turn %f", throttle, turn));
     robotDrive.arcadeDrive(throttle, turn, false);
   }
 
   /**
-   * Sets raw left and right motor values.
+   * Sets raw left and right motor values. DOES NOT flip direction for production robot.
    * 
    * @param left The left value
    * @param right The right value
@@ -361,9 +375,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
 
     // dead reckoning
-    SmartDashboard.putNumber("Robot_x", positionX);
-    SmartDashboard.putNumber("Robot_y", positionY);
-    SmartDashboard.putNumber("Robot_yaw", rotation);
+    swFieldDisplay.putBoolean("_swfield", true);
+    swFieldDisplay.putNumber("x", positionX);
+    swFieldDisplay.putNumber("y", positionY);
+    swFieldDisplay.putNumber("direction", rotation);
   }
 
   public RobotPosition getRobotPosition() {
@@ -388,16 +403,16 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     double deltaEncoderRight = encoderRight - prevEncoderRight;
 
     double deltaInches = (deltaEncoderLeft + deltaEncoderRight) / 2;
-    
+
     absoluteDistanceTraveled += Math.abs(deltaInches);
 
     positionX = positionX + Math.cos(Math.toRadians(90 - rotation)) * deltaInches;
     positionY = positionY + Math.sin(Math.toRadians(90 - rotation)) * deltaInches;
-    
+
     prevEncoderLeft = encoderLeft;
     prevEncoderRight = encoderRight;
   }
-  
+
   public double getAbsoluteDistanceTraveled() {
     return absoluteDistanceTraveled;
   }
@@ -423,14 +438,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public void zeroSensors() {
     navX.reset();
     navX.resetDisplacement();
-    
+
     FieldPosition currentPosition =
         FieldMap.getAllianceMap().startingPositions[Robot.operatorInterface
             .getStartingPositionId()];
     setPosition(currentPosition);
-    
+
     absoluteDistanceTraveled = 0;
-    
+
     updatePosition(navX.getYaw());
   }
 
