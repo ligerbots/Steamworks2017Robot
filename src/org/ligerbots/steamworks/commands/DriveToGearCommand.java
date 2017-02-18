@@ -36,6 +36,7 @@ public class DriveToGearCommand extends StatefulCommand {
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
   DriveDistanceCommand driveBackCommand;
+  boolean deliverOnly = false;
 
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
@@ -49,11 +50,22 @@ public class DriveToGearCommand extends StatefulCommand {
 
     driveAwayCommand = new DriveDistanceCommand(-36.0);
   }
+  
+  public DriveToGearCommand(boolean deliverOnly) {
+    this();
+    this.deliverOnly = deliverOnly;
+  }
 
   protected void initialize() {
-    logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
-    currentState = State.INITIAL_WAIT_FOR_VISION;
-    nanosAtWaitForVisionStart = System.nanoTime();
+    if (!deliverOnly) {
+      logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
+      currentState = State.INITIAL_WAIT_FOR_VISION;
+      nanosAtWaitForVisionStart = System.nanoTime();
+    } else {
+      currentState = State.DELIVER_GEAR;
+      nanosAtGearDeliverStart = System.nanoTime();
+      logger.info("Initialize, state=DELIVER_GEAR");
+    }
   }
 
   protected void execute() {
@@ -227,12 +239,16 @@ public class DriveToGearCommand extends StatefulCommand {
   protected void end() {
     super.end();
     
+    Robot.gearManipulator.setOpen(false);
+    
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
   }
 
   protected void interrupted() {
     super.interrupted();
+    
+    Robot.gearManipulator.setOpen(false);
     
     logger.info("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);

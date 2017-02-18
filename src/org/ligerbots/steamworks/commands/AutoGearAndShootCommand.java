@@ -17,7 +17,6 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   // @formatter:off
   enum State {
     GEAR_NAVIGATION,
-    GEAR_ALIGN,
     GEAR_DELIVERY,
     BOILER_NAVIGATION,
     BOILER_ALIGN,
@@ -29,7 +28,6 @@ public class AutoGearAndShootCommand extends StatefulCommand {
 
   State currentState;
   DriveToGearCommand gearCommand;
-  TurnCommand gearAlign;
   TurnCommand boilerAlign;
   AlignBoilerAndShootCommand boilerCommand;
 
@@ -45,7 +43,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     requires(Robot.shooter);
     requires(Robot.feeder);
 
-    gearCommand = new DriveToGearCommand();
+    gearCommand = new DriveToGearCommand(true);
     boilerCommand = new AlignBoilerAndShootCommand();
   }
 
@@ -68,27 +66,9 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (driveToGear.isFinished()) {
           driveToGear.end();
 
-          currentState = State.GEAR_ALIGN;
-          logger.info("state=GEAR_ALIGN");
-
-          generateGearAlign();
-          gearAlign.initialize();
-        }
-        break;
-      case GEAR_ALIGN:
-        gearAlign.execute();
-        if (gearAlign.isFinished()) {
-          gearAlign.end();
-
-          if (gearAlign.isFailedToComplete()) {
-            logger.warn("Gear align failed! Recalculating turn");
-            generateGearAlign();
-            gearAlign.initialize();
-          } else {
-            logger.info("state=GEAR_DELIVERY");
-            currentState = State.GEAR_DELIVERY;
-            gearCommand.initialize();
-          }
+          logger.info("state=GEAR_DELIVERY");
+          currentState = State.GEAR_DELIVERY;
+          gearCommand.initialize();
         }
         break;
       case GEAR_DELIVERY:
@@ -155,12 +135,6 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     RobotPosition pos = Robot.driveTrain.getRobotPosition();
     double angle = 90 - pos.angleTo(targetPosition);
     return new TurnCommand(angle - pos.getDirection());
-  }
-  
-  private void generateGearAlign() {
-    FieldMap map = FieldMap.getAllianceMap();
-    gearAlign =
-        generateAlign(map.gearLiftPositions[Robot.operatorInterface.getGearLiftPositionId()]);
   }
   
   private void generateBoilerAlign() {
