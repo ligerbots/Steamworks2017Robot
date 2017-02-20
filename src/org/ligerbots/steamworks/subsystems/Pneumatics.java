@@ -3,6 +3,8 @@ package org.ligerbots.steamworks.subsystems;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +19,13 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
     ON, OFF, TOGGLE
   }
 
-  Compressor compressor;
+  Compressor compressor = null;
 
   public Pneumatics() {
     logger.info("Initialize");
-    compressor = new Compressor(RobotMap.PCM_CAN_ID);
+    if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
+    	compressor = new Compressor(RobotMap.PCM_CAN_ID);
+    }
   }
 
   public void initDefaultCommand() {}
@@ -32,25 +36,29 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
    * @param state Whether the compressor should be on, off, or toggled
    */
   public void setCompressorOn(CompressorState state) {
-    if (state == CompressorState.TOGGLE) {
-      compressor.setClosedLoopControl(!compressor.getClosedLoopControl());
-    } else if (state == CompressorState.ON) {
-      compressor.setClosedLoopControl(true);
-    } else if (state == CompressorState.OFF) {
-      compressor.setClosedLoopControl(false);
+    if (compressor != null) {
+        if (state == CompressorState.TOGGLE) {
+          compressor.setClosedLoopControl(!compressor.getClosedLoopControl());
+        } else if (state == CompressorState.ON) {
+          compressor.setClosedLoopControl(true);
+        } else if (state == CompressorState.OFF) {
+          compressor.setClosedLoopControl(false);
+        }
+    
+        logger.info(String.format("Setting compressor, request=%s, compressor on=%b", state.toString(),
+            compressor.getClosedLoopControl()));
     }
-
-    logger.info(String.format("Setting compressor, request=%s, compressor on=%b", state.toString(),
-        compressor.getClosedLoopControl()));
   }
 
   public boolean isCompressorOn() {
-    return compressor.getClosedLoopControl();
+    return compressor == null ? false : compressor.getClosedLoopControl();
   }
 
   @Override
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putBoolean("Compressor_Closed_Loop", isCompressorOn());
-    SmartDashboard.putBoolean("Compressor_Pressure_Switch", compressor.getPressureSwitchValue());
+	if (compressor != null) {
+	    SmartDashboard.putBoolean("Compressor_Closed_Loop", isCompressorOn());
+	    SmartDashboard.putBoolean("Compressor_Pressure_Switch", compressor.getPressureSwitchValue());
+	}
   }
 }

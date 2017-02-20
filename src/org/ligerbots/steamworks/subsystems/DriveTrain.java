@@ -65,6 +65,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
   long navxUpdateNanos;
   ITable swFieldDisplay;
+  boolean pcmPresent;
 
   /**
    * Creates a new drive train instance.
@@ -114,6 +115,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
+    pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
 
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
@@ -238,17 +240,18 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public void shift(ShiftType shiftType) {
     logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
         shiftingSolenoid.get().toString()));
-
-    if (shiftType == ShiftType.TOGGLE) {
-      if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
-        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
-      } else {
-        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
-      }
-    } else if (shiftType == ShiftType.UP) {
-      shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
-    } else {
-      shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+    if (pcmPresent) {
+	    if (shiftType == ShiftType.TOGGLE) {
+	      if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
+	        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+	      } else {
+	        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+	      }
+	    } else if (shiftType == ShiftType.UP) {
+	      shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+	    } else {
+	      shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+	    }
     }
   }
 
@@ -376,11 +379,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putBoolean("Climb_Switch", climbLimitSwitch.get());
 
     // solenoid diagnostics
-    SmartDashboard.putString("PCM_Blacklist",
-        Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));
-    SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
-    SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
+    if (pcmPresent) {
+    	SmartDashboard.putString("PCM_Blacklist", Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));
+    	SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
+    	SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
         shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
+    }
 
     // dead reckoning
     swFieldDisplay.putBoolean("_swfield", true);

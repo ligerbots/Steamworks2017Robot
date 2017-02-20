@@ -91,8 +91,10 @@ public class OperatorInterface {
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
     xboxMenuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
 
-    JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
-    xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+    if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
+	JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
+	xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+    }
 
     SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
@@ -174,14 +176,14 @@ public class OperatorInterface {
   }
   
   public int getAutoMode() {
-    return autoMode.getSelected();
+    return 0; //autoMode.getSelected();
   }
   
   public int getStartingPositionId() {
-    return startingPosition.getSelected();
+    return 0; //startingPosition.getSelected();
   }
   
   public int getGearLiftPositionId() {
-    return gearLiftPosition.getSelected();
+    return 0; //gearLiftPosition.getSelected();
   }
 }
