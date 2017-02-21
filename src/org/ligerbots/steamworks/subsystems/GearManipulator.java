@@ -23,6 +23,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     logger.info("Initialize");
 
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
+    gearServo.setSpeed(RobotMap.GEAR_SERVO_SPEED);
     setOpen(false);
  }
 

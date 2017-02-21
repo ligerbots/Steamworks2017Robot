@@ -51,7 +51,8 @@ public class ShooterFeederCommand extends StatefulCommand {
    */
   public ShooterFeederCommand(double desiredShooterRpm) {
 //    requires(Robot.feeder);
-    requires(Robot.shooter);
+    requires(Robot.shooter); 
+    requires(Robot.stirrer);
     this.desiredShooterRpm = desiredShooterRpm;
   }
 
@@ -116,7 +117,11 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     if (readyToStartFeeder && !withholdShooting) {
       //Robot.feeder.setFeeder(1.0);
+      Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
     }
+    
+    /// TEMP
+    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
   }
 
   protected boolean isFinished() {

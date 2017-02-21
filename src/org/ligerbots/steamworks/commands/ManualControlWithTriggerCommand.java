@@ -21,7 +21,8 @@ public class ManualControlWithTriggerCommand extends Command {
     SHOOTER_RPM,
     INTAKE,
     FEEDER,
-    GEAR_SERVO
+    GEAR_SERVO,
+    STIRRER_SERVO
   }
   
   ManualControlType type;
@@ -52,6 +53,9 @@ public class ManualControlWithTriggerCommand extends Command {
       case GEAR_SERVO:
         requires(Robot.gearManipulator);
         break;
+      case STIRRER_SERVO:
+        requires(Robot.stirrer);
+        break;
       default:
         break;
     }
@@ -80,6 +84,9 @@ public class ManualControlWithTriggerCommand extends Command {
       case GEAR_SERVO:
         Robot.gearManipulator.setServoRaw(Math.abs(value));
         break;
+      case STIRRER_SERVO:
+        Robot.stirrer.setStirrer(0.2);
+        break;        
       default:
         break;
     }
@@ -107,6 +114,9 @@ public class ManualControlWithTriggerCommand extends Command {
         Robot.feeder.setFeeder(0);
         break;
       case GEAR_SERVO:
+        break;
+      case STIRRER_SERVO:
+        Robot.stirrer.setStirrer(0.0);
         break;
       default:
         break;

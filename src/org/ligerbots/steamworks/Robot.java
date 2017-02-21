@@ -11,9 +11,9 @@ import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.wpi.first.wpilibj.hal.HAL;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.wpilibj.hal.HAL;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
@@ -30,6 +30,7 @@ import org.ligerbots.steamworks.subsystems.Pneumatics;
 import org.ligerbots.steamworks.subsystems.ProximitySensor;
 import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
+import org.ligerbots.steamworks.subsystems.Stirrer;
 import org.ligerbots.steamworks.subsystems.Vision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +79,7 @@ public class Robot extends IterativeRobot {
   public static Vision vision;
   public static Shooter shooter;
   public static Feeder feeder;
+  public static Stirrer stirrer;
   public static Intake intake;
   public static GearManipulator gearManipulator;
   public static ProximitySensor proximitySensor;
@@ -118,12 +120,13 @@ public class Robot extends IterativeRobot {
       vision = new Vision();
       shooter = new Shooter();
       feeder = new Feeder();
+      stirrer = new Stirrer();
       gearManipulator = new GearManipulator();
       intake = new Intake();
       pneumatics = new Pneumatics();
       proximitySensor = new ProximitySensor();
       pdpSubsystem = new PdpSubsystem();
-      allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, gearManipulator, intake,
+      allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, stirrer, gearManipulator, intake,
           pneumatics, proximitySensor, pdpSubsystem);
   
       driveJoystickCommand = new DriveJoystickCommand();

@@ -2,6 +2,7 @@ package org.ligerbots.steamworks;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.InstantCommand;
@@ -41,6 +42,7 @@ public class OperatorInterface {
   public static final int AUTO_MODE_NONE = 2;
   
   public XboxController xboxController;
+  public Joystick farmController; // ???
   
   SendableChooser<Integer> autoMode;
   SendableChooser<Integer> startingPosition;
@@ -69,6 +71,7 @@ public class OperatorInterface {
     SmartDashboard.putData("Auto gear lift position", gearLiftPosition);
     
     xboxController = new XboxController(0);
+    farmController = new Joystick(1);
 
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
     xboxAButton.whenPressed(new IntakeCommand());
@@ -96,10 +99,17 @@ public class OperatorInterface {
     xboxMenuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
 
     if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
-	JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
-	xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+      JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
+      xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
     }
 
+    if (isFarmControllerPresent()) {
+      LoggerFactory.getLogger(OperatorInterface.class).info("Farm controller found!");
+      // mapFarmControllerButtons();      
+    } else {
+      LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
+    }
+    
     SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveToGearCommand());
@@ -190,4 +200,9 @@ public class OperatorInterface {
   public int getGearLiftPositionId() {
     return 0; //gearLiftPosition.getSelected();
   }
+  
+  public boolean isFarmControllerPresent() {
+    return (farmController.getButtonCount() > 10);
+  }
+  
 }

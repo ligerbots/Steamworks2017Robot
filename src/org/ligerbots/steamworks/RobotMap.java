@@ -47,6 +47,8 @@ public class RobotMap {
   public static final int RELAY_LED_RING = 0;
 
   public static final int GEAR_SERVO_CHANNEL = 0;
+  
+  public static final int STIRRER_SERVO_CHANNEL = 1;
 
   public static final int MAG_ENCODER_UNITS_PER_REVOLUTION = 4096;
   public static final float MAG_ENCODER_FREQUENCY = 10;
@@ -92,6 +94,12 @@ public class RobotMap {
   public static double GEARMECH_CLOSED_DEGREES = 165;
   @Preference
   public static double GEARMECH_OPEN_DEGREES = 70;
+  
+  @Preference
+  public static double GEAR_SERVO_SPEED = 0.5;
+
+  @Preference
+  public static double STIRRER_SERVO_SPEED = 0.5;
 
   @Preference
   public static double AUTO_TURN_MAX_SPEED_HIGH = 0.3;
