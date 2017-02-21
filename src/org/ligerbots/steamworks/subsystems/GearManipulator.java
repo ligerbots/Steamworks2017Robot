@@ -14,7 +14,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(GearManipulator.class);  
   
   Servo gearServo;
-  boolean isOpen;
+  boolean isOpen = false;
 
   /**
    * Creates the GearManipulator, and sets servo to closed position.
@@ -24,7 +24,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
 
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
     setOpen(false);
-  }
+ }
 
   public void initDefaultCommand() {
   }
@@ -34,13 +34,23 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
    * @param shouldBeOpen Whether it should be open or closed.
    */
   public void setOpen(boolean shouldBeOpen) {
-    logger.info(String.format("Set gear manipulator, open=%b", shouldBeOpen));
+    logger.info(String.format("Set gear manipulator, shouldBeOpen=%b", shouldBeOpen));
     
     isOpen = shouldBeOpen;
     if (shouldBeOpen) {
-      gearServo.set(RobotMap.GEARMECH_POSITION_OPEN);
+      double gearmech_open_degrees = RobotMap.GEARMECH_OPEN_DEGREES;
+      logger.info(String.format("gearmech open degrees %f", gearmech_open_degrees));
+      // Map 0 degrees to 0.0 and 180 degrees to 1.0
+      double gearmech_position_open = gearmech_open_degrees / 180.;
+      gearServo.set(gearmech_position_open);
+      logger.info(String.format("Set gear manipulator to %f (open)", gearmech_position_open));
     } else {
-      gearServo.set(RobotMap.GEARMECH_POSITION_CLOSED);
+      double gearmech_closed_degrees = RobotMap.GEARMECH_CLOSED_DEGREES;
+   // Map 0 degrees to 0.0 and 180 degrees to 1.0
+      double gearmech_position_closed = gearmech_closed_degrees / 180.;
+      gearServo.set(gearmech_position_closed);
+      logger.info(String.format("gearmech closed degrees %f", gearmech_closed_degrees));
+      logger.info(String.format("Set gear manipulator to %f (closed)", gearmech_position_closed));
     }
   }
   
@@ -52,6 +62,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
    * @return Whether the gear mechanism is open or closed.
    */
   public boolean isOpen() {
+    logger.info(String.format("isOpen=%b", isOpen));
     return isOpen;
   }
   

@@ -14,8 +14,21 @@ public class GearCommand extends Command {
   private static final Logger logger = LoggerFactory.getLogger(GearCommand.class);
 
   boolean shouldBeOpen;
+  boolean toggle;
   boolean hold;
 
+  /**
+   * Creates a new GearCommand which toggles the current state of the gear.
+   * Some people (@crf) say that toggling is not a useful interface, since the operator has
+   * no way to tell what the current state of the system is...
+   * 
+   */
+  public GearCommand() {
+    toggle = true;
+    hold = false;        
+    logger.trace("Gear command in toggle mode");
+  }
+  
   /**
    * Creates a new GearCommand.
    * 
@@ -37,17 +50,26 @@ public class GearCommand extends Command {
    */
   public GearCommand(boolean shouldBeOpen, boolean hold) {
     requires(Robot.gearManipulator);
+    this.toggle = false;
     this.shouldBeOpen = shouldBeOpen;
     this.hold = hold;
   }
 
   protected void initialize() {
-    logger.info(String.format("Initialize, shouldBeOpen=%b, hold=%b", shouldBeOpen, hold));
+    if (toggle) {
+      logger.info(String.format("Initialize, toggle=%b, hold=%b", toggle, hold));
+    } else {
+      logger.info(String.format("Initialize, shouldBeOpen=%b, hold=%b", shouldBeOpen, hold));
+    }
   }
 
   protected void execute() {
-    Robot.gearManipulator.setOpen(shouldBeOpen);
-  }
+    if (toggle) {
+      Robot.gearManipulator.setOpen(!Robot.gearManipulator.isOpen());
+    } else  {
+      Robot.gearManipulator.setOpen(shouldBeOpen);
+    }
+  } 
 
   protected boolean isFinished() {
     return !hold;

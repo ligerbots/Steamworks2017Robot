@@ -89,9 +89,9 @@ public class RobotMap {
   public static double MAXIMUM_SHOOTING_DISTANCE = 144; //INCHES
   
   @Preference
-  public static double GEARMECH_POSITION_CLOSED = 0;
+  public static double GEARMECH_CLOSED_DEGREES = 165;
   @Preference
-  public static double GEARMECH_POSITION_OPEN = 1;
+  public static double GEARMECH_OPEN_DEGREES = 70;
 
   @Preference
   public static double AUTO_TURN_MAX_SPEED_HIGH = 0.3;

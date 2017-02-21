@@ -80,7 +80,11 @@ public class OperatorInterface {
     xboxXButton.whileHeld(new ShooterFeederCommand(true));
 
     JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
-    xboxYButton.whileHeld(new GearCommand(true, true));
+    // no more hold, just call close command when released
+    // xboxYButton.whenPressed(new GearCommand(true));
+    // xboxYButton.whenReleased(new GearCommand(false));
+    // This is a toggle command.
+    xboxYButton.whenPressed(new GearCommand());
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
     xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
