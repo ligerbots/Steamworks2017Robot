@@ -39,14 +39,14 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     
     isOpen = shouldBeOpen;
     if (shouldBeOpen) {
-      double gearmech_open_degrees = RobotMap.GEARMECH_OPEN_DEGREES;
+      double gearmech_open_degrees = 70;	// RobotMap.GEARMECH_OPEN_DEGREES;
       logger.info(String.format("gearmech open degrees %f", gearmech_open_degrees));
       // Map 0 degrees to 0.0 and 180 degrees to 1.0
       double gearmech_position_open = gearmech_open_degrees / 180.;
       gearServo.set(gearmech_position_open);
       logger.info(String.format("Set gear manipulator to %f (open)", gearmech_position_open));
     } else {
-      double gearmech_closed_degrees = RobotMap.GEARMECH_CLOSED_DEGREES;
+      double gearmech_closed_degrees = 165; 	// RobotMap.GEARMECH_CLOSED_DEGREES;
    // Map 0 degrees to 0.0 and 180 degrees to 1.0
       double gearmech_position_closed = gearmech_closed_degrees / 180.;
       gearServo.set(gearmech_position_closed);

@@ -26,7 +26,7 @@ public class PdpSubsystem extends Subsystem implements SmartDashboardLogger {
   public void sendDataToSmartDashboard() {
     if (pdp != null) {
       SmartDashboard.putNumber("Temperature", pdp.getTemperature());
-      SmartDashboard.putNumber("TotalPower", pdp.getTotalPower());
+      //SmartDashboard.putNumber("TotalPower", pdp.getTotalPower());
 
       // in the past, this has tended to screw up the CAN bus
       // for (int i = 0; i < 16; i++) {

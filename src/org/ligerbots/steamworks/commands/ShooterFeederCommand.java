@@ -93,7 +93,8 @@ public class ShooterFeederCommand extends StatefulCommand {
     withholdShooting = false;
     rpmInRange = false;
     ended = false;
-  }
+    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
+    }
 
   protected void execute() {
     super.execute();
@@ -117,11 +118,10 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     if (readyToStartFeeder && !withholdShooting) {
       //Robot.feeder.setFeeder(1.0);
-      Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
+
     }
-    
-    /// TEMP
-    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
+    Robot.stirrer.stir(50);    
+
   }
 
   protected boolean isFinished() {
@@ -158,6 +158,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     logger.info("finish");
     //Robot.feeder.setFeeder(0);
+    Robot.stirrer.stir(50);    
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }

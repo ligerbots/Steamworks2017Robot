@@ -16,6 +16,7 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Feeder.class);
 
   Servo stirrerServo;
+  double lastPos = 0.0;
 
   /**
    * Creates the Stirrer subsystem.
@@ -26,6 +27,12 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
     // SR1425CR
     stirrerServo = new Servo(RobotMap.STIRRER_SERVO_CHANNEL);
   }
+  
+  public void stir(double rate) {
+
+      stirrerServo.set(rate);
+
+  }
 
   /**
    * Sets the stirrer motor speed.
@@ -34,8 +41,8 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
    */
   public void setStirrer(double speed) {
     if (stirrerServo != null) {
-      logger.trace(String.format("Setting feeder, speed", speed));
-      // stirrerServo.set(speed);      
+      logger.trace(String.format("Setting stirrer, speed", speed));
+  
       stirrerServo.setSpeed(speed);
     }
   }
@@ -47,8 +54,8 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
    */
   public void sendDataToSmartDashboard() {
     if (stirrerServo != null) {
-      // SmartDashboard.putNumber("Stirrer Power",
-      //     stirrerServo.getOutputCurrent() * feederTalon.getOutputVoltage());
+       //SmartDashboard.putNumber("Stirrer Power",
+       //    stirrerServo.getOutputCurrent() * feederTalon.getOutputVoltage());
       
     }
   }
