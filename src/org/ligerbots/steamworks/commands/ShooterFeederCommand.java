@@ -123,7 +123,7 @@ public class ShooterFeederCommand extends StatefulCommand {
       //Robot.feeder.setFeeder(1.0);
 
     }
-    Robot.stirrer.stir(50);    
+    Robot.stirrer.stir(0.5);    
 
   }
 
