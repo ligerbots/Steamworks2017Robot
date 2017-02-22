@@ -86,6 +86,9 @@ public class ShooterFeederCommand extends StatefulCommand {
   }
 
   protected void initialize() {
+    if (getFromDashboard) {
+      desiredShooterRpm = SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
+    }
     logger.info(String.format("Initialize, desired rpm=%f", desiredShooterRpm));
 //    Robot.feeder.setFeeder(0);
     readyToStartFeeder = false;

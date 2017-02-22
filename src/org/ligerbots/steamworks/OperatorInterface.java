@@ -121,7 +121,7 @@ public class OperatorInterface {
       // This is a toggle command.
       farmGearButton.whenPressed(new GearCommand());
 
-      JoystickButton farmShiftButton = new JoystickButton(xboxController, 10);
+      JoystickButton farmShiftButton = new JoystickButton(farmController, 10);
       farmShiftButton.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
 
       JoystickButton farmDriveToGearButton = new JoystickButton(farmController, 5);
@@ -131,7 +131,7 @@ public class OperatorInterface {
       farmLedButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
 
       if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
-        JoystickButton farmCompressorButton = new JoystickButton(xboxController, 11);
+        JoystickButton farmCompressorButton = new JoystickButton(farmController, 11);
         farmCompressorButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
       }
          
