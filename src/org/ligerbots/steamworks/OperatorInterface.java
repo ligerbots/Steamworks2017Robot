@@ -102,10 +102,39 @@ public class OperatorInterface {
       JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
       xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
     }
-
+    
     if (isFarmControllerPresent()) {
       LoggerFactory.getLogger(OperatorInterface.class).info("Farm controller found!");
-      // mapFarmControllerButtons();      
+      JoystickButton farmIntakeButton = new JoystickButton(farmController, 6);
+      farmIntakeButton.whenPressed(new IntakeCommand());
+
+      JoystickButton farmClimbButton = new JoystickButton(farmController, 21);
+      farmClimbButton.whenPressed(new ClimbCommand());
+
+      JoystickButton farmShooterButton = new JoystickButton(farmController, 1);
+      farmShooterButton.whileHeld(new ShooterFeederCommand(true));
+
+      JoystickButton farmGearButton = new JoystickButton(farmController, 4);
+      // no more hold, just call close command when released
+      // xboxYButton.whenPressed(new GearCommand(true));
+      // xboxYButton.whenReleased(new GearCommand(false));
+      // This is a toggle command.
+      farmGearButton.whenPressed(new GearCommand());
+
+      JoystickButton farmShiftButton = new JoystickButton(xboxController, 10);
+      farmShiftButton.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
+
+      JoystickButton farmDriveToGearButton = new JoystickButton(farmController, 5);
+      farmDriveToGearButton.whenPressed(new DriveToGearCommand());
+
+      JoystickButton farmLedButton = new JoystickButton(farmController, 17);
+      farmLedButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
+
+      if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
+        JoystickButton farmCompressorButton = new JoystickButton(xboxController, 11);
+        farmCompressorButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
+      }
+         
     } else {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
