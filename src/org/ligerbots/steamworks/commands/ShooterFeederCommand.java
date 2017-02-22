@@ -171,6 +171,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     logger.info("Interrupted, spinning down shooter");
     //Robot.feeder.setFeeder(0);
+    Robot.stirrer.stir(50);  
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }
