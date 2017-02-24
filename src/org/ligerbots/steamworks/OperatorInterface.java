@@ -42,7 +42,7 @@ public class OperatorInterface {
   public static final int AUTO_MODE_NONE = 2;
   
   public XboxController xboxController;
-  public Joystick farmController; // ???
+  public Joystick farmController;
   
   SendableChooser<Integer> autoMode;
   SendableChooser<Integer> startingPosition;
@@ -83,10 +83,6 @@ public class OperatorInterface {
     xboxXButton.whileHeld(new ShooterFeederCommand(true));
 
     JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
-    // no more hold, just call close command when released
-    // xboxYButton.whenPressed(new GearCommand(true));
-    // xboxYButton.whenReleased(new GearCommand(false));
-    // This is a toggle command.
     xboxYButton.whenPressed(new GearCommand());
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
@@ -134,7 +130,6 @@ public class OperatorInterface {
         JoystickButton farmCompressorButton = new JoystickButton(farmController, 11);
         farmCompressorButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
       }
-         
     } else {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
@@ -219,19 +214,25 @@ public class OperatorInterface {
   }
   
   public int getAutoMode() {
-    return 0; //autoMode.getSelected();
+    return autoMode.getSelected();
   }
   
   public int getStartingPositionId() {
-    return 0; //startingPosition.getSelected();
+    return startingPosition.getSelected();
   }
   
   public int getGearLiftPositionId() {
-    return 0; //gearLiftPosition.getSelected();
+    return gearLiftPosition.getSelected();
   }
   
+  /**
+   * Detects whether we have a farm controller.
+   * @return True if present. Currently, always true
+   */
   public boolean isFarmControllerPresent() {
-    return (farmController.getButtonCount() > 10);
+    return true;
+    // we had problems with a startup check last year
+    //return (farmController.getButtonCount() > 10);
   }
   
 }

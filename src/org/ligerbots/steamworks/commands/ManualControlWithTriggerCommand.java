@@ -85,7 +85,7 @@ public class ManualControlWithTriggerCommand extends Command {
         Robot.gearManipulator.setServoRaw(Math.abs(value));
         break;
       case STIRRER_SERVO:
-        Robot.stirrer.setStirrer(0.2);
+        Robot.stirrer.setStirrer(value);
         break;        
       default:
         break;
@@ -116,7 +116,7 @@ public class ManualControlWithTriggerCommand extends Command {
       case GEAR_SERVO:
         break;
       case STIRRER_SERVO:
-        Robot.stirrer.setStirrer(0.0);
+        Robot.stirrer.setStirrer(0);
         break;
       default:
         break;

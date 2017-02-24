@@ -241,17 +241,17 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     logger.info(String.format("Shifting, type=%s, shifter state=%s", shiftType.toString(),
         shiftingSolenoid.get().toString()));
     if (pcmPresent) {
-	    if (shiftType == ShiftType.TOGGLE) {
-	      if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
-	        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
-	      } else {
-	        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
-	      }
-	    } else if (shiftType == ShiftType.UP) {
-	      shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
-	    } else {
-	      shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
-	    }
+      if (shiftType == ShiftType.TOGGLE) {
+        if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
+          shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+        } else {
+          shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+        }
+      } else if (shiftType == ShiftType.UP) {
+        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+      } else {
+        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+      }
     }
   }
 
@@ -380,14 +380,18 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     // solenoid diagnostics
     if (pcmPresent) {
-    	SmartDashboard.putString("PCM_Blacklist", Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));
-    	SmartDashboard.putBoolean("Shift_Voltage_Fault", shiftingSolenoid.getPCMSolenoidVoltageFault());
-    	SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
-        shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
+      SmartDashboard.putString("PCM_Blacklist",
+          Integer.toString(shiftingSolenoid.getPCMSolenoidBlackList(), 2));
+      SmartDashboard.putBoolean("Shift_Voltage_Fault",
+          shiftingSolenoid.getPCMSolenoidVoltageFault());
+      SmartDashboard.putBoolean("Shift_Voltage_Sticky_Fault",
+          shiftingSolenoid.getPCMSolenoidVoltageStickyFault());
     }
 
-    // dead reckoning
-    swFieldDisplay.putBoolean("_swfield", true);
+    // dead reckoning field display
+    // tell the dashboard what this object is
+    swFieldDisplay.putBoolean("_swfield", true); 
+    // put in dead reckoning values
     swFieldDisplay.putNumber("x", positionX);
     swFieldDisplay.putNumber("y", positionY);
     swFieldDisplay.putNumber("direction", rotation);

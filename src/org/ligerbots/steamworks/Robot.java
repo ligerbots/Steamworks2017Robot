@@ -126,8 +126,8 @@ public class Robot extends IterativeRobot {
       pneumatics = new Pneumatics();
       proximitySensor = new ProximitySensor();
       pdpSubsystem = new PdpSubsystem();
-      allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, stirrer, gearManipulator, intake,
-          pneumatics, proximitySensor, pdpSubsystem);
+      allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, stirrer, gearManipulator,
+          intake, pneumatics, proximitySensor, pdpSubsystem);
   
       driveJoystickCommand = new DriveJoystickCommand();
       operatorInterface = new OperatorInterface();
@@ -328,11 +328,14 @@ public class Robot extends IterativeRobot {
     }
   }
   
-  private boolean m_disabledInitialized = false;
-  private boolean m_autonomousInitialized = false;
-  private boolean m_teleopInitialized = false;
-  private boolean m_testInitialized = false;
+  private boolean disabledInitialized = false;
+  private boolean autonomousInitialized = false;
+  private boolean teleopInitialized = false;
+  private boolean testInitialized = false;
   
+  /**
+   * {@link IterativeRobot#startCompetition()}.
+   */
   public void startCompetition() {
     HAL.report(tResourceType.kResourceType_Framework,
                                    tInstances.kFramework_Iterative);
@@ -348,61 +351,61 @@ public class Robot extends IterativeRobot {
     while (true) {
       // Wait for new data to arrive
       start = System.nanoTime();
-//      m_ds.waitForData();
+      // m_ds.waitForData();
       // Call the appropriate function depending upon the current robot mode
       if (isDisabled()) {
         // call DisabledInit() if we are now just entering disabled mode from
         // either a different mode or from power-on
-        if (!m_disabledInitialized) {
+        if (!disabledInitialized) {
           LiveWindow.setEnabled(false);
           disabledInit();
-          m_disabledInitialized = true;
+          disabledInitialized = true;
           // reset the initialization flags for the other modes
-          m_autonomousInitialized = false;
-          m_teleopInitialized = false;
-          m_testInitialized = false;
+          autonomousInitialized = false;
+          teleopInitialized = false;
+          testInitialized = false;
         }
         HAL.observeUserProgramDisabled();
         disabledPeriodic();
       } else if (isTest()) {
         // call TestInit() if we are now just entering test mode from either
         // a different mode or from power-on
-        if (!m_testInitialized) {
+        if (!testInitialized) {
           LiveWindow.setEnabled(true);
           testInit();
-          m_testInitialized = true;
-          m_autonomousInitialized = false;
-          m_teleopInitialized = false;
-          m_disabledInitialized = false;
+          testInitialized = true;
+          autonomousInitialized = false;
+          teleopInitialized = false;
+          disabledInitialized = false;
         }
         HAL.observeUserProgramTest();
         testPeriodic();
       } else if (isAutonomous()) {
         // call Autonomous_Init() if this is the first time
         // we've entered autonomous_mode
-        if (!m_autonomousInitialized) {
+        if (!autonomousInitialized) {
           LiveWindow.setEnabled(false);
           // KBS NOTE: old code reset all PWMs and relays to "safe values"
           // whenever entering autonomous mode, before calling
           // "Autonomous_Init()"
           autonomousInit();
-          m_autonomousInitialized = true;
-          m_testInitialized = false;
-          m_teleopInitialized = false;
-          m_disabledInitialized = false;
+          autonomousInitialized = true;
+          testInitialized = false;
+          teleopInitialized = false;
+          disabledInitialized = false;
         }
         HAL.observeUserProgramAutonomous();
         autonomousPeriodic();
       } else {
         // call Teleop_Init() if this is the first time
         // we've entered teleop_mode
-        if (!m_teleopInitialized) {
+        if (!teleopInitialized) {
           LiveWindow.setEnabled(false);
           teleopInit();
-          m_teleopInitialized = true;
-          m_testInitialized = false;
-          m_autonomousInitialized = false;
-          m_disabledInitialized = false;
+          teleopInitialized = true;
+          testInitialized = false;
+          autonomousInitialized = false;
+          disabledInitialized = false;
         }
         HAL.observeUserProgramTeleop();
         teleopPeriodic();

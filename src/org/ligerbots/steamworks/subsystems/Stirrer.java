@@ -1,10 +1,8 @@
 package org.ligerbots.steamworks.subsystems;
 
-import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +11,9 @@ import org.slf4j.LoggerFactory;
  * The feeder is the mechanism that delivers fuel consistently to the shooter from the hopper.
  */
 public class Stirrer extends Subsystem implements SmartDashboardLogger {
-  private static final Logger logger = LoggerFactory.getLogger(Feeder.class);
+  private static final Logger logger = LoggerFactory.getLogger(Stirrer.class);
 
   Servo stirrerServo;
-  double lastPos = 0.0;
 
   /**
    * Creates the Stirrer subsystem.
@@ -24,26 +21,23 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
   public Stirrer() {
     logger.info("Initialize");
 
-    // SR1425CR
+    // HSR-1425CR
     stirrerServo = new Servo(RobotMap.STIRRER_SERVO_CHANNEL);
-  }
-  
-  public void stir(double rate) {
-
-      stirrerServo.set(rate);
-
+    // values for the servo we have. http://hitecrcd.com/faqs/servos/general-servos
+    stirrerServo.setBounds(2.1, 0, 0, 0, 0.9);
+    stirrerServo.setPeriodMultiplier(PeriodMultiplier.k1X);
   }
 
   /**
    * Sets the stirrer motor speed.
    * 
-   * @param value A percentvbus value, 0.0 to 1.0
+   * @param value The servo value, 0 to 1
    */
-  public void setStirrer(double speed) {
+  public void setStirrer(double value) {
     if (stirrerServo != null) {
-      logger.trace(String.format("Setting stirrer, speed", speed));
-  
-      stirrerServo.setSpeed(speed);
+      logger.trace(String.format("Setting stirrer, value %f", value));
+
+      stirrerServo.set(value);
     }
   }
 
@@ -52,12 +46,6 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
   /**
    * Sends diagnostics to SmartDashboard.
    */
-  public void sendDataToSmartDashboard() {
-    if (stirrerServo != null) {
-       //SmartDashboard.putNumber("Stirrer Power",
-       //    stirrerServo.getOutputCurrent() * feederTalon.getOutputVoltage());
-      
-    }
-  }
+  public void sendDataToSmartDashboard() {}
 }
 

@@ -15,7 +15,6 @@ public class GearCommand extends Command {
 
   boolean shouldBeOpen;
   boolean toggle;
-  boolean hold;
 
   /**
    * Creates a new GearCommand which toggles the current state of the gear.
@@ -25,20 +24,9 @@ public class GearCommand extends Command {
    */
   public GearCommand() {
     toggle = true;
-    hold = false;        
     logger.trace("Gear command in toggle mode");
   }
   
-  /**
-   * Creates a new GearCommand.
-   * 
-   * @param shouldBeOpen Whether the gear mechanism should be open or not.
-   */
-  public GearCommand(boolean shouldBeOpen) {
-    this(shouldBeOpen, false);
-    logger.trace("Gear command: Setting shouldBeOpen to " + shouldBeOpen);
-  }
-
   /**
    * Creates a new GearCommand. The hold parameter is used in {@link OperatorInterface} for a
    * {@link JoystickButton#whileHeld(Command)} so the gear mechanism returns to closed position once
@@ -46,20 +34,18 @@ public class GearCommand extends Command {
    * driving.
    * 
    * @param shouldBeOpen Whether the gear mechanism should be open or not.
-   * @param hold Whether this command should keep running until canceled or not.
    */
-  public GearCommand(boolean shouldBeOpen, boolean hold) {
+  public GearCommand(boolean shouldBeOpen) {
     requires(Robot.gearManipulator);
     this.toggle = false;
     this.shouldBeOpen = shouldBeOpen;
-    this.hold = hold;
   }
 
   protected void initialize() {
     if (toggle) {
-      logger.info(String.format("Initialize, toggle=%b, hold=%b", toggle, hold));
+      logger.info(String.format("Initialize, toggle=%b", toggle));
     } else {
-      logger.info(String.format("Initialize, shouldBeOpen=%b, hold=%b", shouldBeOpen, hold));
+      logger.info(String.format("Initialize, shouldBeOpen=%b", shouldBeOpen));
     }
   }
 
@@ -72,20 +58,14 @@ public class GearCommand extends Command {
   } 
 
   protected boolean isFinished() {
-    return !hold;
+    return true;
   }
 
   protected void end() {
     logger.trace("Finish");
-    if (hold) {
-      Robot.gearManipulator.setOpen(!shouldBeOpen);
-    }
   }
 
   protected void interrupted() {
     logger.info("Interrupted");
-    if (hold) {
-      Robot.gearManipulator.setOpen(!shouldBeOpen);
-    }
   }
 }

@@ -23,9 +23,8 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     logger.info("Initialize");
 
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
-    gearServo.setSpeed(RobotMap.GEAR_SERVO_SPEED);
     setOpen(false);
- }
+  }
 
   public void initDefaultCommand() {
   }
@@ -35,24 +34,15 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
    * @param shouldBeOpen Whether it should be open or closed.
    */
   public void setOpen(boolean shouldBeOpen) {
-    logger.info(String.format("Set gear manipulator, shouldBeOpen=%b", shouldBeOpen));
-    
     isOpen = shouldBeOpen;
-    if (shouldBeOpen) {
-      double gearmech_open_degrees = 70;	// RobotMap.GEARMECH_OPEN_DEGREES;
-      logger.info(String.format("gearmech open degrees %f", gearmech_open_degrees));
-      // Map 0 degrees to 0.0 and 180 degrees to 1.0
-      double gearmech_position_open = gearmech_open_degrees / 180.;
-      gearServo.set(gearmech_position_open);
-      logger.info(String.format("Set gear manipulator to %f (open)", gearmech_position_open));
-    } else {
-      double gearmech_closed_degrees = 165; 	// RobotMap.GEARMECH_CLOSED_DEGREES;
-   // Map 0 degrees to 0.0 and 180 degrees to 1.0
-      double gearmech_position_closed = gearmech_closed_degrees / 180.;
-      gearServo.set(gearmech_position_closed);
-      logger.info(String.format("gearmech closed degrees %f", gearmech_closed_degrees));
-      logger.info(String.format("Set gear manipulator to %f (closed)", gearmech_position_closed));
-    }
+    
+    double servoDegrees =
+        shouldBeOpen ? RobotMap.GEARMECH_OPEN_DEGREES : RobotMap.GEARMECH_CLOSED_DEGREES;
+    double servoValue = servoDegrees / 180;
+    logger.info(String.format("open=%b degrees=%f value=%f", shouldBeOpen, servoDegrees,
+        servoValue));
+    
+    setServoRaw(servoValue);
   }
   
   public void setServoRaw(double value) {

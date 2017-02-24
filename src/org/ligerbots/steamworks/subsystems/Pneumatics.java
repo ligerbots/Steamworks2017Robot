@@ -21,10 +21,13 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
 
   Compressor compressor = null;
 
+  /**
+   * Creates a new Pneumatics subsystem.
+   */
   public Pneumatics() {
     logger.info("Initialize");
     if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
-    	compressor = new Compressor(RobotMap.PCM_CAN_ID);
+      compressor = new Compressor(RobotMap.PCM_CAN_ID);
     }
   }
 
@@ -37,16 +40,16 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
    */
   public void setCompressorOn(CompressorState state) {
     if (compressor != null) {
-        if (state == CompressorState.TOGGLE) {
-          compressor.setClosedLoopControl(!compressor.getClosedLoopControl());
-        } else if (state == CompressorState.ON) {
-          compressor.setClosedLoopControl(true);
-        } else if (state == CompressorState.OFF) {
-          compressor.setClosedLoopControl(false);
-        }
-    
-        logger.info(String.format("Setting compressor, request=%s, compressor on=%b", state.toString(),
-            compressor.getClosedLoopControl()));
+      if (state == CompressorState.TOGGLE) {
+        compressor.setClosedLoopControl(!compressor.getClosedLoopControl());
+      } else if (state == CompressorState.ON) {
+        compressor.setClosedLoopControl(true);
+      } else if (state == CompressorState.OFF) {
+        compressor.setClosedLoopControl(false);
+      }
+
+      logger.info(String.format("Setting compressor, request=%s, compressor on=%b",
+          state.toString(), compressor.getClosedLoopControl()));
     }
   }
 
@@ -56,9 +59,9 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
 
   @Override
   public void sendDataToSmartDashboard() {
-	if (compressor != null) {
-	    SmartDashboard.putBoolean("Compressor_Closed_Loop", isCompressorOn());
-	    SmartDashboard.putBoolean("Compressor_Pressure_Switch", compressor.getPressureSwitchValue());
-	}
+    if (compressor != null) {
+      SmartDashboard.putBoolean("Compressor_Closed_Loop", isCompressorOn());
+      SmartDashboard.putBoolean("Compressor_Pressure_Switch", compressor.getPressureSwitchValue());
+    }
   }
 }

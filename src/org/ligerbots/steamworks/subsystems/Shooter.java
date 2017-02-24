@@ -144,6 +144,10 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterMaster.enableControl();
   }
 
+  /**
+   * Reads the shooter RPM from the talons.
+   * @return The RPM
+   */
   public double getShooterRpm() {
     if (RobotMap.IS_ROADKILL) {
       return 0;

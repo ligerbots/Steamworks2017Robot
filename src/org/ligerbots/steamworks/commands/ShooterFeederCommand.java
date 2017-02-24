@@ -50,7 +50,7 @@ public class ShooterFeederCommand extends StatefulCommand {
    * @param desiredShooterRpm The rpm we need the shooter at.
    */
   public ShooterFeederCommand(double desiredShooterRpm) {
-//    requires(Robot.feeder);
+    requires(Robot.feeder);
     requires(Robot.shooter); 
     requires(Robot.stirrer);
     this.desiredShooterRpm = desiredShooterRpm;
@@ -90,14 +90,12 @@ public class ShooterFeederCommand extends StatefulCommand {
       desiredShooterRpm = SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
     }
     logger.info(String.format("Initialize, desired rpm=%f", desiredShooterRpm));
-//    Robot.feeder.setFeeder(0);
     readyToStartFeeder = false;
     aborted = false;
     withholdShooting = false;
     rpmInRange = false;
     ended = false;
-    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_SPEED);
-    }
+  }
 
   protected void execute() {
     super.execute();
@@ -121,10 +119,9 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     if (readyToStartFeeder && !withholdShooting) {
       Robot.feeder.setFeeder(1.0);
-
     }
-    Robot.stirrer.stir(0.5);    
-
+    
+    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STIR);    
   }
 
   protected boolean isFinished() {
@@ -161,7 +158,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     logger.info("finish");
     Robot.feeder.setFeeder(0);
-    Robot.stirrer.stir(50);    
+    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STOP);    
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }
@@ -171,7 +168,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
     logger.info("Interrupted, spinning down shooter");
     Robot.feeder.setFeeder(0);
-    Robot.stirrer.stir(50);  
+    Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STOP);  
     Robot.shooter.setShooterRpm(0);
     ended = true;
   }

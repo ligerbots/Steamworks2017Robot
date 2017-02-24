@@ -96,10 +96,9 @@ public class RobotMap {
   public static double GEARMECH_OPEN_DEGREES = 70;
   
   @Preference
-  public static double GEAR_SERVO_SPEED = 0.5;
-
+  public static double STIRRER_SERVO_VALUE_STIR = 1.0;
   @Preference
-  public static double STIRRER_SERVO_SPEED = 0.5;
+  public static double STIRRER_SERVO_VALUE_STOP = 0.5;
 
   @Preference
   public static double AUTO_TURN_MAX_SPEED_HIGH = 0.3;
