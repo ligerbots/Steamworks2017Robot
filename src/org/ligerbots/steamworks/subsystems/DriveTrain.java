@@ -151,9 +151,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     // PID constants. TODO: find PID constants
     talon.setProfile(0);
     talon.setF(0);
-    talon.setP(0.0001);
-    talon.setI(0);
-    talon.setD(0);
+    talon.setP(0.5);
+    talon.setI(0.0001);
+    talon.setD(1.0);
     talon.setPosition(0);
     talon.enableBrakeMode(true);
   }
@@ -291,15 +291,20 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (!enabled) {
       leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
       rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-      leftMaster.set(0);
-      rightMaster.set(0);
+      leftMaster.reverseSensor(true);
+      robotDrive.setSafetyEnabled(true);
+      rawLeftRightDrive(0, 0);
     } else {
+      robotDrive.setSafetyEnabled(false);
+      
       final double currentEncoderLeft = leftMaster.getPosition();
       final double currentEncoderRight = rightMaster.getPosition();
       
+      leftMaster.reverseSensor(false);
+      
       leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
       rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-      leftMaster.set(currentEncoderLeft);
+      leftMaster.set(-currentEncoderLeft);
       rightMaster.set(currentEncoderRight);
     }
   }

@@ -135,7 +135,10 @@ public class OperatorInterface {
     }
     
     SmartDashboard.putData(new TurnCommand(45));
+    SmartDashboard.putData(new TurnCommand(90));
+    SmartDashboard.putData(new TurnCommand(180));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
+    SmartDashboard.putData(new DriveDistanceCommand(12 * 10));
     SmartDashboard.putData(new DriveToGearCommand());
     
     SmartDashboard.putData(new DriveUltrasonicCommand(3.0));

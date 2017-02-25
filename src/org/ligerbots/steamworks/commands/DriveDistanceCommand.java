@@ -32,6 +32,9 @@ public class DriveDistanceCommand extends AccessibleCommand {
   double autoDriveMaxSpeed;
   double autoDriveMinSpeed;
   double autoDriveStartSpeed;
+  
+  double nanosSinceOnTarget;
+  boolean detectedOnTarget;
 
   /**
    * Create a new DriveDistanceCommand.
@@ -71,6 +74,8 @@ public class DriveDistanceCommand extends AccessibleCommand {
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_LOW;
     }
     
+    detectedOnTarget = false;
+    
     logger.info(String.format("Initialize, distance=%f, highgear=%b", offsetInches, isHighGear));
   }
 
@@ -105,9 +110,17 @@ public class DriveDistanceCommand extends AccessibleCommand {
     } else if (turn < -1.0) {
       turn = -1.0;
     }
+    
+    boolean onTargetNow = error < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
 
     // ramp up, drive at max speed, or ramp down depending on progress (measured by error)
-    if (error < autoDriveRampDownDist) {
+    if (onTargetNow) {
+      if (!detectedOnTarget) {
+        detectedOnTarget = true;
+        nanosSinceOnTarget = System.nanoTime();
+        Robot.driveTrain.setHoldPositionEnabled(true);
+      }
+    } else if (error < autoDriveRampDownDist) {
       double driveSpeed = (error * (autoDriveMaxSpeed - autoDriveMinSpeed)
           / autoDriveRampDownDist) + autoDriveMinSpeed;
       Robot.driveTrain.rawThrottleTurnDrive(offsetInches > 0 ? driveSpeed : -driveSpeed, turn);
@@ -135,7 +148,7 @@ public class DriveDistanceCommand extends AccessibleCommand {
       return true;
     }
 
-    boolean onTarget = error < RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR;
+    boolean onTarget = detectedOnTarget && System.nanoTime() - nanosSinceOnTarget > 1_000_000_000;
     if (onTarget) {
       succeeded = true;
       ended = true;
@@ -145,14 +158,14 @@ public class DriveDistanceCommand extends AccessibleCommand {
 
   protected void end() {
     logger.info("Finish");
-    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    Robot.driveTrain.setHoldPositionEnabled(false);
     Robot.gearManipulator.setOpen(false);
     ended = true;
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
-    Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+    Robot.driveTrain.setHoldPositionEnabled(false);
     Robot.gearManipulator.setOpen(false);
     ended = true;
   }
