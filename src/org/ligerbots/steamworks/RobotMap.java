@@ -22,8 +22,8 @@ public class RobotMap {
   
   public static final int PCM_CAN_ID = 9;
 
-  public static final int CT_ID_LEFT_1 = IS_ROADKILL ? 1 : 2;
-  public static final int CT_ID_LEFT_2 = IS_ROADKILL ? 3 : 1;
+  public static final int CT_ID_LEFT_1 = IS_ROADKILL ? 1 : 1;
+  public static final int CT_ID_LEFT_2 = IS_ROADKILL ? 3 : 2;
   public static final int CT_ID_RIGHT_1 = IS_ROADKILL ? 2 : 7;
   public static final int CT_ID_RIGHT_2 = IS_ROADKILL ? 4 : 6;
 
