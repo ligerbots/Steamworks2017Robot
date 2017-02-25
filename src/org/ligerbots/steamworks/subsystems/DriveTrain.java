@@ -66,6 +66,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   long navxUpdateNanos;
   ITable swFieldDisplay;
   boolean pcmPresent;
+  
+  boolean isHoldingPosition;
 
   /**
    * Creates a new drive train instance.
@@ -74,6 +76,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     logger.info("Initialize");
 
     swFieldDisplay = NetworkTable.getTable("SmartDashboard/SwField");
+
+    isHoldingPosition = false;
     
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
@@ -111,7 +115,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         lastOutputRight = rightOutput;
       }
     };
-    robotDrive.setMaxOutput(12.5);
+    robotDrive.setMaxOutput(12.0);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
@@ -142,6 +146,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
     talon.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
     talon.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
+    talon.configNominalOutputVoltage(+0.0f, -0.0f);
+    talon.configPeakOutputVoltage(+12.0f, -12.0f);
+    // PID constants. TODO: find PID constants
+    talon.setProfile(0);
+    talon.setF(0);
+    talon.setP(0.0001);
+    talon.setI(0);
+    talon.setD(0);
     talon.setPosition(0);
     talon.enableBrakeMode(true);
   }
@@ -172,13 +184,17 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param quickTurn true to override constant-curvature turning behavior
    */
   public void joystickDrive(double throttle, double turn, boolean quickTurn) {
+    if (isHoldingPosition) {
+      return;
+    }
+    
     if (!RobotMap.IS_ROADKILL) {
       throttle = -throttle;
       turn = -turn;
     }
     logger.trace(String.format("Driving with throttle %f and turn %f quickTurn %b", throttle, turn,
         quickTurn));
-    if (quickTurn) {
+    if (quickTurn || !RobotMap.JOYSTICK_DRIVE_COMPENSATION_ENABLED) {
       robotDrive.arcadeDrive(throttle, turn);
     } else {
       robotDrive.arcadeDrive(throttle,
@@ -194,6 +210,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param turn turn is the horizontal axis
    */
   public void rawThrottleTurnDrive(double throttle, double turn) {
+    if (isHoldingPosition) {
+      return;
+    }
+    
     if (!RobotMap.IS_ROADKILL) {
       throttle = -throttle;
       turn = -turn;
@@ -210,6 +230,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param right The right value
    */
   public void rawLeftRightDrive(double left, double right) {
+    if (isHoldingPosition) {
+      return;
+    }
+    
     robotDrive.setLeftRightMotorOutputs(left, right);
   }
 
@@ -256,12 +280,36 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
 
   /**
-   * Makes the robot drive until the limitSwitch is pressed.
+   * Enables or disables PID position holding for the climb.
+   * @param enabled Whether to enable or disable PID position holding.
    */
-  public void climb() {
-    logger.trace("Doing climb");
-    shift(ShiftType.DOWN);
-    rawThrottleTurnDrive(1, 0);
+  public void setHoldPositionEnabled(boolean enabled) {
+    setBrakeOn(true);
+    
+    isHoldingPosition = enabled;
+    
+    if (!enabled) {
+      leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+      rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+      leftMaster.set(0);
+      rightMaster.set(0);
+    } else {
+      final double currentEncoderLeft = leftMaster.getPosition();
+      final double currentEncoderRight = rightMaster.getPosition();
+      
+      leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+      rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+      leftMaster.set(currentEncoderLeft);
+      rightMaster.set(currentEncoderRight);
+    }
+  }
+  
+  /**
+   * Checks whether the drivetrain is currently holding its position.
+   * @return True if holding position
+   */
+  public boolean isHoldPositionEnabled() {
+    return isHoldingPosition;
   }
 
   public boolean isClimbLimitSwitchPressed() {

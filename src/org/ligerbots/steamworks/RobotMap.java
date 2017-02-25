@@ -161,6 +161,9 @@ public class RobotMap {
   @Preference
   public static boolean VISION_BOILER_AUTO_CORRECT = false;
   
+  @Preference
+  public static boolean JOYSTICK_DRIVE_COMPENSATION_ENABLED = true;
+  
   /**
    * Sets up Preferences variables. Must be called first in robotInit().
    */

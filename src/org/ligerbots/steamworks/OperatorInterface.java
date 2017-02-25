@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
-import org.ligerbots.steamworks.commands.ClimbCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DrivePathCommand;
@@ -20,6 +19,7 @@ import org.ligerbots.steamworks.commands.DriveToGearCommand;
 import org.ligerbots.steamworks.commands.DriveUltrasonicCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
+import org.ligerbots.steamworks.commands.HoldPositionCommand;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.LedRingCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
@@ -77,7 +77,7 @@ public class OperatorInterface {
     xboxAButton.whenPressed(new IntakeCommand());
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
-    xboxBButton.whenPressed(new ClimbCommand());
+    xboxBButton.whenPressed(new HoldPositionCommand());
 
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
     xboxXButton.whileHeld(new ShooterFeederCommand(true));
@@ -105,7 +105,7 @@ public class OperatorInterface {
       farmIntakeButton.whenPressed(new IntakeCommand());
 
       JoystickButton farmClimbButton = new JoystickButton(farmController, 21);
-      farmClimbButton.whenPressed(new ClimbCommand());
+      farmClimbButton.whenPressed(new HoldPositionCommand());
 
       JoystickButton farmShooterButton = new JoystickButton(farmController, 1);
       farmShooterButton.whileHeld(new ShooterFeederCommand(true));
