@@ -75,6 +75,7 @@ public class RobotMap {
   
   public static final double ROBOT_LENGTH = 40;
   public static final double ROBOT_WIDTH = 36;
+  public static final double ROBOT_SHOOTER_TO_TURN_CENTER_DIST = 16.5;
 
   public static final double SHOOTER_MAX_RPM = 6000;
   

@@ -119,6 +119,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
+    SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
 
     climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
@@ -268,13 +269,17 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       if (shiftType == ShiftType.TOGGLE) {
         if (shiftingSolenoid.get() == DoubleSolenoid.Value.kReverse) {
           shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+          SmartDashboard.putBoolean("Drive_Shift", true);
         } else {
           shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+          SmartDashboard.putBoolean("Drive_Shift", false);
         }
       } else if (shiftType == ShiftType.UP) {
         shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+        SmartDashboard.putBoolean("Drive_Shift", true);
       } else {
         shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+        SmartDashboard.putBoolean("Drive_Shift", false);
       }
     }
   }
