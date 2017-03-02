@@ -3,11 +3,11 @@ package org.ligerbots.steamworks.subsystems;
 import com.ctre.CANTalon;
 import com.kauailabs.navx.AHRSProtocol.AHRSUpdateBase;
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -48,7 +48,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   CANTalon rightSlave;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
-  DigitalInput climbLimitSwitch;
+  Solenoid climberSolenoid;
   AHRS navX;
 
   double positionX;
@@ -68,6 +68,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   boolean pcmPresent;
   
   boolean isHoldingPosition;
+  boolean isClimberLocked;
 
   /**
    * Creates a new drive train instance.
@@ -78,6 +79,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     swFieldDisplay = NetworkTable.getTable("SmartDashboard/SwField");
 
     isHoldingPosition = false;
+    isClimberLocked = false;
     
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
@@ -110,6 +112,12 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     robotDrive = new RobotDrive(leftMaster, rightMaster) {
       public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
+        // make sure we don't break the ratchet
+        if (isClimberLocked && rightOutput > 0) {
+          logger.warn("Attempt to drive forward while ratchet is engaged!");
+          rightOutput = 0;
+        }
+        
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;
         lastOutputRight = rightOutput;
@@ -119,10 +127,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
+    climberSolenoid = new Solenoid(RobotMap.SOLENOID_CLIMBER_LOCK);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
-
-    climbLimitSwitch = new DigitalInput(RobotMap.LIMIT_SWITCH_CLIMB_COMPLETE);
 
     // restore X and Y in case of crash
     if (SmartDashboard.containsKey("Robot_x")) {
@@ -289,6 +296,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * @param enabled Whether to enable or disable PID position holding.
    */
   public void setHoldPositionEnabled(boolean enabled) {
+    if (isClimberLocked) {
+      return;
+    }
+    
     setBrakeOn(true);
     
     isHoldingPosition = enabled;
@@ -321,9 +332,15 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public boolean isHoldPositionEnabled() {
     return isHoldingPosition;
   }
-
-  public boolean isClimbLimitSwitchPressed() {
-    return climbLimitSwitch.get();
+  
+  /**
+   * Locks the climber ratchet so we don't fall off after the match ends.
+   */
+  public void engageClimberRatchet() {
+    climberSolenoid.set(true);
+    isClimberLocked = true;
+    // just in case
+    setHoldPositionEnabled(false);
   }
 
   /**
@@ -433,8 +450,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
-
-    SmartDashboard.putBoolean("Climb_Switch", climbLimitSwitch.get());
 
     // solenoid diagnostics
     if (pcmPresent) {

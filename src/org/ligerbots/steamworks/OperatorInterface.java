@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
+import org.ligerbots.steamworks.commands.ClimberEngageRatchetCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DrivePathCommand;
@@ -142,6 +143,8 @@ public class OperatorInterface {
     SmartDashboard.putData(new DriveToGearCommand());
     
     SmartDashboard.putData(new DriveUltrasonicCommand(3.0));
+    
+    SmartDashboard.putData(new ClimberEngageRatchetCommand());
     
     SmartDashboard.putData(new FeederBackOutCommand());
     

@@ -43,6 +43,7 @@ public class RobotMap {
 
   public static final int SOLENOID_SHIFT_UP = 1;
   public static final int SOLENOID_SHIFT_DOWN = 0;
+  public static final int SOLENOID_CLIMBER_LOCK = 2;
 
   public static final int RELAY_LED_RING = 0;
 
@@ -59,7 +60,6 @@ public class RobotMap {
   public static final double MILLIMETERS_PER_INCH = 25.4;
   public static final double MILLIVOLTS_PER_MILLIMETER = 0.977;
 
-  public static final int LIMIT_SWITCH_CLIMB_COMPLETE = 0;
   public static final int ULTRASONIC_TRIGGER = 1;
   public static final int ULTRASONIC_ECHO = 2;
   
