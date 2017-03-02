@@ -315,7 +315,7 @@ public class FieldMap {
     
     
     FieldPosition spline0 = currentPosition.add(alliance == Alliance.Red ? 1 : -1, 0);
-    final double clearX = 282;
+    final double clearX = FieldPosition.CLEAR_DIVIDERS_TO_CENTER;
     FieldPosition clearOfDividersPosition =
         new FieldPosition(alliance == Alliance.Red ? -clearX : clearX, currentPosition.y);
 
