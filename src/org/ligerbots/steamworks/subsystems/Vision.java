@@ -79,7 +79,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final double DEFAULT_BOILER_TARGET_WIDTH = 0.82 * 15; // in
   private static final double DEFAULT_BOILER_TARGET_HEIGHT = 6.0; // in
 
-  Relay ledRing;
+  Relay ledRing0;
+  Relay ledRing1;
 
   // buffer vision data for multithreaded access
 
@@ -105,7 +106,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   public Vision() {
     logger.trace("Initialize");
 
-    ledRing = new Relay(RobotMap.RELAY_LED_RING);
+    ledRing0 = new Relay(RobotMap.RELAY_LED_RING_0);
+    ledRing1 = new Relay(RobotMap.RELAY_LED_RING_1);
 
     gearVision.table = NetworkTable.getTable("Vision_Gear");
     boilerVision.table = NetworkTable.getTable("Vision_Boiler");
@@ -192,7 +194,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     } else {
       on = false;
     }
-    ledRing.set(on ? Relay.Value.kReverse : Relay.Value.kOff);
+    ledRing0.set(on ? Relay.Value.kReverse : Relay.Value.kOff);
+    ledRing1.set(on ? Relay.Value.kReverse : Relay.Value.kOff);
   }
 
   /**
@@ -201,7 +204,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
    * @return True for on, false for off
    */
   public boolean isLedRingOn() {
-    return ledRing.get() != Relay.Value.kOff;
+    return ledRing0.get() != Relay.Value.kOff;
   }
 
   public VisionData getGearVisionData() {
@@ -410,7 +413,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   @Override
   public void sendDataToSmartDashboard() {
     // phone handles vision data for us
-    SmartDashboard.putBoolean("LED_On", ledRing.get() != Relay.Value.kOff);
+    SmartDashboard.putBoolean("LED_On", isLedRingOn());
 
     boolean gearLiftPhone = false;
     boolean boilerPhone = false;
