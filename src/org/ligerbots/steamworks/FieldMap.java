@@ -17,6 +17,8 @@ public class FieldMap {
   public static final int FIELD_SIDE_BOILER = 0;
   public static final int FIELD_SIDE_CENTER = 1;
   public static final int FIELD_SIDE_FEEDER = 2;
+  
+  public static final double HOPPER_TRIGGER_WIDTH = 24.0;
 
   private static FieldMap red;
   private static FieldMap blue;
@@ -57,6 +59,12 @@ public class FieldMap {
     red.ropeStations[0] = new FieldPosition(-146.602, -52.411);
     red.ropeStations[1] = new FieldPosition(-237.683, 0);
     red.ropeStations[2] = new FieldPosition(-146.602, 52.411);
+    red.hoppers[0] = red.hopperBoilerRed;
+    red.hoppers[1] = red.hopperBoilerCenter;
+    red.hoppers[2] = red.hopperBoilerBlue;
+    red.hoppers[3] = red.hopperLoadingBlue;
+    red.hoppers[4] = red.hopperLoadingRed;
+    
 
     blue = new FieldMap();
     blue.startingPositions[0] = red.startingPositions[0].multiply(-1, 1);
@@ -79,6 +87,11 @@ public class FieldMap {
     blue.ropeStations[0] = red.ropeStations[0].multiply(-1, 1);
     blue.ropeStations[1] = red.ropeStations[1].multiply(-1, 1);
     blue.ropeStations[2] = red.ropeStations[2].multiply(-1, 1);
+    blue.hoppers[0] = blue.hopperBoilerRed;
+    blue.hoppers[1] = blue.hopperBoilerCenter;
+    blue.hoppers[2] = blue.hopperBoilerBlue;
+    blue.hoppers[3] = blue.hopperLoadingBlue;
+    blue.hoppers[4] = blue.hopperLoadingRed;
   }
 
   public static FieldMap getRed() {
@@ -122,6 +135,7 @@ public class FieldMap {
   public FieldLine dividerLift12;
   public FieldLine dividerLift23;
   public FieldPosition[] ropeStations = new FieldPosition[3];
+  public FieldPosition[] hoppers = new FieldPosition[5];
 
   /**
    * Generates a Catmull-Rom spline for smooth navigation across a set of control points.
@@ -299,6 +313,7 @@ public class FieldMap {
     FieldPosition boiler = map.boiler;
     Alliance alliance = DriverStation.getInstance().getAlliance();
     
+    
     FieldPosition spline0 = currentPosition.add(alliance == Alliance.Red ? 1 : -1, 0);
     final double clearX = 282;
     FieldPosition clearOfDividersPosition =
@@ -318,6 +333,67 @@ public class FieldMap {
     
     controlPoints.add(boiler);
     List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
+  }
+  
+  /**
+   * Generates navigation from a starting position to the hopper.
+   * @param startingPositionId The starting position ID
+   * @return A DriveToPathCommand that drives the generated path
+   */
+  public static DrivePathCommand navigateStartToHopper(int startingPositionId) { 
+    FieldMap map = getAllianceMap();
+    
+    final Alliance alliance = DriverStation.getInstance().getAlliance();
+
+    final FieldPosition hopperPosition =
+        alliance == Alliance.Red ? red.hopperBoilerRed : blue.hopperBoilerBlue;
+
+    if (startingPositionId != 0) {
+      startingPositionId = 0;
+      logger.error("New starting position: " + startingPositionId);
+    }
+    
+    final List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
+
+    FieldPosition startingPosition = map.startingPositions[startingPositionId];
+    logger.debug(String.format("Starting position %s", startingPosition));
+    
+    // add a point behind us so the C-R spline generates correctly
+    controlPoints.add(startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0));
+
+    // drive forward 2 feet
+    FieldPosition initialForwardPosition =
+        startingPosition.add(alliance == Alliance.Red ? 24 : -24, 0);
+    logger.debug(String.format("2ft forward position %s", initialForwardPosition));
+    
+    controlPoints.add(initialForwardPosition);
+
+    double initialDriveToX;
+    double initialDriveToY;
+    
+    initialDriveToX = alliance == Alliance.Red
+        ? hopperPosition.getX() - HOPPER_TRIGGER_WIDTH / 2 - RobotMap.ROBOT_WIDTH / 2 + 2.0
+        : hopperPosition.getX() + HOPPER_TRIGGER_WIDTH / 2 + RobotMap.ROBOT_WIDTH / 2 - 2.0;
+    initialDriveToY = hopperPosition.getY()
+        - (RobotMap.ROBOT_LENGTH - RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST);
+    
+    double splinePointX = initialDriveToX;
+    double splinePointY = initialDriveToY - 24.0;
+
+    FieldPosition initialDriveToPosition = new FieldPosition(initialDriveToX, initialDriveToY);
+    logger.debug(String.format("Drive to position %s", initialDriveToPosition));
+    controlPoints.add(initialDriveToPosition);
+    
+    FieldPosition splinePoint = new FieldPosition(splinePointX, splinePointY);
+    logger.debug(String.format("Spline point %s", splinePoint));
+    controlPoints.add(splinePoint);
+    
+    logger.info(controlPoints.toString());
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    logger.info(splinePoints.toString());
+    
     DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
     return drivePathCommand;
   }
