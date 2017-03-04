@@ -72,7 +72,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           double tx = data.getTvecX();
           double tz = data.getTvecZ();
           double ty = data.getTvecY();
-          double angle = 90 - Math.toDegrees(Math.atan2(tz, tx));
+          double angle = 90 - Math.toDegrees(Math.atan2(tz, ty));
           currentAngle = angle;
           logger.info(String.format("Got data: tx=%f, tz=%f, angle=%f, state=TURN", tx, tz, angle));
 
@@ -82,7 +82,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           shooterFeederCommand.setRpm(calculatedRpm);
 
           if (Math.abs(angle) < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR) {
-            double distanceFromCameraToBoilerSquared = tz * tz + ty * ty;
+            double distanceFromCameraToBoilerSquared = tz * tz + tx * tx;
             double deltaHeight = 6 * 12 + 9 - RobotMap.BOILER_CAMERA_HEIGHT;
             double horizontalDistanceFromCameraToBoiler =
                 Math.sqrt(distanceFromCameraToBoilerSquared - deltaHeight * deltaHeight);

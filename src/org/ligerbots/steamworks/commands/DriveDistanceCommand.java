@@ -159,14 +159,12 @@ public class DriveDistanceCommand extends AccessibleCommand {
   protected void end() {
     logger.info("Finish");
     Robot.driveTrain.setHoldPositionEnabled(false);
-    Robot.gearManipulator.setOpen(false);
     ended = true;
   }
 
   protected void interrupted() {
     logger.warn("Interrupted");
     Robot.driveTrain.setHoldPositionEnabled(false);
-    Robot.gearManipulator.setOpen(false);
     ended = true;
   }
   

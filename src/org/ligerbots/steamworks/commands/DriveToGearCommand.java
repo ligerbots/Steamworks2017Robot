@@ -5,7 +5,9 @@ import java.util.List;
 import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
+import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class DriveToGearCommand extends StatefulCommand {
     INITIAL_WAIT_FOR_VISION,
     INITIAL_DRIVE,
     DRIVE_BACK,
+    DRIVE_TO_GEAR,
     DELIVER_GEAR,
     DRIVE_AWAY,
     DONE,
@@ -36,6 +39,7 @@ public class DriveToGearCommand extends StatefulCommand {
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
   DriveDistanceCommand driveBackCommand;
+  DriveUltrasonicCommand driveToGearCommand;
   boolean deliverOnly = false;
 
   DrivePathCommand initialDriveCommand;
@@ -192,6 +196,17 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
+          currentState = State.DRIVE_TO_GEAR;
+          driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST);
+          logger.info("state=DRIVE_TO_GEAR");
+        }
+        break;
+      case DRIVE_TO_GEAR:
+        driveToGearCommand.execute();
+        
+        if (driveToGearCommand.isFinished()) {
+          driveToGearCommand.end();
+          
           currentState = State.DELIVER_GEAR;
           nanosAtGearDeliverStart = System.nanoTime();
           logger.info("state=DELIVER_GEAR");
@@ -199,7 +214,7 @@ public class DriveToGearCommand extends StatefulCommand {
         break;
       case DELIVER_GEAR:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
-        Robot.gearManipulator.setOpen(true);
+        Robot.gearManipulator.setPosition(GearManipulator.Position.DELIVER_GEAR);
         if (System.nanoTime() - nanosAtGearDeliverStart > WAIT_GEAR_NANOS) {
           currentState = State.DRIVE_AWAY;
           logger.info("state=DRIVE_AWAY");
@@ -239,7 +254,7 @@ public class DriveToGearCommand extends StatefulCommand {
   protected void end() {
     super.end();
     
-    Robot.gearManipulator.setOpen(false);
+    Robot.gearManipulator.setPosition(GearManipulator.Position.CLOSED);
     
     logger.info("Finish");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
@@ -248,7 +263,7 @@ public class DriveToGearCommand extends StatefulCommand {
   protected void interrupted() {
     super.interrupted();
     
-    Robot.gearManipulator.setOpen(false);
+    Robot.gearManipulator.setPosition(GearManipulator.Position.CLOSED);
     
     logger.info("Interrupted");
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);

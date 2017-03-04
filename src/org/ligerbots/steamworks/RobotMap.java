@@ -70,9 +70,8 @@ public class RobotMap {
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
   public static final double GEARING_FACTOR = IS_ROADKILL ? 1 : 1d / (3d * 54d / 30d);
   
-  public static final double VISION_BOILER_CAMERA_ANGLE = 50.8; // degrees
-  
-  public static final double BOILER_CAMERA_HEIGHT = 16; //I MADE THIS UP! PLEASE CHANGE! inches?
+  public static final double VISION_BOILER_CAMERA_ANGLE = 35.2; // degrees
+  public static final double BOILER_CAMERA_HEIGHT = 16; // TODO: measure
   
   public static final double ROBOT_LENGTH = 40;
   public static final double ROBOT_WIDTH = 36;
@@ -93,9 +92,16 @@ public class RobotMap {
   public static double MAXIMUM_SHOOTING_DISTANCE = 144; //INCHES
   
   @Preference
-  public static double GEARMECH_CLOSED_DEGREES = 165;
+  public static double GEARMECH_CLOSED = 0;
   @Preference
-  public static double GEARMECH_OPEN_DEGREES = 70;
+  public static double GEARMECH_DELIVER = 0;
+  @Preference
+  public static double GEARMECH_RECEIVE = 0;
+  @Preference
+  public static double GEARMECH_RECEIVE_DIST = 5.0; // in
+  
+  @Preference
+  public static double GEAR_DELIVERY_DIST = 9.5; // in
   
   @Preference
   public static double STIRRER_SERVO_VALUE_STIR = 1.0;

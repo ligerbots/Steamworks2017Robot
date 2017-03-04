@@ -4,6 +4,7 @@ import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotPosition;
+import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Vision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +159,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     Robot.shooter.setShooterRpm(0);
     Robot.feeder.setFeeder(0);
-    Robot.gearManipulator.setOpen(false);
+    Robot.gearManipulator.setPosition(GearManipulator.Position.CLOSED);
   }
 
   protected void interrupted() {
@@ -168,7 +169,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     Robot.shooter.setShooterRpm(0);
     Robot.feeder.setFeeder(0);
-    Robot.gearManipulator.setOpen(false);
+    Robot.gearManipulator.setPosition(GearManipulator.Position.CLOSED);
   }
 
   @Override
