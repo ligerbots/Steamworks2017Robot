@@ -64,7 +64,7 @@ public class ManualControlWithTriggerCommand extends Command {
   protected void execute() {
     double value = Robot.operatorInterface.xboxController.getTriggerAxis(Hand.kRight)
         - Robot.operatorInterface.xboxController.getTriggerAxis(Hand.kLeft);
-    SmartDashboard.putNumber("ManualControl_value", value);
+    //SmartDashboard.putNumber("ManualControl_value", value);
     switch (type) {
       case DRIVE_THROTTLE:
         Robot.driveTrain.rawThrottleTurnDrive(value, 0);
@@ -73,7 +73,7 @@ public class ManualControlWithTriggerCommand extends Command {
         Robot.driveTrain.rawThrottleTurnDrive(0, value);
         break;
       case SHOOTER_RPM:
-        Robot.shooter.setShooterRpm(value * RobotMap.SHOOTER_MAX_RPM);
+        Robot.shooter.setShooterPercentVBus(value);
         break;
       case INTAKE:
         Robot.intake.setIntakeRaw(value);
@@ -82,7 +82,7 @@ public class ManualControlWithTriggerCommand extends Command {
         Robot.feeder.setFeeder(value);
         break;
       case GEAR_SERVO:
-        Robot.gearManipulator.setServoRaw(Math.abs(value));
+        Robot.gearManipulator.setServoRaw(SmartDashboard.getNumber("ManualControl_value", 0));
         break;
       case STIRRER_SERVO:
         Robot.stirrer.setStirrer(value);

@@ -57,7 +57,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterMaster.setProfile(0);
     shooterMaster.setF(0);
     shooterMaster.setP(0.05);
-    shooterMaster.setI(0.0002);
+    shooterMaster.setI(0.00012);
     shooterMaster.setD(1.0);
     // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Master", shooterMaster);
@@ -139,7 +139,7 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     shooterSlave.set(masterId);
     shooterSlave.enableControl();
 
-    shooterMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+    shooterMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
     shooterMaster.set(percentVbus);
     shooterMaster.enableControl();
   }

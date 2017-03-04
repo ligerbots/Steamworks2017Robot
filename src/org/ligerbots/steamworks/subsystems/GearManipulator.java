@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
@@ -23,7 +24,9 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     logger.info("Initialize");
 
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
-    setOpen(false);
+    gearServo.setBounds(2.4, 0, 0, 0, 0.8);
+    gearServo.setPeriodMultiplier(PeriodMultiplier.k1X);
+    //setOpen(false);
   }
 
   public void initDefaultCommand() {
