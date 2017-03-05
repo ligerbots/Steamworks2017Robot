@@ -26,13 +26,12 @@ public class ManualControlWithTriggerCommand extends Command {
   
   ManualControlType type;
   
+  /**
+   * Creates a new ManualControlWithTriggerCommand.
+   * @param type The thing to control
+   */
   public ManualControlWithTriggerCommand(ManualControlType type) {
     this.type = type;
-  }
-
-  protected void initialize() {
-    logger.info(String.format("Init, type=%s", type));
-    
     switch (type) {
       case DRIVE_THROTTLE:
         requires(Robot.driveTrain);
@@ -58,6 +57,10 @@ public class ManualControlWithTriggerCommand extends Command {
       default:
         break;
     }
+  }
+
+  protected void initialize() {
+    logger.info(String.format("Init, type=%s", type));
   }
 
   protected void execute() {

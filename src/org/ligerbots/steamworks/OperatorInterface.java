@@ -142,7 +142,7 @@ public class OperatorInterface {
     SmartDashboard.putData(new DriveDistanceCommand(12 * 10));
     SmartDashboard.putData(new DriveToGearCommand());
     
-    SmartDashboard.putData(new DriveUltrasonicCommand(3.0));
+    SmartDashboard.putData(new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true));
     
     SmartDashboard.putData(new ClimberEngageRatchetCommand());
     

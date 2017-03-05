@@ -32,11 +32,6 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     gearServo.setPeriodMultiplier(PeriodMultiplier.k1X);
     
     setPosition(Position.CLOSED);
-    
-    Thread servoThread = new Thread(this::servoShutoffThread);
-    servoThread.setName("Servo Shutoff Thread");
-    servoThread.setDaemon(true);
-    servoThread.start();
   }
 
   public void initDefaultCommand() {}
@@ -65,33 +60,9 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
 
     setServoRaw(servoValue);
   }
-  
-  private void servoShutoffThread() {
-    long timeWhen1 = -1;
-    while (true) {
-      if (gearServo.get() == 1.0) {
-        if (timeWhen1 == -1) {
-          timeWhen1 = System.currentTimeMillis();
-        } else if (System.currentTimeMillis() - timeWhen1 > 2000) {
-          gearServo.setDisabled();
-        }
-      } else {
-        timeWhen1 = -1;
-      }
-      
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-  }
 
   public void setServoRaw(double value) {
     gearServo.set(value);
-    //if (value == 1.0) {
-    //  gearServo.setDisabled();
-    //}
   }
 
   /**

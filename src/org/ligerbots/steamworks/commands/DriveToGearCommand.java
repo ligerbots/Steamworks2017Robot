@@ -2,11 +2,13 @@ package org.ligerbots.steamworks.commands;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ public class DriveToGearCommand extends StatefulCommand {
     INITIAL_WAIT_FOR_VISION,
     INITIAL_DRIVE,
     DRIVE_BACK,
+    TURN_TO_GEAR,
     DRIVE_TO_GEAR,
     DELIVER_GEAR,
     DRIVE_AWAY,
@@ -44,6 +47,7 @@ public class DriveToGearCommand extends StatefulCommand {
 
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
+  TurnCommand turnBackOnTargetCommand;
 
   /**
    * Creates a new DriveToGearCommand.
@@ -99,15 +103,17 @@ public class DriveToGearCommand extends StatefulCommand {
           
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
-          double distanceBack = 48.0;
+          double distanceBack = 36.0;
+          double distanceSide = 6.0;
           
-          if (distanceToGearLift < 60.0) {
-            driveBackCommand = new DriveDistanceCommand(distanceToGearLift - 66);
+          if (distanceToGearLift < distanceBack) {
+            driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
             driveBackCommand.initialize();
             currentState = State.DRIVE_BACK;
             logger.info("state=DRIVE_BACK");
           } else {
-            // calculate the location that is 48 inches back from the target in the robot frame
+            // calculate the location that is distanceBack inches back from the target in the robot
+            // frame
             double dx = -distanceBack * Math.sin(Math.toRadians(ry));
             double dz = -distanceBack * Math.cos(Math.toRadians(ry));
   
@@ -158,7 +164,8 @@ public class DriveToGearCommand extends StatefulCommand {
             List<FieldPosition> ctrlPoints = new LinkedList<>();
             ctrlPoints.add(backFromCurrentPosition);
             ctrlPoints.add(currentPosition);
-            ctrlPoints.add(midDestination);
+            ctrlPoints.add(midDestination.add(distanceSide * Math.sin(gearLiftConventionalAngle),
+                distanceSide * Math.cos(gearLiftConventionalAngle)));
             ctrlPoints.add(destination.add(-24 * Math.cos(gearLiftConventionalAngle),
                 -24 * Math.sin(gearLiftConventionalAngle)));
             ctrlPoints.add(splineFinalControl);
@@ -166,6 +173,8 @@ public class DriveToGearCommand extends StatefulCommand {
             initialDriveCommand =
                 new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
             initialDriveCommand.initialize();
+            
+            turnBackOnTargetCommand = new TurnCommand(DriveTrain.fixDegrees(ry));
   
             currentState = State.INITIAL_DRIVE;
             logger.info("state=INITIAL_DRIVE");
@@ -185,6 +194,17 @@ public class DriveToGearCommand extends StatefulCommand {
           nanosAtWaitForVisionStart = System.nanoTime();
         }
         break;
+      case TURN_TO_GEAR:
+        turnBackOnTargetCommand.execute();
+        if (turnBackOnTargetCommand.isFinished()) {
+          turnBackOnTargetCommand.end();
+          
+          currentState = State.DRIVE_TO_GEAR;
+          driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
+          driveToGearCommand.initialize();
+          logger.info("state=DRIVE_TO_GEAR");
+        }
+        break;
       case INITIAL_DRIVE:
         initialDriveCommand.execute();
         if (initialDriveCommand.isFinished()) {
@@ -196,9 +216,9 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
-          currentState = State.DRIVE_TO_GEAR;
-          driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST);
-          logger.info("state=DRIVE_TO_GEAR");
+          turnBackOnTargetCommand.initialize();
+          logger.info("state=TURN_TO_GEAR");
+          currentState = State.TURN_TO_GEAR;
         }
         break;
       case DRIVE_TO_GEAR:
