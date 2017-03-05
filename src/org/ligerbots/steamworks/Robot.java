@@ -32,6 +32,7 @@ import org.ligerbots.steamworks.subsystems.Shooter;
 import org.ligerbots.steamworks.subsystems.SmartDashboardLogger;
 import org.ligerbots.steamworks.subsystems.Stirrer;
 import org.ligerbots.steamworks.subsystems.Vision;
+import org.ligerbots.steamworks.subsystems.Vision.LedState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,6 +241,8 @@ public class Robot extends IterativeRobot {
       // aligned, but not reset again if the robot code crashes and restarts
       driveTrain.calibrateYaw();
       driveTrain.zeroSensors();
+      
+      vision.setLedRingOn(LedState.ON);
   
       // schedule the autonomous command (example)
       // if (autonomousCommand != null) {
@@ -292,6 +295,8 @@ public class Robot extends IterativeRobot {
       // if (autonomousCommand != null) {
       // autonomousCommand.cancel();
       // }
+      
+      vision.setLedRingOn(LedState.ON);
   
       driveJoystickCommand.start();
     } catch (Throwable ex) {
