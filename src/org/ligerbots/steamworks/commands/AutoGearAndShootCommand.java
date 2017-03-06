@@ -44,7 +44,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     requires(Robot.shooter);
     requires(Robot.feeder);
 
-    gearCommand = new DriveToGearCommand(true);
+    gearCommand = new DriveToGearCommand();
     boilerCommand = new AlignBoilerAndShootCommand();
   }
 

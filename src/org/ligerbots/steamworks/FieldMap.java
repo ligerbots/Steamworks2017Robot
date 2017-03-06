@@ -34,16 +34,13 @@ public class FieldMap {
     // robot starting positions are in the middle of the alliance station
     red = new FieldMap();
     // define starting position relative to the robot center of turning
+    // updated by Erik for optimal driving time (less sharp turns)
     red.startingPositions[0] =
-        // new FieldPosition(-325.688, -89.060).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
-        // on 2017-03-04 cbf changed this. 89" would have started the robot well off of our carpet
-        new FieldPosition(-325.688, -61.0).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        new FieldPosition(-325.688, -100).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[1] =
-        new FieldPosition(-325.688, -16.475).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        new FieldPosition(-325.688, 0).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[2] =
-        // new FieldPosition(-325.688, 87.003).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
-        // on 2017-03-04 cbf changed this to:
-        new FieldPosition(-325.688, 59.00).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        new FieldPosition(-325.688, 100).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.boiler = new FieldPosition(-320.133, -155.743);
     red.loadingStationInner = new FieldPosition(311.673, 130.640);
     red.loadingStationOuter = new FieldPosition(268.352, 152.109);
@@ -245,6 +242,8 @@ public class FieldMap {
     
     // add a point behind us so the C-R spline generates correctly
     controlPoints.add(startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0));
+    
+    controlPoints.add(startingPosition);
 
     // drive forward 2 feet
     FieldPosition initialForwardPosition =
@@ -262,7 +261,7 @@ public class FieldMap {
           alliance == Alliance.Red ? gearLiftPosition.getX() - 60 : gearLiftPosition.getX() + 60;
       initialDriveToY = 0;
       splinePointX =
-          alliance == Alliance.Red ? gearLiftPosition.getX() - 24 : gearLiftPosition.getX() + 24;
+          alliance == Alliance.Red ? gearLiftPosition.getX() - 54 : gearLiftPosition.getX() + 54;
       splinePointY = 0;
     } else if (gearLiftPositionId == 0) {
       double angle = alliance == Alliance.Red ? 240 : 300;
@@ -271,8 +270,8 @@ public class FieldMap {
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
       
-      dx = 24 * Math.cos(Math.toRadians(angle));
-      dy = 24 * Math.sin(Math.toRadians(angle));
+      dx = 54 * Math.cos(Math.toRadians(angle));
+      dy = 54 * Math.sin(Math.toRadians(angle));
       splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
     } else {
@@ -282,8 +281,8 @@ public class FieldMap {
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
       
-      dx = 24 * Math.cos(Math.toRadians(angle));
-      dy = 24 * Math.sin(Math.toRadians(angle));
+      dx = 54 * Math.cos(Math.toRadians(angle));
+      dy = 54 * Math.sin(Math.toRadians(angle));
       splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
     }
@@ -330,8 +329,7 @@ public class FieldMap {
     controlPoints.add(currentPosition);
     controlPoints.add(clearOfDividersPosition);
     
-    double ratio = ((RobotMap.MAXIMUM_SHOOTING_DISTANCE + RobotMap.MINIMUM_SHOOTING_DISTANCE) / 2)
-        / distanceToBoiler;
+    double ratio = RobotMap.SHOOTING_DISTANCE / distanceToBoiler;
     
     controlPoints.add(clearOfDividersPosition.multiply(1 - ratio).add(boiler.multiply(ratio)));
     

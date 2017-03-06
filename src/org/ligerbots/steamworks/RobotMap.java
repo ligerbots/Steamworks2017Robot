@@ -71,7 +71,7 @@ public class RobotMap {
   public static final double GEARING_FACTOR = IS_ROADKILL ? 1 : 1d / (3d * 54d / 30d);
   
   public static final double VISION_BOILER_CAMERA_ANGLE = 35.2; // degrees
-  public static final double BOILER_CAMERA_HEIGHT = 16; // TODO: measure
+  public static final double BOILER_CAMERA_HEIGHT = 18; // TODO: measure
   
   public static final double ROBOT_LENGTH = 40;
   public static final double ROBOT_WIDTH = 36;
@@ -88,10 +88,10 @@ public class RobotMap {
   public static boolean SHOOTER_AUTO_STOP = false;
   
   @Preference
-  public static double MINIMUM_SHOOTING_DISTANCE = 36; // inches
+  public static double SHOOTING_DISTANCE = 130;
   
   @Preference
-  public static double MAXIMUM_SHOOTING_DISTANCE = 144; //INCHES
+  public static double SHOOTING_RPM = 4200;
   
   @Preference
   public static double GEARMECH_CLOSED = 0;
@@ -164,7 +164,7 @@ public class RobotMap {
   public static double JOYSTICK_DRIVE_TURN_SENSITIVITY = 1.0;
 
   @Preference
-  public static double SHOOTER_RPM_PERCENT_TOLERANCE = 0.05;
+  public static double SHOOTER_RPM_PERCENT_TOLERANCE = 0.01;
   @Preference
   public static long AUTO_SHOOTER_WAIT_NANOS = 5_000_000_000L;
   

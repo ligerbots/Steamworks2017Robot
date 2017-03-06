@@ -28,7 +28,7 @@ public class ShooterFeederCommand extends StatefulCommand {
    * Creates a new ShooterFeederCommand with a not-yet-known rpm.
    */
   public ShooterFeederCommand() {
-    this(Double.NaN);
+    this(Double.NaN, false);
   }
 
   /**
@@ -37,20 +37,27 @@ public class ShooterFeederCommand extends StatefulCommand {
    * @param getFromDashboard Whether to get shooter rpm from dashboard
    */
   public ShooterFeederCommand(boolean getFromDashboard) {
-    this(Double.NaN);
-    this.getFromDashboard = getFromDashboard;
-    if (!SmartDashboard.containsKey("Shooter_Test_Rpm")) {
-      SmartDashboard.putNumber("Shooter_Test_Rpm", 4000);
-    }
+    this(Double.NaN, getFromDashboard);
+  }
+  
+  public ShooterFeederCommand(double desiredShooterRpm) {
+    this(desiredShooterRpm, false);
   }
 
   /**
    * Creates a new ShooterFeederCommand.
    * 
    * @param desiredShooterRpm The rpm we need the shooter at.
+   * @param getFromDashboard Whether to get RPM from the dashboard
    */
-  public ShooterFeederCommand(double desiredShooterRpm) {
-    //requires(Robot.feeder);
+  public ShooterFeederCommand(double desiredShooterRpm, boolean getFromDashboard) {
+    this.getFromDashboard = getFromDashboard;
+    if (!SmartDashboard.containsKey("Shooter_Test_Rpm")) {
+      SmartDashboard.putNumber("Shooter_Test_Rpm", 4000);
+    }
+    if (!getFromDashboard) {
+      requires(Robot.feeder);
+    }
     requires(Robot.shooter); 
     requires(Robot.stirrer);
     this.desiredShooterRpm = desiredShooterRpm;
@@ -118,7 +125,9 @@ public class ShooterFeederCommand extends StatefulCommand {
     }
 
     if (readyToStartFeeder && !withholdShooting) {
-      //Robot.feeder.setFeeder(1.0);
+      if (!getFromDashboard) {
+        Robot.feeder.setFeeder(1.0);
+      }
     }
     
     Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STIR);    

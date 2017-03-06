@@ -1,7 +1,9 @@
 package org.ligerbots.steamworks.commands;
 
+import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.subsystems.DriveTrain.ShiftType;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,71 +71,70 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         if ((justStarted || System.nanoTime() - nanosStartOfWait >= WAIT_NANOS)
             && Robot.vision.isBoilerVisionDataValid()) {
           VisionData data = Robot.vision.getBoilerVisionData();
-          double tx = data.getTvecX();
-          double tz = data.getTvecZ();
-          double ty = data.getTvecY();
-          double angle = 90 - Math.toDegrees(Math.atan2(tz, ty));
-          currentAngle = angle;
-          logger.info(String.format("Got data: tx=%f, tz=%f, angle=%f, state=TURN", tx, tz, angle));
-
-          // calculate shooter rpm
-          double calculatedRpm = 5000;
-          logger.info(String.format("Shooter rpm: %f", calculatedRpm));
-          shooterFeederCommand.setRpm(calculatedRpm);
-
-          if (Math.abs(angle) < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR) {
-            double distanceFromCameraToBoilerSquared = tz * tz + tx * tx;
-            double deltaHeight = 6 * 12 + 9 - RobotMap.BOILER_CAMERA_HEIGHT;
-            double horizontalDistanceFromCameraToBoiler =
-                Math.sqrt(distanceFromCameraToBoilerSquared - deltaHeight * deltaHeight);
-            if (horizontalDistanceFromCameraToBoiler > RobotMap.MAXIMUM_SHOOTING_DISTANCE
-                || horizontalDistanceFromCameraToBoiler < RobotMap.MINIMUM_SHOOTING_DISTANCE) {
-              currentState = State.DRIVE_TO_RANGE;
-              justStarted = false;
-              logger.info("state=DRIVE_TO_RANGE");
-              
-              if (horizontalDistanceFromCameraToBoiler > RobotMap.MAXIMUM_SHOOTING_DISTANCE) {
-                driveDistanceCommand = new DriveDistanceCommand(
-                    horizontalDistanceFromCameraToBoiler - RobotMap.MAXIMUM_SHOOTING_DISTANCE + 10);
-              } else {
-                driveDistanceCommand = new DriveDistanceCommand(
-                    horizontalDistanceFromCameraToBoiler - RobotMap.MINIMUM_SHOOTING_DISTANCE - 10);
-              }
-              driveDistanceCommand.initialize();
-            } else {
-              shooterFeederCommand.setWithholdShooting(false);
-              currentState = State.SHOOT;
-              justStarted = false;
-              logger.info("state=SHOOT");
-            }
-          } else {
-            turnCommand = new TurnCommand(angle);
-            turnCommand.initialize();
+          // phone is rotated, so Y is actually the axis that would be zero if aligned
+          double cx = data.getCenterX();
+          double cy = data.getCenterY();
+          logger.info(String.format("cx %f, cy %f", cx, cy));
+          
+          double boilerCenterHeight = (FieldPosition.BOILER_LOW_VISION_TARGET_BOTTOM + 5.0)
+              - RobotMap.BOILER_CAMERA_HEIGHT;
+          // use small angle approximation to turn image position into angle from the camera's
+          // center of frame. Nexus 5 half-vertical-FOV is 60deg/2 = 30deg
+          double angleOnCamera = (cx - 0.5) * 30 / 0.5;
+          double angleFromGround = angleOnCamera + RobotMap.VISION_BOILER_CAMERA_ANGLE;
+          double distanceToTarget = boilerCenterHeight / Math.tan(Math.toRadians(angleFromGround));
+          logger.info(String.format("distance %f", distanceToTarget));
+          
+          if (Math.abs(cy) >= 2) {
             currentState = State.TURN;
+            Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
             logger.info("state=TURN");
+          } else if (distanceToTarget > RobotMap.SHOOTING_DISTANCE
+              + RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR
+              || distanceToTarget < RobotMap.SHOOTING_DISTANCE
+                  - RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR) {
+            currentState = State.DRIVE_TO_RANGE;
+            justStarted = false;
+            double distanceToDrive = distanceToTarget - RobotMap.SHOOTING_DISTANCE;
+            logger.info(String.format("state=DRIVE_TO_RANGE dist=%f", distanceToDrive));
+            driveDistanceCommand =
+                new DriveDistanceCommand(distanceToDrive);
+            driveDistanceCommand.initialize();
+          } else {
+            // calculate shooter rpm
+            double calculatedRpm = RobotMap.SHOOTING_RPM;
+            logger.info(String.format("Shooter rpm: %f", calculatedRpm));
+            shooterFeederCommand.setRpm(calculatedRpm);
+            
+            shooterFeederCommand.setWithholdShooting(false);
+            currentState = State.SHOOT;
+            justStarted = false;
+            logger.info("state=SHOOT");
           }
         }
         break;
       case TURN:
-        turnCommand.execute();
-        if (turnCommand.isFinished()) {
-          turnCommand.end();
-
-          if (!turnCommand.succeeded) {
-            logger.warn("turn command failed, state=ABORTED");
-            currentState = State.ABORTED;
-          } else {
-            logger.info("state=WAIT_FOR_VISION");
-            nanosStartOfWait = System.nanoTime();
-            currentState = State.WAIT_FOR_VISION;
-          }
-        }
-
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
           logger.info("Lost vision, state=WAIT_FOR_VISION");
           currentState = State.WAIT_FOR_VISION;
+        } else {
+          VisionData data = Robot.vision.getBoilerVisionData();
+          
+          if (Math.abs(data.getCenterY()) < 2) {
+            Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+            logger.info("Completed turn, state=WAIT_FOR_VISION");
+            currentState = State.WAIT_FOR_VISION;
+          }
+          
+          double turn = RobotMap.AUTO_TURN_MIN_SPEED_LOW
+              + Math.abs(data.getCenterY()) * (1 - RobotMap.AUTO_TURN_MIN_SPEED_LOW);
+          // turn clockwise if necessary, otherwise counterclockwise
+          if (data.getCenterY() > 0) {
+            turn = -turn;
+          }
+          Robot.driveTrain.rawThrottleTurnDrive(0, turn);
         }
         break;
       case DRIVE_TO_RANGE:
