@@ -32,6 +32,16 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     double tvecX;
     double tvecY;
     double tvecZ;
+    double centerX;
+    double centerY;
+
+    public double getCenterX() {
+      return centerX;
+    }
+
+    public double getCenterY() {
+      return centerY;
+    }
 
     public double getRvecPitch() {
       return rvecPitch;
@@ -58,8 +68,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     }
 
     public String toString() {
-      return String.format("%f,%f,%f | %f,%f,%f", tvecX, tvecY, tvecZ, rvecPitch, rvecYaw,
-          rvecRoll);
+      return String.format("%f,%f,%f | %f,%f,%f | %f,%f", tvecX, tvecY, tvecZ, rvecPitch, rvecYaw,
+          rvecRoll, centerX, centerY);
     }
   }
 
@@ -238,7 +248,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     // 10fps refresh rate, so here we set up a receiver for the data
     logger.info("Data thread init");
     DatagramChannel udpChannel = null;
-    ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 6 + 1);
+    ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 8 + 1);
 
     try {
       udpChannel = DatagramChannel.open();
@@ -279,10 +289,13 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         double tvecX = dataPacket.getDouble();
         double tvecY = dataPacket.getDouble();
         double tvecZ = dataPacket.getDouble();
+        double centerX = dataPacket.getDouble();
+        double centerY = dataPacket.getDouble();
 
         // if the data is garbage or no target was located, keep the old data
         if (Double.isNaN(rvecPitch) || Double.isNaN(rvecYaw) || Double.isNaN(rvecRoll)
-            || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)) {
+            || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)
+            || Double.isNaN(centerX) || Double.isNaN(centerY)) {
           continue;
         }
 
@@ -305,6 +318,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         notCurrentData.tvecX = tvecX;
         notCurrentData.tvecY = tvecY;
         notCurrentData.tvecZ = tvecZ;
+        notCurrentData.centerX = centerX;
+        notCurrentData.centerY = centerY;
 
         container.currentVisionDataIndex = 1 - container.currentVisionDataIndex;
 

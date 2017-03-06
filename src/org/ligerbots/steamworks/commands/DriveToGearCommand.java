@@ -1,8 +1,8 @@
 package org.ligerbots.steamworks.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
@@ -13,8 +13,6 @@ import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * Automatically drives to the gear target. Since the robot is a tank drive, it drives 48 inches
@@ -166,8 +164,8 @@ public class DriveToGearCommand extends StatefulCommand {
                 currentPosition.add(targetDistance * Math.cos(targetConventionalAngle),
                     targetDistance * Math.sin(targetConventionalAngle));
             
-            final FieldPosition splineFinalControl = destination.add(
-                24 * Math.cos(gearLiftConventionalAngle), 24 * Math.sin(gearLiftConventionalAngle));
+            // final FieldPosition splineFinalControl = destination.add(
+            // 24 * Math.cos(gearLiftConventionalAngle), 24 * Math.sin(gearLiftConventionalAngle));
             
             List<FieldPosition> ctrlPoints = new LinkedList<>();
             ctrlPoints.add(backFromCurrentPosition);
@@ -246,9 +244,9 @@ public class DriveToGearCommand extends StatefulCommand {
             logger.info("state=DRIVE_AWAY");
             driveAwayCommand.initialize();
             
-            //if (DriverStation.getInstance().isAutonomous()) {
+            if (DriverStation.getInstance().isAutonomous()) {
               doRetry = true;
-            //}
+            }
           } else {
             currentState = State.DELIVER_GEAR;
             nanosAtGearDeliverStart = System.nanoTime();

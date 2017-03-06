@@ -169,8 +169,6 @@ public class Robot extends IterativeRobot {
       logger.trace("robotPeriodic()");
       Scheduler.getInstance().run();
   
-      vision.setVisionEnabled(true);
-  
       long currentNanos = System.nanoTime();
       
       if (currentNanos - nanosAtLastUpdate > RobotMap.SMARTDASHBOARD_UPDATE_RATE * 1000000000) {
@@ -220,6 +218,7 @@ public class Robot extends IterativeRobot {
     try {
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
       logger.trace("disabledPeriodic()");
+      vision.setVisionEnabled(false);
     } catch (Throwable ex) {
       logger.error("disabledPeriodic error", ex);
       ex.printStackTrace();
@@ -270,6 +269,7 @@ public class Robot extends IterativeRobot {
       // 2. (auto|teleop|disabled)Periodic
       // 3. robotPeriodic()
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
+      vision.setVisionEnabled(true);
       logger.trace("autonomousPeriodic()");
     } catch (Throwable ex) {
       logger.error("autonomousPeriodic error", ex);
@@ -314,6 +314,7 @@ public class Robot extends IterativeRobot {
     try {
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
       logger.trace("teleopPeriodic()");
+      vision.setVisionEnabled(true);
     } catch (Throwable ex) {
       logger.error("teleopPeriodic error", ex);
       ex.printStackTrace();
@@ -328,6 +329,7 @@ public class Robot extends IterativeRobot {
     try {
       logger.trace("testPeriodic()");
       LiveWindow.run();
+      vision.setVisionEnabled(true);
     } catch (Throwable ex) {
       logger.error("testPeriodic error", ex);
       ex.printStackTrace();

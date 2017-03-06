@@ -36,14 +36,14 @@ public class FieldMap {
     // define starting position relative to the robot center of turning
     red.startingPositions[0] =
         // new FieldPosition(-325.688, -89.060).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
-	// on 2017-03-04 cbf changed this. 89" would have started the robot well off of our carpet
-    	new FieldPosition(-325.688, -61.0).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        // on 2017-03-04 cbf changed this. 89" would have started the robot well off of our carpet
+        new FieldPosition(-325.688, -61.0).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[1] =
         new FieldPosition(-325.688, -16.475).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[2] =
         // new FieldPosition(-325.688, 87.003).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
-	// on 2017-03-04 cbf changed this to:
-    	new FieldPosition(-325.688, 59.00).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        // on 2017-03-04 cbf changed this to:
+        new FieldPosition(-325.688, 59.00).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.boiler = new FieldPosition(-320.133, -155.743);
     red.loadingStationInner = new FieldPosition(311.673, 130.640);
     red.loadingStationOuter = new FieldPosition(268.352, 152.109);
