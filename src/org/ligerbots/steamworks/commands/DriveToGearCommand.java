@@ -14,6 +14,8 @@ import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.wpi.first.wpilibj.DriverStation;
+
 /**
  * Automatically drives to the gear target. Since the robot is a tank drive, it drives 48 inches
  * back from the target first, then drives up. This ensures the robot is square to the lift when
@@ -24,7 +26,7 @@ public class DriveToGearCommand extends StatefulCommand {
 
   private static final long WAIT_VISION_NANOS = 500_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
-  private static final long WAIT_GEAR_NANOS = 500_000_000;
+  private static final long WAIT_GEAR_NANOS = 1_000_000_000;
 
   enum State {
     INITIAL_WAIT_FOR_VISION,
@@ -44,6 +46,10 @@ public class DriveToGearCommand extends StatefulCommand {
   DriveDistanceCommand driveBackCommand;
   DriveUltrasonicCommand driveToGearCommand;
   boolean deliverOnly = false;
+  
+  double finalAngle;
+  
+  boolean doRetry;
 
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
@@ -56,7 +62,7 @@ public class DriveToGearCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
 
-    driveAwayCommand = new DriveDistanceCommand(-36.0);
+    driveAwayCommand = new DriveDistanceCommand(-12.0, 0.3);
   }
   
   public DriveToGearCommand(boolean deliverOnly) {
@@ -74,6 +80,8 @@ public class DriveToGearCommand extends StatefulCommand {
       nanosAtGearDeliverStart = System.nanoTime();
       logger.info("Initialize, state=DELIVER_GEAR");
     }
+    
+    doRetry = false;
   }
 
   protected void execute() {
@@ -96,14 +104,14 @@ public class DriveToGearCommand extends StatefulCommand {
           VisionData data = Robot.vision.getGearVisionData();
 
           double tx = data.getTvecX();
-          double tz = data.getTvecZ();
+          double tz = data.getTvecZ() + RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST;
           double ry = data.getRvecYaw();
 
           logger.debug(String.format("tx: %f, tz: %f, ry: %f", tx, tz, ry));
           
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
-          double distanceBack = 36.0;
+          double distanceBack = 48.0;
           double distanceSide = 6.0;
           
           if (distanceToGearLift < distanceBack) {
@@ -166,16 +174,19 @@ public class DriveToGearCommand extends StatefulCommand {
             ctrlPoints.add(currentPosition);
             ctrlPoints.add(midDestination.add(distanceSide * Math.sin(gearLiftConventionalAngle),
                 distanceSide * Math.cos(gearLiftConventionalAngle)));
-            ctrlPoints.add(destination.add(-24 * Math.cos(gearLiftConventionalAngle),
-                -24 * Math.sin(gearLiftConventionalAngle)));
-            ctrlPoints.add(splineFinalControl);
+            ctrlPoints.add(destination
+                .add(distanceSide * Math.sin(gearLiftConventionalAngle),
+                    distanceSide * Math.cos(gearLiftConventionalAngle))
+                .add(-38 * Math.cos(gearLiftConventionalAngle),
+                    -38 * Math.sin(gearLiftConventionalAngle)));
+            ctrlPoints.add(destination);
+            
+            finalAngle = currentPosition.getDirection() + ry;
   
             initialDriveCommand =
                 new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
             initialDriveCommand.initialize();
             
-            turnBackOnTargetCommand = new TurnCommand(DriveTrain.fixDegrees(ry));
-  
             currentState = State.INITIAL_DRIVE;
             logger.info("state=INITIAL_DRIVE");
           }
@@ -216,6 +227,8 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
+          turnBackOnTargetCommand = new TurnCommand(DriveTrain
+              .fixDegrees(finalAngle + 7.0 - Robot.driveTrain.getRobotPosition().getDirection()));
           turnBackOnTargetCommand.initialize();
           logger.info("state=TURN_TO_GEAR");
           currentState = State.TURN_TO_GEAR;
@@ -227,9 +240,20 @@ public class DriveToGearCommand extends StatefulCommand {
         if (driveToGearCommand.isFinished()) {
           driveToGearCommand.end();
           
-          currentState = State.DELIVER_GEAR;
-          nanosAtGearDeliverStart = System.nanoTime();
-          logger.info("state=DELIVER_GEAR");
+          if (driveToGearCommand.aborted) {
+            logger.warn("Ultrasonic drive aborted, not delivering gear");
+            currentState = State.DRIVE_AWAY;
+            logger.info("state=DRIVE_AWAY");
+            driveAwayCommand.initialize();
+            
+            //if (DriverStation.getInstance().isAutonomous()) {
+              doRetry = true;
+            //}
+          } else {
+            currentState = State.DELIVER_GEAR;
+            nanosAtGearDeliverStart = System.nanoTime();
+            logger.info("state=DELIVER_GEAR");
+          }
         }
         break;
       case DELIVER_GEAR:
@@ -251,8 +275,16 @@ public class DriveToGearCommand extends StatefulCommand {
             logger.warn("Drive away command aborted!");
             // we'll count this as "gear delivered" and not set state to ABORTED
           }
-
-          currentState = State.DONE;
+          
+          if (doRetry) {
+            doRetry = false;
+            currentState = State.DRIVE_TO_GEAR;
+            driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
+            driveToGearCommand.initialize();
+            logger.info("state=DRIVE_TO_GEAR");
+          } else {
+            currentState = State.DONE;
+          }
         }
         break;
       default:

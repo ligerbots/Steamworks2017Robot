@@ -1,6 +1,9 @@
 package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
+
+import java.util.Arrays;
+
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
@@ -16,19 +19,25 @@ public class DriveUltrasonicCommand extends Command {
   double targetDistance;
   double currentDistance;
   double startYaw;
-  boolean wiggle;
+  boolean isGearLift;
+  
+  double[] ultrasonicValues;
+  int ultrasonicValuesIndex;
+  boolean ultrasonicValuesFilled;
+  
+  boolean aborted;
   
   long startTime;
 
   /**
    * Creates a new DriveUltrasonicCommand.
    * @param targetDistance The ultrasonic measurement to go to
-   * @param wiggle Whether to wiggle or not
+   * @param isGearLift Whether to wiggle for gear lift or not
    */
-  public DriveUltrasonicCommand(double targetDistance, boolean wiggle) {
+  public DriveUltrasonicCommand(double targetDistance, boolean isGearLift) {
     super("DriveByUltrasonicCommand_" + targetDistance);
     this.targetDistance = targetDistance;
-    this.wiggle = wiggle;
+    this.isGearLift = isGearLift;
     requires(Robot.driveTrain);
   }
   
@@ -40,6 +49,11 @@ public class DriveUltrasonicCommand extends Command {
     logger.info(String.format("Init, target=%f", targetDistance));
 
     startYaw = Robot.driveTrain.getYaw();
+    
+    aborted = false;
+    ultrasonicValues = new double[25];
+    ultrasonicValuesIndex = 0;
+    ultrasonicValuesFilled = false;
     
     Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
     startTime = System.nanoTime();
@@ -60,9 +74,9 @@ public class DriveUltrasonicCommand extends Command {
       }
     }
     
-    if (wiggle) {
+    if (isGearLift) {
       yawDifference +=
-          5 * Math.sin((System.nanoTime() - startTime) * 2 * Math.PI / 1_000_000_000);
+          5.5 * Math.sin((System.nanoTime() - startTime) * 2 * Math.PI / 1_000_000_000);
     }
     
     turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
@@ -73,6 +87,11 @@ public class DriveUltrasonicCommand extends Command {
     }
 
     currentDistance = Robot.proximitySensor.getDistance();
+    ultrasonicValues[ultrasonicValuesIndex++] = currentDistance;
+    if (ultrasonicValuesIndex >= ultrasonicValues.length) {
+      ultrasonicValuesFilled = true;
+      ultrasonicValuesIndex = 0;
+    }
 
     logger.debug(String.format("current=%f, target=%f, yawError=%f", currentDistance,
         targetDistance, yawDifference));
@@ -91,8 +110,39 @@ public class DriveUltrasonicCommand extends Command {
       logger.warn("Aborted");
       return true;
     }
+    
+    if (ultrasonicValuesFilled) {
+      double[] localCopy = new double[ultrasonicValues.length];
+      System.arraycopy(ultrasonicValues, 0, localCopy, 0, ultrasonicValues.length);
+      Arrays.sort(localCopy);
+      double range = Math.abs(localCopy[0] - localCopy[localCopy.length - 1]);
+      if (range < 2 && System.nanoTime() - startTime > 3_000_000_000L) {
+        if (currentDistance < 7.8) {
+          logger.info("Stopping distance isn't changing and <7.8in");
+          return true;
+        } else {
+          aborted = true;
+          logger.warn("Aborting because distance isn't changing");
+          return true;
+        }
+      }
+    }
+    
+    if (isGearLift && System.nanoTime() - startTime > 7_000_000_000L) {
+      if (currentDistance < 7.8) {
+        logger.warn("Stopping because timeout and < 7.8in");
+      } else {
+        aborted = true;
+        logger.warn("Aborting because timeout");
+      }
+      return true;
+    }
 
-    return Math.abs(currentDistance - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR;
+    if (!isGearLift) {
+      return Math.abs(currentDistance - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR;
+    }
+    
+    return false;
   }
 
   protected void end() {

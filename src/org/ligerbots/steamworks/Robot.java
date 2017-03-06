@@ -10,6 +10,7 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
@@ -419,11 +420,7 @@ public class Robot extends IterativeRobot {
       
       long dt = 20_000_000 - (System.nanoTime() - start);
       if (dt > 0) {
-        try {
-          Thread.sleep(dt / 1_000_000, (int) (dt % 1_000_000));
-        } catch (InterruptedException ex) {
-          ex.printStackTrace();
-        }
+        Timer.delay(dt / 1_000_000_000d);
       }
     }
   }

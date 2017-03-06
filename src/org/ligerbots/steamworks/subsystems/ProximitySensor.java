@@ -20,6 +20,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   int bufferIndex;
   
   double adjustedDistance;
+  double distance;
 
   private static final Logger logger = LoggerFactory.getLogger(ProximitySensor.class);
 
@@ -44,7 +45,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
 
   private void averagingThread() {
     while (true) {
-      double distance = pulseWidthUltrasonic.getRangeInches();
+      distance = pulseWidthUltrasonic.getRangeInches();
       buffer[bufferIndex] = distance;
       bufferIndex++;
       if (bufferIndex >= buffer.length) {
@@ -64,7 +65,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
       adjustedDistance = sum / (bufferCopy.length / 2);
       
       try {
-        Thread.sleep(20);
+        Thread.sleep(100);
       } catch (Exception ex) {
         ex.printStackTrace();
       }
@@ -77,7 +78,11 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
    * @return Distance in inches
    */
   public double getDistance() {
-    return adjustedDistance;
+    if (Math.abs(distance - adjustedDistance) < 15.0) {
+      return distance;
+    } else {
+      return adjustedDistance;
+    }
   }
 
   public void initDefaultCommand() {}
@@ -86,7 +91,7 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
    * Sends sensor data to the dashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("Proximity_Sensor_Distance", adjustedDistance);
+    SmartDashboard.putNumber("Proximity_Sensor_Distance", getDistance());
   }
 }
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Wait" default="wait">
+  <target name="wait" description="Waits 5 seconds">
+    <sleep seconds="5" />
+  </target>
+</project>

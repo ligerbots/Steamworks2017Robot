@@ -22,6 +22,7 @@ public class DrivePathCommand extends AccessibleCommand {
   double angleError;
 
   RobotPosition currentPosition;
+  FieldPosition currentWaypoint;
 
   boolean isHighGear;
   double autoDriveRampUpDist;
@@ -97,7 +98,7 @@ public class DrivePathCommand extends AccessibleCommand {
       }
     }
 
-    FieldPosition currentWaypoint = waypoints.get(waypointIndex);
+    currentWaypoint = waypoints.get(waypointIndex);
 
     double angleToWaypoint = 90 - currentPosition.angleTo(currentWaypoint);
     angleError = (angleToWaypoint - currentPosition.getDirection() + 360) % 360;

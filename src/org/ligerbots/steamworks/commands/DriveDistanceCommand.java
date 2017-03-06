@@ -35,6 +35,8 @@ public class DriveDistanceCommand extends AccessibleCommand {
   
   double nanosSinceOnTarget;
   boolean detectedOnTarget;
+  
+  double requestedSpeed;
 
   /**
    * Create a new DriveDistanceCommand.
@@ -42,8 +44,19 @@ public class DriveDistanceCommand extends AccessibleCommand {
    * @param offsetInches The number of inches to drive.
    */
   public DriveDistanceCommand(double offsetInches) {
+   this(offsetInches, Double.NaN);
+  }
+  
+  /**
+   * Create a new DriveDistanceCommand.
+   * 
+   * @param offsetInches The number of inches to drive.
+   * @param speed The speed to drive at
+   */
+  public DriveDistanceCommand(double offsetInches, double speed) {
     super("DriveDistanceCommand_" + offsetInches);
     this.offsetInches = offsetInches;
+    this.requestedSpeed = speed;
     requires(Robot.driveTrain);
   }
 
@@ -72,6 +85,12 @@ public class DriveDistanceCommand extends AccessibleCommand {
       autoDriveMaxSpeed = RobotMap.AUTO_DRIVE_MAX_SPEED_LOW;
       autoDriveMinSpeed = RobotMap.AUTO_DRIVE_MIN_SPEED_LOW;
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_LOW;
+    }
+    
+    if (!Double.isNaN(requestedSpeed)) {
+      autoDriveMaxSpeed = requestedSpeed;
+      autoDriveStartSpeed = requestedSpeed;
+      autoDriveMinSpeed = requestedSpeed;
     }
     
     detectedOnTarget = false;

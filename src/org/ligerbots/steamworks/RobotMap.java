@@ -79,6 +79,8 @@ public class RobotMap {
 
   public static final double SHOOTER_MAX_RPM = 6000;
   
+  public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
+  
   @Preference
   public static double INTAKE_SPEED = 1.0;
   
