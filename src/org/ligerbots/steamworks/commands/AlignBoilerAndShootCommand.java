@@ -80,12 +80,13 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
               - RobotMap.BOILER_CAMERA_HEIGHT;
           // use small angle approximation to turn image position into angle from the camera's
           // center of frame. Nexus 5 half-vertical-FOV is 60deg/2 = 30deg
+          // use 0.62 for cx 0.49 for cy
           double angleOnCamera = (cx - 0.5) * 30 / 0.5;
           double angleFromGround = angleOnCamera + RobotMap.VISION_BOILER_CAMERA_ANGLE;
           double distanceToTarget = boilerCenterHeight / Math.tan(Math.toRadians(angleFromGround));
           logger.info(String.format("distance %f", distanceToTarget));
           
-          if (Math.abs(cy) >= 2) {
+          if (Math.abs(cy - 0.5) >= 0.02) {
             currentState = State.TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
@@ -122,16 +123,16 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           VisionData data = Robot.vision.getBoilerVisionData();
           
-          if (Math.abs(data.getCenterY()) < 2) {
+          if (Math.abs(data.getCenterY() - 0.5) < 0.02) {
             Robot.driveTrain.rawThrottleTurnDrive(0, 0);
             logger.info("Completed turn, state=WAIT_FOR_VISION");
             currentState = State.WAIT_FOR_VISION;
           }
           
           double turn = RobotMap.AUTO_TURN_MIN_SPEED_LOW
-              + Math.abs(data.getCenterY()) * (1 - RobotMap.AUTO_TURN_MIN_SPEED_LOW);
+              + Math.abs(data.getCenterY() - 0.5) * (1 - RobotMap.AUTO_TURN_MIN_SPEED_LOW);
           // turn clockwise if necessary, otherwise counterclockwise
-          if (data.getCenterY() > 0) {
+          if (data.getCenterY() < 0.5) {
             turn = -turn;
           }
           Robot.driveTrain.rawThrottleTurnDrive(0, turn);

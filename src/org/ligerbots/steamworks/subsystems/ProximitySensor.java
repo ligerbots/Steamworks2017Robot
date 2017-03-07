@@ -30,7 +30,8 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   public ProximitySensor() {
     logger.trace("Initializing proximity sensor");
 
-    pulseWidthUltrasonic = new Ultrasonic(RobotMap.ULTRASONIC_TRIGGER, RobotMap.ULTRASONIC_ECHO);
+    pulseWidthUltrasonic =
+        new Ultrasonic(RobotMap.ULTRASONIC_LEFT_TRIGGER, RobotMap.ULTRASONIC_LEFT_ECHO);
     pulseWidthUltrasonic.setAutomaticMode(true);
 
     buffer = new double[12];
