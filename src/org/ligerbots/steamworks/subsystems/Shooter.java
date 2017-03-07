@@ -56,9 +56,9 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     // configure PID
     shooterMaster.setProfile(0);
     shooterMaster.setF(0);
-    shooterMaster.setP(0.05);
+    shooterMaster.setP(0.12);
     shooterMaster.setI(0.00012);
-    shooterMaster.setD(1.0);
+    shooterMaster.setD(0.5);
     // add to LiveWindow for easy testing
     LiveWindow.addActuator("Shooter", "Master", shooterMaster);
 

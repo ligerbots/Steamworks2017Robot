@@ -180,6 +180,8 @@ public class DriveToGearCommand extends StatefulCommand {
             ctrlPoints.add(destination);
             
             finalAngle = currentPosition.getDirection() + ry;
+            
+            logger.info(String.format("Control points: %s", ctrlPoints.toString()));
   
             initialDriveCommand =
                 new DrivePathCommand(FieldMap.generateCatmullRomSpline(ctrlPoints));
