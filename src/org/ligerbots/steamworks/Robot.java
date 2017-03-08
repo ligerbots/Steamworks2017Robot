@@ -78,20 +78,25 @@ public class Robot extends IterativeRobot {
     root.addAppender(socketAppender);
   }
   
+  
   public enum AutoMode {
-    GEAR_SHOOT("Gear + Shoot", true, true),
-    HOPPER_SHOOT("Hopper + Shoot", false, true),
-    GEAR_ONLY("Gear", true, false),
-    SHOOT_ONLY("Shoot", false, true),
-    NONE("NO AUTONOMOUS", false, false);
+    GEAR_SHOOT("Gear + Shoot", true, true, false),
+    GEAR_ONLY("Gear", true, false, false),
+    SHOOT_GEAR("Shoot + Gear", true, true, true),
+    SHOOT_ONLY("Shoot", false, true, true),
+    HOPPER_SHOOT("Hopper + Shoot", false, true, false),
+    SHOOT_HOPPER("Shoot + Hopper + Shoot", false, true, true),
+    NONE("NO AUTONOMOUS", false, false, false);
     
     public final String name;
     boolean doesGear;
     boolean doesShoot;
-    AutoMode(String name, boolean doesGear, boolean doesShoot) {
+    boolean shootFirst;
+    AutoMode(String name, boolean doesGear, boolean doesShoot, boolean shootFirst) {
       this.name = name;
       this.doesGear = doesGear;
       this.doesShoot = doesShoot;
+      this.shootFirst = shootFirst;
     }
     
     @Override

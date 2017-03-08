@@ -38,11 +38,12 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   
   boolean doGear;
   boolean doShoot;
+  boolean shootFirst;
 
   /**
    * Creates a new AutoGearAndShootCommand.
    */
-  public AutoGearAndShootCommand(boolean doGear, boolean doShoot) {
+  public AutoGearAndShootCommand(boolean doGear, boolean doShoot, boolean shootFirst) {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
     requires(Robot.shooter);
@@ -53,10 +54,11 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     
     this.doGear = doGear;
     this.doShoot = doShoot;
+    this.shootFirst = shootFirst;
   }
 
   protected void initialize() {
-    if (doGear) {
+    if (doGear && !shootFirst) {
       logger.info("Initialize, state=GEAR_NAVIGATION");
       currentState = State.GEAR_NAVIGATION;
       driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getStartingPosition(),
@@ -91,7 +93,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (gearCommand.isFinished()) {
           gearCommand.end();
 
-          if (doShoot) {
+          if (doShoot && !shootFirst) {
             if (Robot.operatorInterface.getGearLiftPosition() == FieldSide.FEEDER) {
               driveToBoiler =
                   FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
@@ -142,8 +144,13 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (boilerCommand.isFinished()) {
           boilerCommand.end();
 
-          logger.info("State=DONE");
-          currentState = State.DONE;
+          if (doGear && shootFirst) {
+              logger.info("Initialize, state=GEAR_NAVIGATION");
+              currentState = State.GEAR_NAVIGATION;
+          } else {
+	          logger.info("State=DONE");
+	          currentState = State.DONE;
+          }
         }
         break;
       default:
