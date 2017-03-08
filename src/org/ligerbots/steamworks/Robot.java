@@ -283,12 +283,8 @@ public class Robot extends IterativeRobot {
       driveTrain.zeroSensors();
       
       vision.setLedRingOn(LedState.ON);
+      intake.setIntakeOn(true);
   
-      // schedule the autonomous command (example)
-      // if (autonomousCommand != null) {
-      // autonomousCommand.start();
-      // }
-      
       AutoMode selectedMode = operatorInterface.getAutoMode();
       switch (selectedMode) {
         case NONE:
