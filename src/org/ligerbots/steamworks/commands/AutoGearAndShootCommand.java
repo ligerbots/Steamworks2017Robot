@@ -35,11 +35,14 @@ public class AutoGearAndShootCommand extends StatefulCommand {
 
   DrivePathCommand driveToGear;
   DrivePathCommand driveToBoiler;
+  
+  boolean doGear;
+  boolean doShoot;
 
   /**
    * Creates a new AutoGearAndShootCommand.
    */
-  public AutoGearAndShootCommand() {
+  public AutoGearAndShootCommand(boolean doGear, boolean doShoot) {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
     requires(Robot.shooter);
@@ -47,15 +50,25 @@ public class AutoGearAndShootCommand extends StatefulCommand {
 
     gearCommand = new DriveToGearCommand();
     boilerCommand = new AlignBoilerAndShootCommand();
+    
+    this.doGear = doGear;
+    this.doShoot = doShoot;
   }
 
   protected void initialize() {
-    logger.info("Initialize, state=GEAR_NAVIGATION");
-    currentState = State.GEAR_NAVIGATION;
-
-    driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getStartingPosition(),
-        Robot.operatorInterface.getGearLiftPosition());
-    driveToGear.initialize();
+    if (doGear) {
+      logger.info("Initialize, state=GEAR_NAVIGATION");
+      currentState = State.GEAR_NAVIGATION;
+      driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getStartingPosition(),
+          Robot.operatorInterface.getGearLiftPosition());
+      driveToGear.initialize();
+    } else if (doShoot) {
+      driveToBoiler = FieldMap.navigateStartToBoiler(Robot.operatorInterface.getStartingPosition());
+      driveToBoiler.initialize();
+      logger.info("state=BOILER_NAVIGATION");
+      currentState = State.BOILER_NAVIGATION;
+    }
+    
     Robot.vision.setLedRingOn(Vision.LedState.ON);
   }
 
@@ -78,17 +91,22 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (gearCommand.isFinished()) {
           gearCommand.end();
 
-          if (Robot.operatorInterface.getGearLiftPosition() == FieldSide.FEEDER) {
-            driveToBoiler =
-                FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
-            driveToBoiler.initialize();
-            logger.info("state=BOILER_NAVIGATION");
-            currentState = State.BOILER_NAVIGATION;
+          if (doShoot) {
+            if (Robot.operatorInterface.getGearLiftPosition() == FieldSide.FEEDER) {
+              driveToBoiler =
+                  FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
+              driveToBoiler.initialize();
+              logger.info("state=BOILER_NAVIGATION");
+              currentState = State.BOILER_NAVIGATION;
+            } else {
+              generateBoilerAlign();
+              boilerAlign.initialize();
+              logger.info("state=BOILER_ALIGN");
+              currentState = State.BOILER_ALIGN;
+            }
           } else {
-            generateBoilerAlign();
-            boilerAlign.initialize();
-            logger.info("state=BOILER_ALIGN");
-            currentState = State.BOILER_ALIGN;
+            logger.info("State=DONE");
+            currentState = State.DONE;
           }
         }
         break;

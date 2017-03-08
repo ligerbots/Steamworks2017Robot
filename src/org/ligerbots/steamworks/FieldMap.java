@@ -344,6 +344,45 @@ public class FieldMap {
   }
   
   /**
+   * Generates navigation to the boiler from a starting position.
+   * @param startingSide The robot starting configuration
+   */
+  public static DrivePathCommand navigateStartToBoiler(FieldSide startingSide) {
+    logger.info(String.format("Calculating path, start=%s", startingSide.toString()));
+    FieldMap map = getAllianceMap();
+
+    final Alliance alliance = DriverStation.getInstance().getAlliance();
+    
+    final FieldPosition startingPosition = map.startingPositions[startingSide.id];
+    final FieldPosition boiler = map.boiler;
+    
+    List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
+    
+    FieldPosition spline0 = startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0);
+    controlPoints.add(spline0);
+    
+    controlPoints.add(startingPosition);
+    
+    FieldPosition initialForward = startingPosition.add(alliance == Alliance.Red ? 24 : -24, 0);
+    controlPoints.add(initialForward);
+
+    if (startingSide != FieldSide.BOILER) {
+      FieldPosition closeToAllianceWallPoint =
+          new FieldPosition(alliance == Alliance.Red ? -297.545 : 297.545, -66);
+      controlPoints.add(closeToAllianceWallPoint);
+    }
+    
+    FieldPosition finalPoint =
+        new FieldPosition(alliance == Alliance.Red ? -205.977 : 205.977, -94.018);
+    controlPoints.add(finalPoint);
+   
+    controlPoints.add(boiler);
+    List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
+    DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
+    return drivePathCommand;
+  }
+  
+  /**
    * Generates navigation from a starting position to the hopper.
    * @param startingPositionId The starting position ID
    * @return A DriveToPathCommand that drives the generated path

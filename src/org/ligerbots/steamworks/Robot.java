@@ -11,6 +11,7 @@ import ch.qos.logback.core.spi.FilterReply;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
@@ -78,15 +79,19 @@ public class Robot extends IterativeRobot {
   }
   
   public enum AutoMode {
-    GEAR_SHOOT("Gear + Shoot"),
-    HOPPER_SHOOT("Hopper + Shoot"),
-    GEAR_ONLY("Gear"),
-    SHOOT_ONLY("Shoot"),
-    NONE("NO AUTONOMOUS");
+    GEAR_SHOOT("Gear + Shoot", true, true),
+    HOPPER_SHOOT("Hopper + Shoot", false, true),
+    GEAR_ONLY("Gear", true, false),
+    SHOOT_ONLY("Shoot", false, true),
+    NONE("NO AUTONOMOUS", false, false);
     
     public final String name;
-    AutoMode(String name) {
+    boolean doesGear;
+    boolean doesShoot;
+    AutoMode(String name, boolean doesGear, boolean doesShoot) {
       this.name = name;
+      this.doesGear = doesGear;
+      this.doesShoot = doesShoot;
     }
     
     @Override
@@ -120,6 +125,8 @@ public class Robot extends IterativeRobot {
   long prevNanos = System.nanoTime();
   
   long autoModePrintNanos;
+  
+  Command autoCommand;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -282,8 +289,24 @@ public class Robot extends IterativeRobot {
       // autonomousCommand.start();
       // }
       
-      AutoGearAndShootCommand autoGearAndShootCommand = new AutoGearAndShootCommand();
-      autoGearAndShootCommand.start();
+      AutoMode selectedMode = operatorInterface.getAutoMode();
+      switch (selectedMode) {
+        case NONE:
+          autoCommand = null;
+          break;
+        case HOPPER_SHOOT:
+          logger.error("Hopper auto is unimplemented!");
+          break;
+        case GEAR_ONLY:
+        case GEAR_SHOOT:
+        case SHOOT_ONLY:
+          autoCommand = new AutoGearAndShootCommand(selectedMode.doesGear, selectedMode.doesShoot);
+          autoCommand.start();
+          break;
+        default:
+          autoCommand = null;
+          break;
+      }
     } catch (Throwable ex) {
       logger.error("autonomousInit error", ex);
       ex.printStackTrace();
@@ -322,13 +345,9 @@ public class Robot extends IterativeRobot {
         logger.info("Running on production");
       }
   
-      // This makes sure that the autonomous stops running when
-      // teleop starts running. If you want the autonomous to
-      // continue until interrupted by another command, remove
-      // this line or comment it out.
-      // if (autonomousCommand != null) {
-      // autonomousCommand.cancel();
-      // }
+      if (autoCommand != null) {
+        autoCommand.cancel();
+      }
       
       vision.setLedRingOn(LedState.ON);
   
