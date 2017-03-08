@@ -105,7 +105,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   VisionContainer boilerVision = new VisionContainer();
 
   public static enum StreamType {
-    GEAR_CAM, BOILER_CAM, TOGGLE
+    GEAR_CAM, BOILER_CAM, BOILER_CAM_FRONT, TOGGLE
   }
 
   StreamType streamType = StreamType.GEAR_CAM;
@@ -167,9 +167,15 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
   public void setStreamType(StreamType streamType) {
     if (streamType == StreamType.TOGGLE) {
       this.streamType =
-          this.streamType == StreamType.BOILER_CAM ? StreamType.GEAR_CAM : StreamType.BOILER_CAM;
+          this.streamType == StreamType.GEAR_CAM ? StreamType.BOILER_CAM : StreamType.GEAR_CAM;
     } else {
       this.streamType = streamType;
+    }
+    
+    if (this.streamType == StreamType.BOILER_CAM_FRONT) {
+      boilerVision.table.putBoolean("frontCamera", true);
+    } else {
+      boilerVision.table.putBoolean("frontCamera", false);
     }
   }
 
@@ -407,7 +413,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
           int length = recvPacket.getInt();
           if (magic == CS_MAGIC_NUMBER) {
-            if ((dataCode == DATA_CODE_BOILER && streamType == StreamType.BOILER_CAM)
+            if ((dataCode == DATA_CODE_BOILER && (streamType == StreamType.BOILER_CAM
+                || streamType == StreamType.BOILER_CAM_FRONT))
                 || (dataCode == DATA_CODE_GEAR && streamType == StreamType.GEAR_CAM)) {
               recvPacket.limit(length + 9);
               recvPacket.position(1);
