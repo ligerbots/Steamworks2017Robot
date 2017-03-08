@@ -218,5 +218,8 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
         shooterMaster.getStickyFaultOverTemp() == 0);
     SmartDashboard.putBoolean("Shooter_Slave_Ok", shooterSlave.getFaultHardwareFailure() == 0);
     SmartDashboard.putBoolean("Shooter_Slave_Temp_Ok", shooterSlave.getStickyFaultOverTemp() == 0);
+    
+    SmartDashboard.putBoolean("Shooter_Master_Present", shooterMaster.isAlive());
+    SmartDashboard.putBoolean("Shooter_Slave_Present", shooterSlave.isAlive());
   }
 }
