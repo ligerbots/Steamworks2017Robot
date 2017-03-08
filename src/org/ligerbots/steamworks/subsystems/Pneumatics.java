@@ -28,6 +28,7 @@ public class Pneumatics extends Subsystem implements SmartDashboardLogger {
     logger.info("Initialize");
     if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
       compressor = new Compressor(RobotMap.PCM_CAN_ID);
+      compressor.setClosedLoopControl(true);
     }
   }
 

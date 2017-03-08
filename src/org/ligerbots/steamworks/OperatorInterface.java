@@ -22,17 +22,19 @@ import org.ligerbots.steamworks.commands.DriveToGearCommand;
 import org.ligerbots.steamworks.commands.DriveUltrasonicCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
-import org.ligerbots.steamworks.commands.HoldPositionCommand;
+import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand;
+import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand.RequestedFeed;
 import org.ligerbots.steamworks.commands.IntakeCommand;
-import org.ligerbots.steamworks.commands.LedRingCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
+import org.ligerbots.steamworks.subsystems.Vision.StreamType;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -69,64 +71,101 @@ public class OperatorInterface {
 
     xboxController = new XboxController(0);
     farmController = new Joystick(1);
+    
+    final ShooterFeederCommand manualShootCommand = new ShooterFeederCommand(true);
+    final AlignBoilerAndShootCommand autoShootCommand = new AlignBoilerAndShootCommand();
+    final GearCommand manualGearCommand = new GearCommand();
+    final DriveToGearCommand autoGearCommand = new DriveToGearCommand();
 
+    // Xbox main controls
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
-    xboxAButton.whenPressed(new IntakeCommand());
+    xboxAButton.whenPressed(autoShootCommand);
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
-    xboxBButton.whenPressed(new HoldPositionCommand());
+    xboxBButton.whenPressed(manualGearCommand);
 
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
-    xboxXButton.whileHeld(new ShooterFeederCommand(true));
+    xboxXButton.whileHeld(manualShootCommand);
 
     JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
-    xboxYButton.whenPressed(new GearCommand());
+    xboxYButton.whenPressed(autoGearCommand);
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
-    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
+    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
 
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
-    xboxRightBumper.whenPressed(new DriveToGearCommand());
+    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
 
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
-    xboxMenuButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
+    xboxMenuButton.whenPressed(new IntakeCommand());
 
-    if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
-      JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
-      xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
-    }
+    JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
+    xboxStartButton.whenPressed(new ClimberEngageRatchetCommand());
 
     if (isFarmControllerPresent()) {
       LoggerFactory.getLogger(OperatorInterface.class).info("Farm controller found!");
-      JoystickButton farmIntakeButton = new JoystickButton(farmController, 6);
-      farmIntakeButton.whenPressed(new IntakeCommand());
-
-      JoystickButton farmClimbButton = new JoystickButton(farmController, 21);
-      farmClimbButton.whenPressed(new HoldPositionCommand());
-
-      JoystickButton farmShooterButton = new JoystickButton(farmController, 1);
-      farmShooterButton.whileHeld(new ShooterFeederCommand(true));
-
-      JoystickButton farmGearButton = new JoystickButton(farmController, 4);
-      // no more hold, just call close command when released
-      // xboxYButton.whenPressed(new GearCommand(true));
-      // xboxYButton.whenReleased(new GearCommand(false));
-      // This is a toggle command.
-      farmGearButton.whenPressed(new GearCommand());
-
-      JoystickButton farmShiftButton = new JoystickButton(farmController, 10);
-      farmShiftButton.whenPressed(new ShiftCommand(DriveTrain.ShiftType.TOGGLE));
-
-      JoystickButton farmDriveToGearButton = new JoystickButton(farmController, 5);
-      farmDriveToGearButton.whenPressed(new DriveToGearCommand());
-
-      JoystickButton farmLedButton = new JoystickButton(farmController, 17);
-      farmLedButton.whenPressed(new LedRingCommand(Vision.LedState.TOGGLE));
-
-      if (Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID)) {
-        JoystickButton farmCompressorButton = new JoystickButton(farmController, 11);
-        farmCompressorButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
-      }
+      
+      // camera 1, 2, 3
+      // intake on, off
+      // gearmech closed, feed, open
+      // drive to 3 inches for feeder
+      // LEDs gear, fuel, none
+      // duplicate manual shoot, auto shoot, manual gear, auto gear
+      // manual RPM / feeder fiddling with 28 + stick
+      
+      // CAMERAS
+      JoystickButton gearCam = new JoystickButton(farmController, 22);
+      gearCam.whenPressed(new CameraFeedCommand(StreamType.GEAR_CAM));
+      
+      JoystickButton boilerCam = new JoystickButton(farmController, 23);
+      boilerCam.whenPressed(new CameraFeedCommand(StreamType.BOILER_CAM));
+      
+      JoystickButton boilerFrontCam = new JoystickButton(farmController, 24);
+      boilerFrontCam.whenPressed(new CameraFeedCommand(StreamType.BOILER_CAM_FRONT));
+      
+      // INTAKE
+      JoystickButton intakeOn = new JoystickButton(farmController, 18);
+      intakeOn.whenPressed(new IntakeCommand(true));
+      
+      JoystickButton intakeOff = new JoystickButton(farmController, 17);
+      intakeOff.whenPressed(new IntakeCommand(false));
+      
+      // GEARMECH
+      JoystickButton gearmechClosed = new JoystickButton(farmController, 1);
+      gearmechClosed.whenPressed(new GearCommand(Position.CLOSED));
+      
+      JoystickButton gearmechReceive = new JoystickButton(farmController, 2);
+      gearmechReceive.whenPressed(new GearCommand(Position.RECEIVE_GEAR));
+      
+      JoystickButton gearmechDeliver = new JoystickButton(farmController, 3);
+      gearmechDeliver.whenPressed(new GearCommand(Position.DELIVER_GEAR));
+      
+      // drive to 3 inches
+      JoystickButton driveToGearFeed = new JoystickButton(farmController, 6);
+      driveToGearFeed.whenPressed(new DriveUltrasonicCommand(3.0));
+      
+      // LEDs
+      JoystickButton ledsOff = new JoystickButton(farmController, 11);
+      ledsOff.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.NONE));
+      
+      JoystickButton ledsGear = new JoystickButton(farmController, 13);
+      ledsGear.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.GEAR));
+      
+      JoystickButton ledsFuel = new JoystickButton(farmController, 15);
+      ledsFuel.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.FUEL));
+      
+      // duplicated controls
+      JoystickButton manualShoot = new JoystickButton(farmController, 4);
+      manualShoot.whileHeld(manualShootCommand);
+      
+      JoystickButton autoShoot = new JoystickButton(farmController, 5);
+      autoShoot.whenPressed(autoShootCommand);
+      
+      JoystickButton manualGear = new JoystickButton(farmController, 9);
+      manualGear.whenPressed(manualGearCommand);
+      
+      JoystickButton autoGear = new JoystickButton(farmController, 10);
+      autoGear.whenPressed(autoGearCommand);
     } else {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
@@ -138,6 +177,7 @@ public class OperatorInterface {
       }
     });
 
+    SmartDashboard.putData(new CompressorCommand(CompressorState.TOGGLE));
     SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new TurnCommand(90));
     SmartDashboard.putData(new TurnCommand(180));
@@ -227,7 +267,7 @@ public class OperatorInterface {
       return false;
     }
     return getThrottle() > 0.5 || getThrottle() < -0.5
-        || xboxController.getStickButton(GenericHID.Hand.kLeft);
+        || xboxController.getStickButton(GenericHID.Hand.kLeft) || farmController.getRawButton(21);
   }
 
   public boolean isQuickTurn() {
@@ -244,6 +284,10 @@ public class OperatorInterface {
 
   public FieldSide getGearLiftPosition() {
     return gearLiftPosition.getSelected();
+  }
+  
+  public boolean isFarmControllerOverrideButtonPressed() {
+    return farmController.getRawButton(28);
   }
 
   /**

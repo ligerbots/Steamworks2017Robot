@@ -53,11 +53,9 @@ public class ShooterFeederCommand extends StatefulCommand {
   public ShooterFeederCommand(double desiredShooterRpm, boolean getFromDashboard) {
     this.getFromDashboard = getFromDashboard;
     if (!SmartDashboard.containsKey("Shooter_Test_Rpm")) {
-      SmartDashboard.putNumber("Shooter_Test_Rpm", 4000);
+      SmartDashboard.putNumber("Shooter_Test_Rpm", RobotMap.SHOOTING_RPM);
     }
-    if (!getFromDashboard) {
-      requires(Robot.feeder);
-    }
+    requires(Robot.feeder);
     requires(Robot.shooter); 
     requires(Robot.stirrer);
     this.desiredShooterRpm = desiredShooterRpm;
@@ -125,9 +123,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     }
 
     if (readyToStartFeeder && !withholdShooting) {
-      if (!getFromDashboard) {
-        Robot.feeder.setFeeder(1.0);
-      }
+      Robot.feeder.setFeeder(RobotMap.FEEDER_SPEED);
     }
     
     Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STIR);    

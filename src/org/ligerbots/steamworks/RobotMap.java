@@ -99,11 +99,14 @@ public class RobotMap {
   public static double SHOOTING_RPM = 4200;
   
   @Preference
-  public static double GEARMECH_CLOSED = 0;
+  public static double FEEDER_SPEED = 1.0;
+  
   @Preference
-  public static double GEARMECH_DELIVER = 0;
+  public static double GEARMECH_CLOSED = 1;
   @Preference
-  public static double GEARMECH_RECEIVE = 0;
+  public static double GEARMECH_DELIVER = 0.4;
+  @Preference
+  public static double GEARMECH_RECEIVE = 0.8;
   @Preference
   public static double GEARMECH_RECEIVE_DIST = 5.0; // in
   
