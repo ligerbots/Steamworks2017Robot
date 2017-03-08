@@ -62,14 +62,14 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * Sends intake data to SmartDashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putBoolean("Intake_Present", intakeTalon != null);
+    SmartDashboard.putBoolean("Intake_Present", intakeTalon != null && intakeTalon.isAlive());
     if (intakeTalon != null) {
       SmartDashboard.putNumber("Intake_Power",
           intakeTalon.getOutputCurrent() * intakeTalon.getOutputVoltage());
       SmartDashboard.putBoolean("Intake_On", intakeOn);
       
-      SmartDashboard.putNumber("Intake_Failure", intakeTalon.getFaultHardwareFailure());
-      SmartDashboard.putNumber("Intake_OverTemp", intakeTalon.getStickyFaultOverTemp());
+      SmartDashboard.putBoolean("Intake_Ok", intakeTalon.getFaultHardwareFailure() == 0);
+      SmartDashboard.putBoolean("Intake_Temp_Ok", intakeTalon.getStickyFaultOverTemp() == 0);
     }
   }
 }

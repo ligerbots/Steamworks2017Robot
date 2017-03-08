@@ -129,6 +129,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     climberSolenoid =
         new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
+    SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
 
@@ -157,7 +158,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     talon.configEncoderCodesPerRev(RobotMap.QUAD_ENCODER_TICKS_PER_REV);
     talon.configNominalOutputVoltage(+0.0f, -0.0f);
     talon.configPeakOutputVoltage(+12.0f, -12.0f);
-    // PID constants. TODO: find PID constants
     talon.setProfile(0);
     talon.setF(0);
     talon.setP(0.5);
@@ -338,6 +338,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Locks the climber ratchet so we don't fall off after the match ends.
    */
   public void engageClimberRatchet() {
+    SmartDashboard.putBoolean("Climber_Engaged", true);
     climberSolenoid.set(DoubleSolenoid.Value.kForward);
     isClimberLocked = true;
     // just in case
@@ -433,20 +434,24 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       SmartDashboard.putNumber("Right_Slave_Power",
           rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
     }
-
+    
     // talon fault diagnostics
     // we don't care about under voltage because it's already clear when brownouts happen
-    SmartDashboard.putNumber("Left_Master_Failure", leftMaster.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Left_Master_OverTemp", leftMaster.getStickyFaultOverTemp());
+    SmartDashboard.putBoolean("Left_Master_Present", leftMaster.isAlive());
+    SmartDashboard.putBoolean("Left_Master_Ok", leftMaster.getFaultHardwareFailure() == 0);
+    SmartDashboard.putBoolean("Left_Master_Temp_Ok", leftMaster.getStickyFaultOverTemp() == 0);
     if (!RobotMap.IS_ROADKILL) {
-      SmartDashboard.putNumber("Left_Slave_Failure", leftSlave.getFaultHardwareFailure());
-      SmartDashboard.putNumber("Left_Slave_OverTemp", leftSlave.getStickyFaultOverTemp());
+      SmartDashboard.putBoolean("Left_Slave_Present", leftSlave.isAlive());
+      SmartDashboard.putBoolean("Left_Slave_Ok", leftSlave.getFaultHardwareFailure() == 0);
+      SmartDashboard.putBoolean("Left_Slave_Temp_Ok", leftSlave.getStickyFaultOverTemp() == 0);
     }
-    SmartDashboard.putNumber("Right_Master_Failure", rightMaster.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Right_Master_OverTemp", rightMaster.getStickyFaultOverTemp());
+    SmartDashboard.putBoolean("Right_Master_Present", rightMaster.isAlive());
+    SmartDashboard.putBoolean("Right_Master_Ok", rightMaster.getFaultHardwareFailure() == 0);
+    SmartDashboard.putBoolean("Right_Master_Temp_Ok", rightMaster.getStickyFaultOverTemp() == 0);
     if (!RobotMap.IS_ROADKILL) {
-      SmartDashboard.putNumber("Right_Slave_Failure", rightSlave.getFaultHardwareFailure());
-      SmartDashboard.putNumber("Right_Slave_OverTemp", rightSlave.getStickyFaultOverTemp());
+      SmartDashboard.putBoolean("Right_Slave_Present", rightSlave.isAlive());
+      SmartDashboard.putBoolean("Right_Slave_Ok", rightSlave.getFaultHardwareFailure() == 0);
+      SmartDashboard.putBoolean("Right_Slave_Temp_Ok", rightSlave.getStickyFaultOverTemp() == 0);
     }
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));

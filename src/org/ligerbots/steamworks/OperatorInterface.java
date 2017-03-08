@@ -135,6 +135,13 @@ public class OperatorInterface {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
     
+    SmartDashboard.putData(new InstantCommand("ForceOverrideRatchetEngage") {
+      @Override
+      public void execute() {
+        Robot.driveTrain.engageClimberRatchet();
+      }
+    });
+    
     SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new TurnCommand(90));
     SmartDashboard.putData(new TurnCommand(180));

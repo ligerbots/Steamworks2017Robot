@@ -213,9 +213,10 @@ public class Shooter extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putNumber("Shooter_PID_error", shooterMaster.getClosedLoopError());
     
     SmartDashboard.putBoolean("Shooter_Fault", shooterFault);
-    SmartDashboard.putNumber("Shooter_Master_Failure", shooterMaster.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Shooter_Master_OverTemp", shooterMaster.getStickyFaultOverTemp());
-    SmartDashboard.putNumber("Shooter_Slave_Failure", shooterSlave.getFaultHardwareFailure());
-    SmartDashboard.putNumber("Shooter_Slave_OverTemp", shooterSlave.getStickyFaultOverTemp());
+    SmartDashboard.putBoolean("Shooter_Master_Ok", shooterMaster.getFaultHardwareFailure() == 0);
+    SmartDashboard.putBoolean("Shooter_Master_Temp_Ok",
+        shooterMaster.getStickyFaultOverTemp() == 0);
+    SmartDashboard.putBoolean("Shooter_Slave_Ok", shooterSlave.getFaultHardwareFailure() == 0);
+    SmartDashboard.putBoolean("Shooter_Slave_Temp_Ok", shooterSlave.getStickyFaultOverTemp() == 0);
   }
 }

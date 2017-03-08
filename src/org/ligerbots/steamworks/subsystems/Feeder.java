@@ -49,13 +49,13 @@ public class Feeder extends Subsystem implements SmartDashboardLogger {
    * Sends diagnostics to SmartDashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putBoolean("Feeder_Present", feederTalon != null);
+    SmartDashboard.putBoolean("Feeder_Present", feederTalon != null && feederTalon.isAlive());
     if (feederTalon != null) {
       SmartDashboard.putNumber("Feeder_Power",
           feederTalon.getOutputCurrent() * feederTalon.getOutputVoltage());
       
-      SmartDashboard.putNumber("Feeder_Failure", feederTalon.getFaultHardwareFailure());
-      SmartDashboard.putNumber("Feeder_OverTemp", feederTalon.getStickyFaultOverTemp());
+      SmartDashboard.putBoolean("Feeder_Ok", feederTalon.getFaultHardwareFailure() == 0);
+      SmartDashboard.putBoolean("Feeder_Temp_Ok", feederTalon.getStickyFaultOverTemp() == 0);
     }
   }
 }

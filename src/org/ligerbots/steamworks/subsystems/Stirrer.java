@@ -3,6 +3,7 @@ package org.ligerbots.steamworks.subsystems;
 import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.ligerbots.steamworks.RobotMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,9 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
   /**
    * Sends diagnostics to SmartDashboard.
    */
-  public void sendDataToSmartDashboard() {}
+  public void sendDataToSmartDashboard() {
+    SmartDashboard.putBoolean("Stirrer_On",
+        stirrerServo.get() != RobotMap.STIRRER_SERVO_VALUE_STOP);
+  }
 }
 
