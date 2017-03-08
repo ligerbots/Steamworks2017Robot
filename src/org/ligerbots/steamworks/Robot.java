@@ -300,12 +300,14 @@ public class Robot extends IterativeRobot {
           autoCommand = null;
           break;
         case HOPPER_SHOOT:
+        case SHOOT_HOPPER:
           logger.error("Hopper auto is unimplemented!");
           break;
         case GEAR_ONLY:
         case GEAR_SHOOT:
         case SHOOT_ONLY:
-          autoCommand = new AutoGearAndShootCommand(selectedMode.doesGear, selectedMode.doesShoot);
+        case SHOOT_GEAR:
+          autoCommand = new AutoGearAndShootCommand(selectedMode.doesGear, selectedMode.doesShoot, selectedMode.shootFirst);
           autoCommand.start();
           break;
         default:
