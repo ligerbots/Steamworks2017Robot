@@ -48,13 +48,14 @@ public class FieldMap {
     // robot starting positions are in the middle of the alliance station
     red = new FieldMap();
     // define starting position relative to the robot center of turning
-    // updated by Erik for optimal driving time (less sharp turns)
+    // updated by Erik for optimal driving time (less sharp turns) and ease of setup (align robot to
+    // either center of field or robot edge to edge of driver station wall
     red.startingPositions[0] =
-        new FieldPosition(-325.688, -100).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        new FieldPosition(-325.688, -108).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[1] =
         new FieldPosition(-325.688, 0).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.startingPositions[2] =
-        new FieldPosition(-325.688, 100).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
+        new FieldPosition(-325.688, 105).add(RobotMap.ROBOT_SHOOTER_TO_TURN_CENTER_DIST, 0);
     red.boiler = new FieldPosition(-320.133, -155.743);
     red.loadingStationInner = new FieldPosition(311.673, 130.640);
     red.loadingStationOuter = new FieldPosition(268.352, 152.109);
