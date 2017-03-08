@@ -166,6 +166,10 @@ public class OperatorInterface {
       
       JoystickButton autoGear = new JoystickButton(farmController, 10);
       autoGear.whenPressed(autoGearCommand);
+      
+      // climb
+      JoystickButton climb = new JoystickButton(farmController, 21);
+      climb.whenPressed(new ClimberEngageRatchetCommand());
     } else {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
@@ -267,7 +271,7 @@ public class OperatorInterface {
       return false;
     }
     return getThrottle() > 0.5 || getThrottle() < -0.5
-        || xboxController.getStickButton(GenericHID.Hand.kLeft) || farmController.getRawButton(21);
+        || xboxController.getStickButton(GenericHID.Hand.kLeft) || farmController.getRawButton(28);
   }
 
   public boolean isQuickTurn() {
@@ -286,10 +290,6 @@ public class OperatorInterface {
     return gearLiftPosition.getSelected();
   }
   
-  public boolean isFarmControllerOverrideButtonPressed() {
-    return farmController.getRawButton(28);
-  }
-
   /**
    * Detects whether we have a farm controller.
    * 
