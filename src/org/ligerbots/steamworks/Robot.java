@@ -76,6 +76,24 @@ public class Robot extends IterativeRobot {
     socketAppender.start();
     root.addAppender(socketAppender);
   }
+  
+  public enum AutoMode {
+    GEAR_SHOOT("Gear + Shoot"),
+    HOPPER_SHOOT("Hopper + Shoot"),
+    GEAR_ONLY("Gear"),
+    SHOOT_ONLY("Shoot"),
+    NONE("NO AUTONOMOUS");
+    
+    public final String name;
+    AutoMode(String name) {
+      this.name = name;
+    }
+    
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
 
   public static DriveTrain driveTrain;
   public static Pneumatics pneumatics;
@@ -100,6 +118,8 @@ public class Robot extends IterativeRobot {
   private static long nanosAtLastUpdate = 0;
   
   long prevNanos = System.nanoTime();
+  
+  long autoModePrintNanos;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -222,6 +242,16 @@ public class Robot extends IterativeRobot {
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
       logger.trace("disabledPeriodic()");
       vision.setVisionEnabled(false);
+      
+      if (System.nanoTime() - autoModePrintNanos > 2_000_000_000) {
+        autoModePrintNanos = System.nanoTime();
+        System.out.println("SELECTED AUTO PARAMETERS:");
+        System.out.println("\tAuto mode: " + operatorInterface.getAutoMode().toString());
+        System.out
+            .println("\tStarting position: " + operatorInterface.getStartingPosition().toString());
+        System.out
+            .println("\nGear lift position: " + operatorInterface.getGearLiftPosition().toString());
+      }
     } catch (Throwable ex) {
       logger.error("disabledPeriodic error", ex);
       ex.printStackTrace();

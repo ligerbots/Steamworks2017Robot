@@ -14,9 +14,23 @@ import org.slf4j.LoggerFactory;
 public class FieldMap {
   private static final Logger logger = LoggerFactory.getLogger(FieldMap.class);
 
-  public static final int FIELD_SIDE_BOILER = 0;
-  public static final int FIELD_SIDE_CENTER = 1;
-  public static final int FIELD_SIDE_FEEDER = 2;
+  public enum FieldSide {
+    BOILER("Boiler side", 0),
+    CENTER("Center", 1),
+    FEEDER("Feeder side", 2);
+    
+    public final String name;
+    public final int id;
+    FieldSide(String name, int id) {
+      this.name = name;
+      this.id = id;
+    }
+    
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
   
   public static final double HOPPER_TRIGGER_WIDTH = 24.0;
 
@@ -212,33 +226,23 @@ public class FieldMap {
   /**
    * Calculates the navigation steps to go to the gear lift.
    * 
-   * @param startingPositionId The starting position ID (see comment at top of file), 0-2
-   * @param gearLiftPositionId The gear lift position ID, 0-2
+   * @param startingSide The starting position FieldSide
+   * @param gearLiftSide The gear lift position FieldSide
    * @return A DrivePathCommand to do the driving
    */
-  public static DrivePathCommand navigateStartToGearLift(int startingPositionId,
-      int gearLiftPositionId) {
-    logger.info(String.format("Calculating path, start=%d, gear=%d", startingPositionId,
-        gearLiftPositionId));
+  public static DrivePathCommand navigateStartToGearLift(FieldSide startingSide,
+      FieldSide gearLiftSide) {
+    logger.info(String.format("Calculating path, start=%s, gear=%s", startingSide.toString(),
+        gearLiftSide.toString()));
     FieldMap map = getAllianceMap();
 
     final Alliance alliance = DriverStation.getInstance().getAlliance();
-
-    if (startingPositionId < 0 || startingPositionId >= map.startingPositions.length) {
-      startingPositionId = 0;
-      logger.error("Bad starting position: " + startingPositionId);
-    }
-
-    if (gearLiftPositionId < 0 || gearLiftPositionId >= map.gearLiftPositions.length) {
-      gearLiftPositionId = 0;
-      logger.error("Bad gear lift position: " + gearLiftPositionId);
-    }
     
     final List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
 
-    FieldPosition startingPosition = map.startingPositions[startingPositionId];
+    FieldPosition startingPosition = map.startingPositions[startingSide.id];
     logger.debug(String.format("Starting position %s", startingPosition));
-    FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftPositionId];
+    FieldPosition gearLiftPosition = map.gearLiftPositions[gearLiftSide.id];
     
     // add a point behind us so the C-R spline generates correctly
     controlPoints.add(startingPosition.add(alliance == Alliance.Red ? -12 : 12, 0));
@@ -256,14 +260,14 @@ public class FieldMap {
     double initialDriveToY;
     double splinePointX;
     double splinePointY;
-    if (gearLiftPositionId == 1) {
+    if (gearLiftSide == FieldSide.CENTER) {
       initialDriveToX =
           alliance == Alliance.Red ? gearLiftPosition.getX() - 60 : gearLiftPosition.getX() + 60;
       initialDriveToY = 0;
       splinePointX =
           alliance == Alliance.Red ? gearLiftPosition.getX() - 54 : gearLiftPosition.getX() + 54;
       splinePointY = 0;
-    } else if (gearLiftPositionId == 0) {
+    } else if (gearLiftSide == FieldSide.BOILER) {
       double angle = alliance == Alliance.Red ? 240 : 300;
       double dx = 60 * Math.cos(Math.toRadians(angle));
       double dy = 60 * Math.sin(Math.toRadians(angle));

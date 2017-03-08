@@ -536,7 +536,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     FieldPosition currentPosition =
         FieldMap.getAllianceMap().startingPositions[Robot.operatorInterface
-            .getStartingPositionId()];
+            .getStartingPosition().id];
     setPosition(currentPosition);
 
     absoluteDistanceTraveled = 0;

@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import java.util.List;
+import org.ligerbots.steamworks.FieldMap.FieldSide;
+import org.ligerbots.steamworks.Robot.AutoMode;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
 import org.ligerbots.steamworks.commands.ClimberEngageRatchetCommand;
@@ -41,36 +43,30 @@ public class OperatorInterface {
   public static final int AUTO_MODE_GEAR_SHOOT = 0;
   public static final int AUTO_MODE_HOPPER_SHOOT = 1;
   public static final int AUTO_MODE_NONE = 2;
-  
+
   public XboxController xboxController;
   public Joystick farmController;
-  
-  SendableChooser<Integer> autoMode;
-  SendableChooser<Integer> startingPosition;
-  SendableChooser<Integer> gearLiftPosition;
+
+  SendableChooser<AutoMode> autoMode;
+  SendableChooser<FieldSide> startingPosition;
+  SendableChooser<FieldSide> gearLiftPosition;
 
   /**
    * This is where we set up the operator interface.
    */
   public OperatorInterface() {
     autoMode = new SendableChooser<>();
-    autoMode.addDefault("Gear + Shoot", AUTO_MODE_GEAR_SHOOT);
-    autoMode.addObject("Hopper + Shoot", AUTO_MODE_HOPPER_SHOOT);
-    autoMode.addObject("NO AUTONOMOUS", AUTO_MODE_NONE);
+    populateSelect(autoMode, AutoMode.class);
     SmartDashboard.putData("Auto mode", autoMode);
-    
+
     startingPosition = new SendableChooser<>();
-    startingPosition.addDefault("Boiler side", FieldMap.FIELD_SIDE_BOILER);
-    startingPosition.addObject("Center", FieldMap.FIELD_SIDE_CENTER);
-    startingPosition.addObject("Feeder side", FieldMap.FIELD_SIDE_FEEDER);
+    populateSelect(startingPosition, FieldSide.class);
     SmartDashboard.putData("Auto start position", startingPosition);
-    
+
     gearLiftPosition = new SendableChooser<>();
-    gearLiftPosition.addDefault("Boiler side", FieldMap.FIELD_SIDE_BOILER);
-    gearLiftPosition.addObject("Center", FieldMap.FIELD_SIDE_CENTER);
-    gearLiftPosition.addObject("Feeder side", FieldMap.FIELD_SIDE_FEEDER);
+    populateSelect(gearLiftPosition, FieldSide.class);
     SmartDashboard.putData("Auto gear lift position", gearLiftPosition);
-    
+
     xboxController = new XboxController(0);
     farmController = new Joystick(1);
 
@@ -99,7 +95,7 @@ public class OperatorInterface {
       JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
       xboxStartButton.whenPressed(new CompressorCommand(CompressorState.TOGGLE));
     }
-    
+
     if (isFarmControllerPresent()) {
       LoggerFactory.getLogger(OperatorInterface.class).info("Farm controller found!");
       JoystickButton farmIntakeButton = new JoystickButton(farmController, 6);
@@ -134,65 +130,77 @@ public class OperatorInterface {
     } else {
       LoggerFactory.getLogger(OperatorInterface.class).info("(No farm controller found)");
     }
-    
+
     SmartDashboard.putData(new InstantCommand("ForceOverrideRatchetEngage") {
       @Override
       public void execute() {
         Robot.driveTrain.engageClimberRatchet();
       }
     });
-    
+
     SmartDashboard.putData(new TurnCommand(45));
     SmartDashboard.putData(new TurnCommand(90));
     SmartDashboard.putData(new TurnCommand(180));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 10));
     SmartDashboard.putData(new DriveToGearCommand());
-    
+
     SmartDashboard.putData(new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true));
-    
+
     SmartDashboard.putData(new ClimberEngageRatchetCommand());
-    
+
     SmartDashboard.putData(new FeederBackOutCommand());
-    
+
     SmartDashboard.putData(new CameraFeedCommand(Vision.StreamType.TOGGLE));
-    
+
     SmartDashboard.putData(new AlignBoilerAndShootCommand());
-    
+
     FieldPosition startPosition = FieldMap.getRed().startingPositions[0];
     List<FieldPosition> testCtrl =
         Arrays.asList(startPosition.add(-1, 0), startPosition, startPosition.add(60, 0),
             startPosition.add(60, -60), startPosition.add(120, -60), startPosition.add(121, -60));
     List<FieldPosition> testWaypoint = FieldMap.generateCatmullRomSpline(testCtrl);
     SmartDashboard.putData(new DrivePathCommand(testWaypoint));
-    
+
     for (ManualControlType type : ManualControlWithTriggerCommand.ManualControlType.values()) {
       SmartDashboard.putData("ManualControl_" + type.toString(),
           new ManualControlWithTriggerCommand(type));
     }
-    
+
     SmartDashboard.putData(new InstantCommand("ZeroSensors") {
       {
         setRunWhenDisabled(true);
       }
-      
+
       @Override
       public void execute() {
         Robot.driveTrain.zeroSensors();
       }
     });
-    
+
     SmartDashboard.putData(new InstantCommand("Auto Calculations") {
       {
         setRunWhenDisabled(true);
       }
-      
+
       @Override
       public void execute() {
         LoggerFactory.getLogger(OperatorInterface.class).info("Auto calc test");
-        FieldMap.navigateStartToGearLift(getStartingPositionId(), getGearLiftPositionId());
+        FieldMap.navigateStartToGearLift(getStartingPosition(), getGearLiftPosition());
       }
     });
+  }
+
+  private <T extends Enum<?>> void populateSelect(SendableChooser<T> chooser, Class<T> options) {
+    boolean first = true;
+    for (T value : options.getEnumConstants()) {
+      if (first) {
+        first = false;
+        chooser.addDefault(value.toString(), value);
+      } else {
+        chooser.addObject(value.toString(), value);
+      }
+    }
   }
 
   public double getThrottle() {
@@ -221,31 +229,32 @@ public class OperatorInterface {
     return getThrottle() > 0.5 || getThrottle() < -0.5
         || xboxController.getStickButton(GenericHID.Hand.kLeft);
   }
-  
+
   public boolean isQuickTurn() {
     return xboxController.getStickButton(GenericHID.Hand.kRight);
   }
-  
-  public int getAutoMode() {
+
+  public AutoMode getAutoMode() {
     return autoMode.getSelected();
   }
-  
-  public int getStartingPositionId() {
+
+  public FieldSide getStartingPosition() {
     return startingPosition.getSelected();
   }
-  
-  public int getGearLiftPositionId() {
+
+  public FieldSide getGearLiftPosition() {
     return gearLiftPosition.getSelected();
   }
-  
+
   /**
    * Detects whether we have a farm controller.
+   * 
    * @return True if present. Currently, always true
    */
   public boolean isFarmControllerPresent() {
     return true;
     // we had problems with a startup check last year
-    //return (farmController.getButtonCount() > 10);
+    // return (farmController.getButtonCount() > 10);
   }
-  
+
 }

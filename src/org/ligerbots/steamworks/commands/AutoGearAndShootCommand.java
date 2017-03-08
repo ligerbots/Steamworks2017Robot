@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.FieldMap;
+import org.ligerbots.steamworks.FieldMap.FieldSide;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotPosition;
@@ -52,8 +53,8 @@ public class AutoGearAndShootCommand extends StatefulCommand {
     logger.info("Initialize, state=GEAR_NAVIGATION");
     currentState = State.GEAR_NAVIGATION;
 
-    driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getGearLiftPositionId(),
-        Robot.operatorInterface.getGearLiftPositionId());
+    driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getStartingPosition(),
+        Robot.operatorInterface.getGearLiftPosition());
     driveToGear.initialize();
     Robot.vision.setLedRingOn(Vision.LedState.ON);
   }
@@ -77,7 +78,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (gearCommand.isFinished()) {
           gearCommand.end();
 
-          if (Robot.operatorInterface.getGearLiftPositionId() == 2) {
+          if (Robot.operatorInterface.getGearLiftPosition() == FieldSide.FEEDER) {
             driveToBoiler =
                 FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
             driveToBoiler.initialize();
