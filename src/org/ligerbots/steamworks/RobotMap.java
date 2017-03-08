@@ -44,6 +44,7 @@ public class RobotMap {
   public static final int SOLENOID_SHIFT_UP = 1;
   public static final int SOLENOID_SHIFT_DOWN = 0;
   public static final int SOLENOID_CLIMBER_LOCK = 2;
+  public static final int SOLENOID_CLIMBER_RETRACT = 3;
 
   public static final int RELAY_LED_RING_0 = 0;
   public static final int RELAY_LED_RING_1 = 1;

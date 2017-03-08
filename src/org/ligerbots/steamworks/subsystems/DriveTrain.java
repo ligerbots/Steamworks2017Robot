@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -48,7 +47,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   CANTalon rightSlave;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
-  Solenoid climberSolenoid;
+  DoubleSolenoid climberSolenoid;
   AHRS navX;
 
   double positionX;
@@ -127,7 +126,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
-    climberSolenoid = new Solenoid(RobotMap.SOLENOID_CLIMBER_LOCK);
+    climberSolenoid =
+        new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
+    climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
 
@@ -337,7 +338,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
    * Locks the climber ratchet so we don't fall off after the match ends.
    */
   public void engageClimberRatchet() {
-    climberSolenoid.set(true);
+    climberSolenoid.set(DoubleSolenoid.Value.kForward);
     isClimberLocked = true;
     // just in case
     setHoldPositionEnabled(false);
