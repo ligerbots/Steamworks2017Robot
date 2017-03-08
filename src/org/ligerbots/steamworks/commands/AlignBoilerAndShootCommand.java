@@ -24,7 +24,6 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   State currentState;
   TurnCommand turnCommand;
   ShooterFeederCommand shooterFeederCommand;
-  DriveDistanceCommand driveDistanceCommand;
 
   boolean justStarted;
   long nanosStartOfWait;
@@ -47,6 +46,8 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     shooterFeederCommand = new ShooterFeederCommand(0);
     shooterFeederCommand.initialize();
     shooterFeederCommand.setWithholdShooting(true);
+    
+    Robot.driveTrain.shift(ShiftType.DOWN);
     
     justStarted = true;
   }
@@ -91,17 +92,10 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
             logger.info("state=TURN");
-          } else if (distanceToTarget > RobotMap.SHOOTING_DISTANCE
-              + RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR
-              || distanceToTarget < RobotMap.SHOOTING_DISTANCE
-                  - RobotMap.AUTO_DRIVE_ACCEPTABLE_ERROR) {
+          } else if (cx < 0.61 || cx > 0.63) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
-            double distanceToDrive = distanceToTarget - RobotMap.SHOOTING_DISTANCE;
-            logger.info(String.format("state=DRIVE_TO_RANGE dist=%f", distanceToDrive));
-            driveDistanceCommand =
-                new DriveDistanceCommand(distanceToDrive);
-            driveDistanceCommand.initialize();
+            logger.info("state=DRIVE_TO_RANGE");
           } else {
             // calculate shooter rpm
             double calculatedRpm = RobotMap.SHOOTING_RPM;
@@ -139,13 +133,18 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         }
         break;
       case DRIVE_TO_RANGE:
-        driveDistanceCommand.execute();
-        if (driveDistanceCommand.isFinished()) {
-          driveDistanceCommand.end();
+        if (!Robot.vision.isBoilerVisionDataValid()) {
+          Robot.driveTrain.rawThrottleTurnDrive(0, 0);
+          logger.info("Lost vision, state=WAIT_FOR_VISION");
+          currentState = State.WAIT_FOR_VISION;
+        } else {
+          VisionData data = Robot.vision.getBoilerVisionData();
+          double cx = data.getCenterX();
           
-          if (!driveDistanceCommand.succeeded) {
-            logger.warn("drive command failed, state=ABORTED");
-            currentState = State.ABORTED;
+          if (cx > 0.63) {
+            Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
+          } else if (cx < 0.61) {
+            Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
           } else {
             currentState = State.WAIT_FOR_VISION;
             nanosStartOfWait = System.nanoTime();

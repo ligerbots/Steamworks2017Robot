@@ -52,6 +52,7 @@ public class DrivePathCommand extends AccessibleCommand {
 
     driveForward = true;
 
+    // no idea how high gear would work / no testing time
     isHighGear = false;
 
     logger.info(String.format("High gear: %b", isHighGear));

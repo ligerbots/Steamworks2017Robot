@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  * Drives to the hopper and shoots. Not complete
  */
-public class AutoDriveToHopperCommand extends Command {
+public class AutoHopperAndShootCommand extends Command {
 
-  public AutoDriveToHopperCommand() {
+  public AutoHopperAndShootCommand() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
   }

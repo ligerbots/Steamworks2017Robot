@@ -26,6 +26,7 @@ import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
+import org.ligerbots.steamworks.subsystems.Lights;
 import org.ligerbots.steamworks.subsystems.PdpSubsystem;
 import org.ligerbots.steamworks.subsystems.Pneumatics;
 import org.ligerbots.steamworks.subsystems.ProximitySensor;
@@ -86,6 +87,7 @@ public class Robot extends IterativeRobot {
   public static GearManipulator gearManipulator;
   public static ProximitySensor proximitySensor;
   public static PdpSubsystem pdpSubsystem;
+  public static Lights lights;
 
   public static List<SmartDashboardLogger> allSubsystems;
 
@@ -128,8 +130,9 @@ public class Robot extends IterativeRobot {
       pneumatics = new Pneumatics();
       proximitySensor = new ProximitySensor();
       pdpSubsystem = new PdpSubsystem();
+      lights = new Lights();
       allSubsystems = Arrays.asList(driveTrain, vision, shooter, feeder, stirrer, gearManipulator,
-          intake, pneumatics, proximitySensor, pdpSubsystem);
+          intake, pneumatics, proximitySensor, pdpSubsystem, lights);
   
       driveJoystickCommand = new DriveJoystickCommand();
       operatorInterface = new OperatorInterface();
