@@ -41,8 +41,8 @@ public class RobotMap {
   // give a margin of error
   public static final int SAFE_CURRENT_775PRO = STALL_CURRENT_775PRO - 20;
 
-  public static final int SOLENOID_SHIFT_UP = 1;
-  public static final int SOLENOID_SHIFT_DOWN = 0;
+  public static final int SOLENOID_SHIFT_UP = 0;
+  public static final int SOLENOID_SHIFT_DOWN = 1;
   public static final int SOLENOID_CLIMBER_LOCK = 2;
   public static final int SOLENOID_CLIMBER_RETRACT = 3;
 

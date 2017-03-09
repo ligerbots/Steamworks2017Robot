@@ -109,7 +109,7 @@ public class DriveToGearCommand extends StatefulCommand {
           
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
-          double distanceBack = 48.0;
+          double distanceBack = 51.0;
           double distanceSide = 6.0;
           
           if (distanceToGearLift < distanceBack) {
@@ -175,8 +175,8 @@ public class DriveToGearCommand extends StatefulCommand {
             ctrlPoints.add(destination
                 .add(distanceSide * Math.sin(gearLiftConventionalAngle),
                     distanceSide * Math.cos(gearLiftConventionalAngle))
-                .add(-38 * Math.cos(gearLiftConventionalAngle),
-                    -38 * Math.sin(gearLiftConventionalAngle)));
+                .add(-41 * Math.cos(gearLiftConventionalAngle),
+                    -41 * Math.sin(gearLiftConventionalAngle)));
             ctrlPoints.add(destination);
             
             finalAngle = currentPosition.getDirection() + ry;

@@ -29,7 +29,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
 
     gearServo = new Servo(RobotMap.GEAR_SERVO_CHANNEL);
     gearServo.setBounds(2.4, 0, 0, 0, 0.8);
-    gearServo.setPeriodMultiplier(PeriodMultiplier.k1X);
+    gearServo.setPeriodMultiplier(PeriodMultiplier.k4X);
     
     setPosition(Position.CLOSED);
   }

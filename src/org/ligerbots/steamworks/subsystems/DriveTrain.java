@@ -83,7 +83,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
       configureMaster(leftMaster);
-      leftMaster.reverseSensor(true);
+      leftMaster.reverseSensor(false);
       leftSlave = new CANTalon(RobotMap.CT_ID_LEFT_2);
       configureSlave(leftSlave, RobotMap.CT_ID_LEFT_1);
     } else {
@@ -99,6 +99,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_RIGHT_1)) {
       rightMaster = new CANTalon(RobotMap.CT_ID_RIGHT_1);
       configureMaster(rightMaster);
+      rightMaster.reverseSensor(true);
       rightSlave = new CANTalon(RobotMap.CT_ID_RIGHT_2);
       configureSlave(rightSlave, RobotMap.CT_ID_RIGHT_1);
     } else {
@@ -127,7 +128,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
     climberSolenoid =
-        new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
+        new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
@@ -301,29 +302,29 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       return;
     }
     
-    setBrakeOn(true);
-    
-    isHoldingPosition = enabled;
-    
-    if (!enabled) {
-      leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-      rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-      leftMaster.reverseSensor(true);
-      robotDrive.setSafetyEnabled(true);
-      rawLeftRightDrive(0, 0);
-    } else {
-      robotDrive.setSafetyEnabled(false);
-      
-      final double currentEncoderLeft = leftMaster.getPosition();
-      final double currentEncoderRight = rightMaster.getPosition();
-      
-      leftMaster.reverseSensor(false);
-      
-      leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-      rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-      leftMaster.set(-currentEncoderLeft);
-      rightMaster.set(currentEncoderRight);
-    }
+//    setBrakeOn(true);
+//    
+//    isHoldingPosition = enabled;
+//    
+//    if (!enabled) {
+//      leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+//      rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+//      leftMaster.reverseSensor(true);
+//      robotDrive.setSafetyEnabled(true);
+//      rawLeftRightDrive(0, 0);
+//    } else {
+//      robotDrive.setSafetyEnabled(false);
+//      
+//      final double currentEncoderLeft = leftMaster.getPosition();
+//      final double currentEncoderRight = rightMaster.getPosition();
+//      
+//      leftMaster.reverseSensor(false);
+//      
+//      leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+//      rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+//      leftMaster.set(-currentEncoderLeft);
+//      rightMaster.set(currentEncoderRight);
+//    }
   }
   
   /**
