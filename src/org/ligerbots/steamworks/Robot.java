@@ -257,7 +257,7 @@ public class Robot extends IterativeRobot {
         System.out
             .println("\tStarting position: " + operatorInterface.getStartingPosition().toString());
         System.out
-            .println("\nGear lift position: " + operatorInterface.getGearLiftPosition().toString());
+            .println("\tGear lift position: " + operatorInterface.getGearLiftPosition().toString());
       }
     } catch (Throwable ex) {
       logger.error("disabledPeriodic error", ex);

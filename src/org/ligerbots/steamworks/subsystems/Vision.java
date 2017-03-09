@@ -210,7 +210,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     } else {
       on = false;
     }
-    ledRing0.set(on ? Relay.Value.kForward : Relay.Value.kOff);
+    ledRing0.set(on ? Relay.Value.kReverse : Relay.Value.kOff);
     ledRing1.set(on ? Relay.Value.kForward : Relay.Value.kOff);
   }
 
