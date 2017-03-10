@@ -45,6 +45,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   CANTalon leftSlave;
   CANTalon rightMaster;
   CANTalon rightSlave;
+  CANTalon climber;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DoubleSolenoid climberSolenoid;
@@ -124,6 +125,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       }
     };
     robotDrive.setMaxOutput(12.0);
+    
+    climber = new CANTalon(RobotMap.CT_ID_CLIMBER);
+    climber.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+    climber.enableBrakeMode(true);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
@@ -344,6 +349,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     isClimberLocked = true;
     // just in case
     setHoldPositionEnabled(false);
+  }
+  
+  public void setClimberSpeed(double speed) {
+    climber.set(speed);
   }
 
   /**

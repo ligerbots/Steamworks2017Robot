@@ -25,6 +25,8 @@ public class DriveJoystickCommand extends Command {
   protected void execute() {
     Robot.driveTrain.joystickDrive(Robot.operatorInterface.getThrottle(),
         Robot.operatorInterface.getTurn(), Robot.operatorInterface.isQuickTurn());
+    
+    Robot.driveTrain.setClimberSpeed(Robot.operatorInterface.getTriggerValue());
   }
 
   protected boolean isFinished() {

@@ -33,6 +33,8 @@ public class RobotMap {
   public static final int CT_ID_INTAKE = IS_ROADKILL ? 7 : 8;
   public static final int CT_ID_FEEDER = IS_ROADKILL ? 8 : 5;
   
+  public static final int CT_ID_CLIMBER = 9;
+  
   public static final int ANALOG_INPUT_PROXIMITY_SENSOR = 0;
 
   // Data from http://motors.vex.com/775pro
