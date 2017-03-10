@@ -263,31 +263,31 @@ public class FieldMap {
     double splinePointY;
     if (gearLiftSide == FieldSide.CENTER) {
       initialDriveToX =
-          alliance == Alliance.Red ? gearLiftPosition.getX() - 60 : gearLiftPosition.getX() + 60;
+          alliance == Alliance.Red ? gearLiftPosition.getX() - 72 : gearLiftPosition.getX() + 72;
       initialDriveToY = 0;
       splinePointX =
-          alliance == Alliance.Red ? gearLiftPosition.getX() - 54 : gearLiftPosition.getX() + 54;
+          alliance == Alliance.Red ? gearLiftPosition.getX() - 66 : gearLiftPosition.getX() + 66;
       splinePointY = 0;
     } else if (gearLiftSide == FieldSide.BOILER) {
       double angle = alliance == Alliance.Red ? 240 : 300;
-      double dx = 60 * Math.cos(Math.toRadians(angle));
-      double dy = 60 * Math.sin(Math.toRadians(angle));
+      double dx = 72 * Math.cos(Math.toRadians(angle));
+      double dy = 72 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
       
-      dx = 54 * Math.cos(Math.toRadians(angle));
-      dy = 54 * Math.sin(Math.toRadians(angle));
+      dx = 66 * Math.cos(Math.toRadians(angle));
+      dy = 66 * Math.sin(Math.toRadians(angle));
       splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
     } else {
       double angle = alliance == Alliance.Red ? 120 : 60;
-      double dx = 60 * Math.cos(Math.toRadians(angle));
-      double dy = 60 * Math.sin(Math.toRadians(angle));
+      double dx = 72 * Math.cos(Math.toRadians(angle));
+      double dy = 72 * Math.sin(Math.toRadians(angle));
       initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
       
-      dx = 54 * Math.cos(Math.toRadians(angle));
-      dy = 54 * Math.sin(Math.toRadians(angle));
+      dx = 66 * Math.cos(Math.toRadians(angle));
+      dy = 66 * Math.sin(Math.toRadians(angle));
       splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
     }
@@ -377,7 +377,7 @@ public class FieldMap {
         new FieldPosition(alliance == Alliance.Red ? -205.977 : 205.977, -94.018);
     controlPoints.add(finalPoint);
    
-    controlPoints.add(boiler);
+    controlPoints.add(new FieldPosition(alliance == Alliance.Red ? -200 : 200, -94.018));
     List<FieldPosition> splinePoints = generateCatmullRomSpline(controlPoints);
     DrivePathCommand drivePathCommand = new DrivePathCommand(splinePoints);
     return drivePathCommand;

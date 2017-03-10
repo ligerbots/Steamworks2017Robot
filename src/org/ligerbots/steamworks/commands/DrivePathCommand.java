@@ -106,17 +106,17 @@ public class DrivePathCommand extends AccessibleCommand {
     if (angleError > 180) {
       angleError -= 360;
     }
-
-    logger.debug(String.format("angleTo=%f current=%f error=%f currentPos=%s waypoints[%d]=%s",
-        angleToWaypoint, currentPosition.getDirection(), angleError, currentPosition.toString(),
-        waypointIndex, currentWaypoint.toString()));
-
+    
     double turn = -autoDriveTurnP * angleError;
     if (turn > autoTurnMaxSpeed) {
       turn = autoTurnMaxSpeed;
     } else if (turn < -autoTurnMaxSpeed) {
       turn = -autoTurnMaxSpeed;
     }
+
+    logger.debug(String.format("angleTo=%f current=%f error=%f turn=%f currentPos=%s waypoints[%d]=%s",
+        angleToWaypoint, currentPosition.getDirection(), angleError, turn, currentPosition.toString(),
+        waypointIndex, currentWaypoint.toString()));
 
     double rampUpDelta = Robot.driveTrain.getAbsoluteDistanceTraveled() - startAbsDistance;
     double rampDownDelta = currentPosition.distanceTo(waypoints.get(waypoints.size() - 1));

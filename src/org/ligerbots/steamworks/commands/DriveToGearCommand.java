@@ -109,8 +109,8 @@ public class DriveToGearCommand extends StatefulCommand {
           
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
-          double distanceBack = 51.0;
-          double distanceSide = 6.0;
+          double distanceBack = 51.75;
+//          double distanceSide = 6.0;
           
           if (distanceToGearLift < distanceBack) {
             driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
@@ -170,13 +170,13 @@ public class DriveToGearCommand extends StatefulCommand {
             List<FieldPosition> ctrlPoints = new LinkedList<>();
             ctrlPoints.add(backFromCurrentPosition);
             ctrlPoints.add(currentPosition);
-            ctrlPoints.add(midDestination.add(distanceSide * Math.sin(gearLiftConventionalAngle),
-                distanceSide * Math.cos(gearLiftConventionalAngle)));
+            ctrlPoints.add(midDestination/*.add(distanceSide * Math.sin(gearLiftConventionalAngle),
+                distanceSide * Math.cos(gearLiftConventionalAngle))*/);
             ctrlPoints.add(destination
-                .add(distanceSide * Math.sin(gearLiftConventionalAngle),
-                    distanceSide * Math.cos(gearLiftConventionalAngle))
-                .add(-41 * Math.cos(gearLiftConventionalAngle),
-                    -41 * Math.sin(gearLiftConventionalAngle)));
+//                .add(distanceSide * Math.sin(gearLiftConventionalAngle),
+//                    distanceSide * Math.cos(gearLiftConventionalAngle))
+                .add(-41.75 * Math.cos(gearLiftConventionalAngle),
+                    -41.75 * Math.sin(gearLiftConventionalAngle)));
             ctrlPoints.add(destination);
             
             finalAngle = currentPosition.getDirection() + ry;
@@ -228,7 +228,7 @@ public class DriveToGearCommand extends StatefulCommand {
           // }
 
           turnBackOnTargetCommand = new TurnCommand(DriveTrain
-              .fixDegrees(finalAngle + 7.0 - Robot.driveTrain.getRobotPosition().getDirection()));
+              .fixDegrees(finalAngle /*+ 7.0*/ - Robot.driveTrain.getRobotPosition().getDirection()));
           turnBackOnTargetCommand.initialize();
           logger.info("state=TURN_TO_GEAR");
           currentState = State.TURN_TO_GEAR;

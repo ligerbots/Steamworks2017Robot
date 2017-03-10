@@ -13,14 +13,22 @@ import org.slf4j.LoggerFactory;
  * feeder station.
  */
 public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
-  Ultrasonic pulseWidthUltrasonic;
+  Ultrasonic ultrasonicLeft;
+  Ultrasonic ultrasonicRight;
 
-  double[] buffer;
-  double[] bufferCopy;
-  int bufferIndex;
+  double[] bufferLeft;
+  double[] bufferCopyLeft;
+  int bufferIndexLeft;
   
-  double adjustedDistance;
-  double distance;
+  double adjustedDistanceLeft;
+  double distanceLeft;
+  
+  double[] bufferRight;
+  double[] bufferCopyRight;
+  int bufferIndexRight;
+  
+  double adjustedDistanceRight;
+  double distanceRight;
 
   private static final Logger logger = LoggerFactory.getLogger(ProximitySensor.class);
 
@@ -30,13 +38,20 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   public ProximitySensor() {
     logger.trace("Initializing proximity sensor");
 
-    pulseWidthUltrasonic =
+    ultrasonicLeft =
         new Ultrasonic(RobotMap.ULTRASONIC_LEFT_TRIGGER, RobotMap.ULTRASONIC_LEFT_ECHO);
-    pulseWidthUltrasonic.setAutomaticMode(true);
+    
+    ultrasonicRight =
+        new Ultrasonic(RobotMap.ULTRASONIC_RIGHT_TRIGGER, RobotMap.ULTRASONIC_RIGHT_ECHO);
+    ultrasonicRight.setAutomaticMode(true);
 
-    buffer = new double[12];
-    bufferCopy = new double[12];
-    bufferIndex = 0;
+    bufferLeft = new double[12];
+    bufferCopyLeft = new double[12];
+    bufferIndexLeft = 0;
+    
+    bufferRight = new double[12];
+    bufferCopyRight = new double[12];
+    bufferIndexRight = 0;
 
     Thread averagingThread = new Thread(this::averagingThread);
     averagingThread.setName("Ultrasonic Averaging Thread");
@@ -46,24 +61,43 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
 
   private void averagingThread() {
     while (true) {
-      distance = pulseWidthUltrasonic.getRangeInches();
-      buffer[bufferIndex] = distance;
-      bufferIndex++;
-      if (bufferIndex >= buffer.length) {
-        bufferIndex = 0;
+      distanceLeft = ultrasonicLeft.getRangeInches();
+      bufferLeft[bufferIndexLeft] = distanceLeft;
+      bufferIndexLeft++;
+      if (bufferIndexLeft >= bufferLeft.length) {
+        bufferIndexLeft = 0;
       }
       
       // sort the historical values and average the middle 50%
       // this should reasonably avoid random glitch values like we typically see from ping-echo
       // sensors
-      System.arraycopy(buffer, 0, bufferCopy, 0, buffer.length);
-      Arrays.sort(bufferCopy);
+      System.arraycopy(bufferLeft, 0, bufferCopyLeft, 0, bufferLeft.length);
+      Arrays.sort(bufferCopyLeft);
 
       double sum = 0;
-      for (int i = bufferCopy.length / 4; i < bufferCopy.length * 3 / 4; i++) {
-        sum += bufferCopy[i];
+      for (int i = bufferCopyLeft.length / 4; i < bufferCopyLeft.length * 3 / 4; i++) {
+        sum += bufferCopyLeft[i];
       }
-      adjustedDistance = sum / (bufferCopy.length / 2);
+      adjustedDistanceLeft = sum / (bufferCopyLeft.length / 2);
+      
+      distanceRight = ultrasonicRight.getRangeInches();
+      bufferRight[bufferIndexRight] = distanceRight;
+      bufferIndexRight++;
+      if (bufferIndexRight >= bufferRight.length) {
+        bufferIndexRight = 0;
+      }
+      
+      // sort the historical values and average the middle 50%
+      // this should reasonably avoid random glitch values like we typically see from ping-echo
+      // sensors
+      System.arraycopy(bufferRight, 0, bufferCopyRight, 0, bufferRight.length);
+      Arrays.sort(bufferCopyRight);
+
+      sum = 0;
+      for (int i = bufferCopyRight.length / 4; i < bufferCopyRight.length * 3 / 4; i++) {
+        sum += bufferCopyRight[i];
+      }
+      adjustedDistanceRight = sum / (bufferCopyRight.length / 2);
       
       try {
         Thread.sleep(100);
@@ -74,15 +108,28 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
   }
 
   /**
-   * Returns the distance detected by the ultrasonic sensor.
+   * Returns the distance detected by the left ultrasonic sensor.
    * 
    * @return Distance in inches
    */
-  public double getDistance() {
-    if (Math.abs(distance - adjustedDistance) < 15.0) {
-      return distance;
+  public double getDistanceLeft() {
+    if (Math.abs(distanceLeft - adjustedDistanceLeft) < 15.0) {
+      return distanceLeft;
     } else {
-      return adjustedDistance;
+      return adjustedDistanceLeft;
+    }
+  }
+  
+  /**
+   * Returns the distance detected by the right ultrasonic sensor.
+   * 
+   * @return Distance in inches
+   */
+  public double getDistanceRight() {
+    if (Math.abs(distanceRight - adjustedDistanceRight) < 15.0) {
+      return distanceRight;
+    } else {
+      return adjustedDistanceRight;
     }
   }
 
@@ -92,7 +139,8 @@ public class ProximitySensor extends Subsystem implements SmartDashboardLogger {
    * Sends sensor data to the dashboard.
    */
   public void sendDataToSmartDashboard() {
-    SmartDashboard.putNumber("Proximity_Sensor_Distance", getDistance());
+    SmartDashboard.putNumber("Ultrasonic_Left", getDistanceLeft());
+    SmartDashboard.putNumber("Ultrasonic_Right", getDistanceRight());
   }
 }
 

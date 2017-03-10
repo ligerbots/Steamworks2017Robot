@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.ligerbots.steamworks.commands.AutoGearAndShootCommand;
+import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
@@ -83,6 +84,7 @@ public class Robot extends IterativeRobot {
     HOPPER_SHOOT("Hopper + Shoot", false, true),
     GEAR_ONLY("Gear", true, false),
     SHOOT_ONLY("Shoot", false, true),
+    DRIVE_FORWARD("Drive forward only", false, false),
     NONE("NO AUTONOMOUS", false, false);
     
     public final String name;
@@ -264,11 +266,14 @@ public class Robot extends IterativeRobot {
       ex.printStackTrace();
     }
   }
+  
+  long nanosAutoStart;
 
   @Override
   public void autonomousInit() {
     try {
       logger.trace("autonomousInit()");
+      nanosAutoStart = System.nanoTime();
   
       /*
        * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
@@ -289,6 +294,11 @@ public class Robot extends IterativeRobot {
       switch (selectedMode) {
         case NONE:
           autoCommand = null;
+          break;
+        case DRIVE_FORWARD:
+          // enough to cross the baseline
+          autoCommand = new DriveDistanceCommand(72);
+          autoCommand.start();
           break;
         case HOPPER_SHOOT:
           logger.error("Hopper auto is unimplemented!");
@@ -322,6 +332,11 @@ public class Robot extends IterativeRobot {
       // 3. robotPeriodic()
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
       vision.setVisionEnabled(true);
+      
+      if (System.nanoTime() - nanosAutoStart > 2_000_000_000L) {
+        intake.setIntakeOn(false);
+      }
+      
       logger.trace("autonomousPeriodic()");
     } catch (Throwable ex) {
       logger.error("autonomousPeriodic error", ex);
@@ -346,7 +361,7 @@ public class Robot extends IterativeRobot {
       }
       
       vision.setLedRingOn(LedState.ON);
-      intake.setIntakeOn(true);
+//      intake.setIntakeOn(true);
   
       driveJoystickCommand.start();
     } catch (Throwable ex) {

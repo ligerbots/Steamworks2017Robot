@@ -92,7 +92,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
             logger.info("state=TURN");
-          } else if (cx < 0.61 || cx > 0.63) {
+          } else if (cx < 0.615 || cx > 0.625) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
             logger.info("state=DRIVE_TO_RANGE");
@@ -113,6 +113,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
           logger.info("Lost vision, state=WAIT_FOR_VISION");
+          nanosStartOfWait = System.nanoTime();
           currentState = State.WAIT_FOR_VISION;
         } else {
           VisionData data = Robot.vision.getBoilerVisionData();
@@ -120,6 +121,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           if (Math.abs(data.getCenterY() - 0.5) < 0.02) {
             Robot.driveTrain.rawThrottleTurnDrive(0, 0);
             logger.info("Completed turn, state=WAIT_FOR_VISION");
+            nanosStartOfWait = System.nanoTime();
             currentState = State.WAIT_FOR_VISION;
           }
           
@@ -136,15 +138,16 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
           logger.info("Lost vision, state=WAIT_FOR_VISION");
+          nanosStartOfWait = System.nanoTime();
           currentState = State.WAIT_FOR_VISION;
         } else {
           VisionData data = Robot.vision.getBoilerVisionData();
           double cx = data.getCenterX();
           
-          if (cx > 0.63) {
-            Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
-          } else if (cx < 0.61) {
-            Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
+          if (cx > 0.625) {
+            Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW + 0.1, 0);
+          } else if (cx < 0.615) {
+            Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW - 0.1, 0);
           } else {
             currentState = State.WAIT_FOR_VISION;
             nanosStartOfWait = System.nanoTime();

@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 public class DriveUltrasonicCommand extends Command {
   private static final Logger logger = LoggerFactory.getLogger(DriveUltrasonicCommand.class);
 
+  double distLeft;
+  double distRight;
   double targetDistance;
   double currentDistance;
   double startYaw;
@@ -75,8 +77,22 @@ public class DriveUltrasonicCommand extends Command {
     }
     
     if (isGearLift) {
-      yawDifference +=
-          5.5 * Math.sin((System.nanoTime() - startTime) * 2 * Math.PI / 1_000_000_000);
+//      yawDifference +=
+//          5.5 * Math.sin((System.nanoTime() - startTime) * 2 * Math.PI / 1_000_000_000);
+    }
+    
+    distLeft = Robot.proximitySensor.getDistanceLeft();
+    distRight = Robot.proximitySensor.getDistanceRight();
+    currentDistance = (distLeft + distRight) / 2;
+    ultrasonicValues[ultrasonicValuesIndex++] = currentDistance;
+    if (ultrasonicValuesIndex >= ultrasonicValues.length) {
+      ultrasonicValuesFilled = true;
+      ultrasonicValuesIndex = 0;
+    }
+    
+    if (Math.abs(distLeft - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR ||
+        Math.abs(distRight - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR) {
+      turn = Math.signum(distRight - distLeft) * RobotMap.AUTO_TURN_MIN_SPEED_LOW;
     }
     
     turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
@@ -86,14 +102,7 @@ public class DriveUltrasonicCommand extends Command {
       turn = -1.0;
     }
 
-    currentDistance = Robot.proximitySensor.getDistance();
-    ultrasonicValues[ultrasonicValuesIndex++] = currentDistance;
-    if (ultrasonicValuesIndex >= ultrasonicValues.length) {
-      ultrasonicValuesFilled = true;
-      ultrasonicValuesIndex = 0;
-    }
-
-    logger.debug(String.format("current=%f, target=%f, yawError=%f", currentDistance,
+    logger.debug(String.format("current=%f/%f, target=%f, yawError=%f", distLeft, distRight,
         targetDistance, yawDifference));
 
     double speed =
@@ -101,7 +110,10 @@ public class DriveUltrasonicCommand extends Command {
     if (speed > RobotMap.AUTO_DRIVE_MIN_SPEED_LOW + 0.1) {
       speed = RobotMap.AUTO_DRIVE_MIN_SPEED_LOW + 0.1;
     }
-    Robot.driveTrain.rawThrottleTurnDrive(currentDistance > targetDistance ? speed : -speed, turn);
+    if (currentDistance < targetDistance) {
+      speed = 0;
+    }
+    Robot.driveTrain.rawThrottleTurnDrive(speed, turn);
   }
 
   @Override
@@ -117,8 +129,8 @@ public class DriveUltrasonicCommand extends Command {
       Arrays.sort(localCopy);
       double range = Math.abs(localCopy[0] - localCopy[localCopy.length - 1]);
       if (range < 2 && System.nanoTime() - startTime > 3_000_000_000L) {
-        if (currentDistance < 7.8) {
-          logger.info("Stopping distance isn't changing and <7.8in");
+        if (currentDistance < 14.8) {
+          logger.info("Stopping distance isn't changing and <14.8in");
           return true;
         } else {
           aborted = true;
@@ -129,8 +141,8 @@ public class DriveUltrasonicCommand extends Command {
     }
     
     if (isGearLift && System.nanoTime() - startTime > 7_000_000_000L) {
-      if (currentDistance < 7.8) {
-        logger.warn("Stopping because timeout and < 7.8in");
+      if (currentDistance < 14.8) {
+        logger.warn("Stopping because timeout and < 14.8in");
       } else {
         aborted = true;
         logger.warn("Aborting because timeout");
@@ -138,11 +150,8 @@ public class DriveUltrasonicCommand extends Command {
       return true;
     }
 
-    if (!isGearLift) {
-      return Math.abs(currentDistance - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR;
-    }
-    
-    return false;
+    return distLeft - RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR < targetDistance
+        && distRight - RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR < targetDistance;
   }
 
   protected void end() {

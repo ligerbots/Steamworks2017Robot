@@ -113,10 +113,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     robotDrive = new RobotDrive(leftMaster, rightMaster) {
       public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
         // make sure we don't break the ratchet
-        if (isClimberLocked && rightOutput > 0) {
-          logger.warn("Attempt to drive forward while ratchet is engaged!");
-          rightOutput = 0;
-        }
+        //if (isClimberLocked && rightOutput > 0) {
+         // logger.warn("Attempt to drive forward while ratchet is engaged!");
+          //rightOutput = 0;
+        //}
         
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;

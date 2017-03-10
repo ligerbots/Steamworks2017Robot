@@ -162,7 +162,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     super.end();
 
     logger.info("finish");
-    //Robot.feeder.setFeeder(0);
+    Robot.feeder.setFeeder(0);
     Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STOP);    
     Robot.shooter.setShooterRpm(0);
     ended = true;
@@ -172,7 +172,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     super.interrupted();
 
     logger.info("Interrupted, spinning down shooter");
-    //Robot.feeder.setFeeder(0);
+    Robot.feeder.setFeeder(0);
     Robot.stirrer.setStirrer(RobotMap.STIRRER_SERVO_VALUE_STOP);  
     Robot.shooter.setShooterRpm(0);
     ended = true;

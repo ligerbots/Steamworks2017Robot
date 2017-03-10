@@ -72,7 +72,7 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
   
   /**
    * Sets a light strip configuration.
-   * @param type Which light strip
+   * @param type Which light stripghhh
    * @param pulse How fast to pulse
    * @param color The color
    */

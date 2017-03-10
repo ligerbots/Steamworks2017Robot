@@ -142,7 +142,7 @@ public class OperatorInterface {
       
       // drive to 3 inches
       JoystickButton driveToGearFeed = new JoystickButton(farmController, 6);
-      driveToGearFeed.whenPressed(new DriveUltrasonicCommand(3.0));
+      driveToGearFeed.whenPressed(new DriveUltrasonicCommand(8.0));
       
       // LEDs
       JoystickButton ledsOff = new JoystickButton(farmController, 11);
