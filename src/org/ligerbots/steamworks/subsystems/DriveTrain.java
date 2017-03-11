@@ -466,6 +466,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
+    
+    SmartDashboard.putNumber("Talon_6_Input", rightSlave.getBusVoltage());
+    SmartDashboard.putNumber("Talon_1_Input", leftMaster.getBusVoltage());
 
     // solenoid diagnostics
     if (pcmPresent) {
