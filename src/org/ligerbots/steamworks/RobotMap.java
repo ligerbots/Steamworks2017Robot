@@ -179,9 +179,6 @@ public class RobotMap {
   public static long AUTO_SHOOTER_WAIT_NANOS = 5_000_000_000L;
   
   @Preference
-  public static boolean VISION_BOILER_AUTO_CORRECT = false;
-  
-  @Preference
   public static boolean JOYSTICK_DRIVE_COMPENSATION_ENABLED = true;
   
   /**

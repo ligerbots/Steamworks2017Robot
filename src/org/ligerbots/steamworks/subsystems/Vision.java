@@ -13,6 +13,10 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import org.ligerbots.steamworks.RobotMap;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,9 +293,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         }
 
         VisionData notCurrentData = container.visionData[1 - container.currentVisionDataIndex];
-        double rvecPitch = dataPacket.getDouble();
-        double rvecYaw = dataPacket.getDouble();
-        double rvecRoll = dataPacket.getDouble();
+        double rvec0 = dataPacket.getDouble();
+        double rvec1 = dataPacket.getDouble();
+        double rvec2 = dataPacket.getDouble();
         double tvecX = dataPacket.getDouble();
         double tvecY = dataPacket.getDouble();
         double tvecZ = dataPacket.getDouble();
@@ -299,28 +303,53 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         double centerY = dataPacket.getDouble();
 
         // if the data is garbage or no target was located, keep the old data
-        if (Double.isNaN(rvecPitch) || Double.isNaN(rvecYaw) || Double.isNaN(rvecRoll)
+        if (Double.isNaN(rvec0) || Double.isNaN(rvec1) || Double.isNaN(rvec2)
             || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)
             || Double.isNaN(centerX) || Double.isNaN(centerY)) {
           continue;
         }
-
-        // TODO: test and verify
-        if (code == DATA_CODE_BOILER && RobotMap.VISION_BOILER_AUTO_CORRECT) {
-          ITable boilerTarget = boilerVision.table.getSubTable("target");
-          double boilerTargetWidth = boilerTarget.getNumber("width", DEFAULT_BOILER_TARGET_WIDTH);
-          if (rvecYaw > RobotMap.VISION_BOILER_CAMERA_ANGLE) {
-            // the target is too wide, causing us to think we are more pitched than we are
-            boilerTarget.putNumber("width", boilerTargetWidth - 0.01);
-          } else if (rvecYaw < RobotMap.VISION_BOILER_CAMERA_ANGLE) {
-            // other way around
-            boilerTarget.putNumber("width", boilerTargetWidth + 0.01);
-          }
+        
+        Mat rvec = new Mat(1, 3, CvType.CV_64F);
+        Mat rotationMatrix = new Mat();
+        // turn condensed axis-angle representation into useful rotation matrix
+        Calib3d.Rodrigues(rvec, rotationMatrix);
+        
+        if (code == DATA_CODE_GEAR) {
+          Mat transform = Mat.eye(3, 3, CvType.CV_64F);
+          double alpha = Math.toRadians(-15);
+          // @formatter:off
+          transform.put(0, 0,
+              1,     0,                0,
+              0,     Math.cos(alpha), -Math.sin(alpha),
+              0,     Math.sin(alpha),  Math.cos(alpha));
+          // @formatter:on
+          
+          rotationMatrix = transform.mul(rotationMatrix);
+          
+          Mat translation = new Mat(1, 3, CvType.CV_64F);
+          translation.put(0, 0, tvecX, tvecY, tvecZ);
+          translation = transform.mul(translation);
+          double[] translationArray = new double[(int) translation.total()];
+          tvecX = translationArray[0];
+          tvecY = translationArray[1];
+          tvecZ = translationArray[2];
         }
 
-        notCurrentData.rvecPitch = rvecPitch;
-        notCurrentData.rvecYaw = rvecYaw;
-        notCurrentData.rvecRoll = rvecRoll;
+        Mat euler = rotationMatrixToEulerAngles(rotationMatrix);
+        double[] eulers = new double[(int) euler.total()];
+        euler.get(0, 0, eulers);
+        
+        ITable result = container.table.getSubTable("result");
+        result.putNumber("x", tvecX);
+        result.putNumber("y", tvecY);
+        result.putNumber("z", tvecZ);
+        result.putNumber("pitch", eulers[0]);
+        result.putNumber("yaw", eulers[1]);
+        result.putNumber("roll", eulers[2]);
+
+        notCurrentData.rvecPitch = eulers[0];
+        notCurrentData.rvecYaw = eulers[1];
+        notCurrentData.rvecRoll = eulers[2];
         notCurrentData.tvecX = tvecX;
         notCurrentData.tvecY = tvecY;
         notCurrentData.tvecZ = tvecZ;
@@ -335,6 +364,17 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         ex.printStackTrace();
       }
     }
+  }
+  
+  private static Mat rotationMatrixToEulerAngles(Mat matrix) {
+    Mat euler = new Mat(1, 3, CvType.CV_64F);
+    euler.put(0, 0,
+        Core.fastAtan2((float) matrix.get(1, 2)[0], (float) matrix.get(2, 2)[0]),
+        Core.fastAtan2((float) -matrix.get(2, 0)[0],
+            (float) Math.sqrt(matrix.get(1, 2)[0] * matrix.get(1, 2)[0]
+                + matrix.get(2, 2)[0] * matrix.get(2, 2)[0])),
+        Core.fastAtan2((float) matrix.get(1, 0)[0], (float) matrix.get(0, 0)[0]));
+    return euler;
   }
 
   /**
