@@ -355,7 +355,6 @@ public class FieldMap {
     final Alliance alliance = DriverStation.getInstance().getAlliance();
     
     final FieldPosition startingPosition = map.startingPositions[startingSide.id];
-    final FieldPosition boiler = map.boiler;
     
     List<FieldPosition> controlPoints = new LinkedList<FieldPosition>();
     

@@ -361,7 +361,6 @@ public class Robot extends IterativeRobot {
       }
       
       vision.setLedRingOn(LedState.ON);
-//      intake.setIntakeOn(true);
   
       driveJoystickCommand.start();
     } catch (Throwable ex) {

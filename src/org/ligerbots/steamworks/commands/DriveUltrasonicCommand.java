@@ -76,11 +76,6 @@ public class DriveUltrasonicCommand extends Command {
       }
     }
     
-    if (isGearLift) {
-//      yawDifference +=
-//          5.5 * Math.sin((System.nanoTime() - startTime) * 2 * Math.PI / 1_000_000_000);
-    }
-    
     distLeft = Robot.proximitySensor.getDistanceLeft();
     distRight = Robot.proximitySensor.getDistanceRight();
     currentDistance = (distLeft + distRight) / 2;

@@ -112,13 +112,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     }
 
     robotDrive = new RobotDrive(leftMaster, rightMaster) {
-      public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
-        // make sure we don't break the ratchet
-        //if (isClimberLocked && rightOutput > 0) {
-         // logger.warn("Attempt to drive forward while ratchet is engaged!");
-          //rightOutput = 0;
-        //}
-        
+      public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {        
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;
         lastOutputRight = rightOutput;
@@ -132,8 +126,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
-    climberSolenoid =
-        new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
+    climberSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK,
+        RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);

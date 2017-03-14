@@ -110,7 +110,7 @@ public class DriveToGearCommand extends StatefulCommand {
           double distanceToGearLift = Math.sqrt(tx * tx + tz * tz);
           
           double distanceBack = 51.75;
-//          double distanceSide = 6.0;
+          // double distanceSide = 6.0;
           
           if (distanceToGearLift < distanceBack) {
             driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
