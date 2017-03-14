@@ -335,9 +335,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           tvecZ = translationArray[2];
         }
 
-        Mat euler = rotationMatrixToEulerAngles(rotationMatrix);
-        double[] eulers = new double[(int) euler.total()];
-        euler.get(0, 0, eulers);
+        double[] eulers = rotationMatrixToEulerAngles(rotationMatrix);
         
         ITable result = container.table.getSubTable("result");
         result.putNumber("x", tvecX);
@@ -366,15 +364,13 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     }
   }
   
-  private static Mat rotationMatrixToEulerAngles(Mat matrix) {
-    Mat euler = new Mat(1, 3, CvType.CV_64F);
-    euler.put(0, 0,
+  private static double[] rotationMatrixToEulerAngles(Mat matrix) {
+    return new double[]{
         Core.fastAtan2((float) matrix.get(1, 2)[0], (float) matrix.get(2, 2)[0]),
         Core.fastAtan2((float) -matrix.get(2, 0)[0],
             (float) Math.sqrt(matrix.get(1, 2)[0] * matrix.get(1, 2)[0]
                 + matrix.get(2, 2)[0] * matrix.get(2, 2)[0])),
-        Core.fastAtan2((float) matrix.get(1, 0)[0], (float) matrix.get(0, 0)[0]));
-    return euler;
+        Core.fastAtan2((float) matrix.get(1, 0)[0], (float) matrix.get(0, 0)[0])};
   }
 
   /**
