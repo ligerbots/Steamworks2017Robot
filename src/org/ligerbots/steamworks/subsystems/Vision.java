@@ -329,10 +329,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           Mat translation = new Mat(1, 3, CvType.CV_64F);
           translation.put(0, 0, tvecX, tvecY, tvecZ);
           translation = transform.mul(translation);
-          double[] translationArray = new double[(int) translation.total()];
-          tvecX = translationArray[0];
-          tvecY = translationArray[1];
-          tvecZ = translationArray[2];
+          tvecX = translation.get(0, 0)[0];
+          tvecY = translation.get(0, 1)[0];
+          tvecZ = translation.get(0, 2)[0];
         }
 
         double[] eulers = rotationMatrixToEulerAngles(rotationMatrix);
