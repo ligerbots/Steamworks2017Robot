@@ -324,9 +324,9 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
               0,     Math.sin(alpha),  Math.cos(alpha));
           // @formatter:on
           
-          rotationMatrix = transform.mul(rotationMatrix);
+          rotationMatrix = rotationMatrix.mul(transform);
           
-          Mat translation = new Mat(1, 3, CvType.CV_64F);
+          Mat translation = new Mat(3, 1, CvType.CV_64F);
           translation.put(0, 0, tvecX, tvecY, tvecZ);
           translation = transform.mul(translation);
           tvecX = translation.get(0, 0)[0];
