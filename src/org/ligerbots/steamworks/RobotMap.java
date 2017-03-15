@@ -89,6 +89,9 @@ public class RobotMap {
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
   
   @Preference
+  public static double JOYSTICK_RAMP_RATE = 0.08; // volts per tick
+  
+  @Preference
   public static double INTAKE_SPEED = 1.0;
   
   @Preference

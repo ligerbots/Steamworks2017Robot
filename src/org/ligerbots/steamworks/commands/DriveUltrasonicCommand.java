@@ -85,11 +85,11 @@ public class DriveUltrasonicCommand extends Command {
       ultrasonicValuesIndex = 0;
     }
     
-    if (Math.abs(distLeft - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR ||
-        Math.abs(distRight - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR) {
+    if (Math.abs(distLeft - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR
+        || Math.abs(distRight - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR) {
       turn = Math.signum(distRight - distLeft) * RobotMap.AUTO_TURN_MIN_SPEED_LOW;
     }
-    
+
     turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
     if (turn > 1.0) {
       turn = 1.0;

@@ -173,8 +173,8 @@ public class DriveToGearCommand extends StatefulCommand {
             ctrlPoints.add(midDestination/*.add(distanceSide * Math.sin(gearLiftConventionalAngle),
                 distanceSide * Math.cos(gearLiftConventionalAngle))*/);
             ctrlPoints.add(destination
-//                .add(distanceSide * Math.sin(gearLiftConventionalAngle),
-//                    distanceSide * Math.cos(gearLiftConventionalAngle))
+                // .add(distanceSide * Math.sin(gearLiftConventionalAngle),
+                // distanceSide * Math.cos(gearLiftConventionalAngle))
                 .add(-41.75 * Math.cos(gearLiftConventionalAngle),
                     -41.75 * Math.sin(gearLiftConventionalAngle)));
             ctrlPoints.add(destination);
@@ -228,7 +228,8 @@ public class DriveToGearCommand extends StatefulCommand {
           // }
 
           turnBackOnTargetCommand = new TurnCommand(DriveTrain
-              .fixDegrees(finalAngle /*+ 7.0*/ - Robot.driveTrain.getRobotPosition().getDirection()));
+              .fixDegrees(
+                  finalAngle - Robot.driveTrain.getRobotPosition().getDirection()));
           turnBackOnTargetCommand.initialize();
           logger.info("state=TURN_TO_GEAR");
           currentState = State.TURN_TO_GEAR;

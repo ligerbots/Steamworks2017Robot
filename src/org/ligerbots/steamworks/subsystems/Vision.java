@@ -292,7 +292,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           continue;
         }
 
-        VisionData notCurrentData = container.visionData[1 - container.currentVisionDataIndex];
+        final VisionData notCurrentData =
+            container.visionData[1 - container.currentVisionDataIndex];
         double rvec0 = dataPacket.getDouble();
         double rvec1 = dataPacket.getDouble();
         double rvec2 = dataPacket.getDouble();

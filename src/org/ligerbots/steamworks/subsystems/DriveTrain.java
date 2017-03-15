@@ -69,6 +69,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   
   boolean isHoldingPosition;
   boolean isClimberLocked;
+  
+  double limitedThrottle = 0;
 
   /**
    * Creates a new drive train instance.
@@ -201,13 +203,34 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       throttle = -throttle;
       turn = -turn;
     }
-    logger.trace(String.format("Driving with throttle %f and turn %f quickTurn %b", throttle, turn,
-        quickTurn));
-    if (quickTurn || !RobotMap.JOYSTICK_DRIVE_COMPENSATION_ENABLED) {
-      robotDrive.arcadeDrive(throttle, turn);
+    
+    // slew rate limiter, https://www.chiefdelphi.com/forums/showpost.php?p=1334827&postcount=8
+    // rate limit if accelerating, but not if decelerating
+    double change = throttle - limitedThrottle;
+    if (throttle > 0 && change > 0) {
+      if (change > RobotMap.JOYSTICK_RAMP_RATE) {
+        change = RobotMap.JOYSTICK_RAMP_RATE;
+      }
+      limitedThrottle += change;
+    } else if (throttle < 0 && change < 0) {
+      if (change < -RobotMap.JOYSTICK_RAMP_RATE) {
+        change = -RobotMap.JOYSTICK_RAMP_RATE;
+      }
+      limitedThrottle += change;
     } else {
-      robotDrive.arcadeDrive(throttle,
-          Math.abs(throttle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY);
+      limitedThrottle = throttle;
+    }
+    
+    logger.trace(String.format("Driving with throttle %f limited to %f and turn %f quickTurn %b",
+        throttle, limitedThrottle, turn, quickTurn));
+    if (quickTurn || !RobotMap.JOYSTICK_DRIVE_COMPENSATION_ENABLED) {
+      robotDrive.arcadeDrive(limitedThrottle, turn);
+    } else {
+      // auto quick turn if throttle is zero
+      double compensatedTurn =
+          Math.abs(limitedThrottle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY;
+      robotDrive.arcadeDrive(limitedThrottle,
+          Math.abs(limitedThrottle) < 0.01 ? turn : compensatedTurn);
     }
   }
 
@@ -301,29 +324,29 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       return;
     }
     
-//    setBrakeOn(true);
-//    
-//    isHoldingPosition = enabled;
-//    
-//    if (!enabled) {
-//      leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-//      rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-//      leftMaster.reverseSensor(true);
-//      robotDrive.setSafetyEnabled(true);
-//      rawLeftRightDrive(0, 0);
-//    } else {
-//      robotDrive.setSafetyEnabled(false);
-//      
-//      final double currentEncoderLeft = leftMaster.getPosition();
-//      final double currentEncoderRight = rightMaster.getPosition();
-//      
-//      leftMaster.reverseSensor(false);
-//      
-//      leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-//      rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-//      leftMaster.set(-currentEncoderLeft);
-//      rightMaster.set(currentEncoderRight);
-//    }
+    // setBrakeOn(true);
+    //
+    // isHoldingPosition = enabled;
+    //
+    // if (!enabled) {
+    // leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+    // rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+    // leftMaster.reverseSensor(true);
+    // robotDrive.setSafetyEnabled(true);
+    // rawLeftRightDrive(0, 0);
+    // } else {
+    // robotDrive.setSafetyEnabled(false);
+    //
+    // final double currentEncoderLeft = leftMaster.getPosition();
+    // final double currentEncoderRight = rightMaster.getPosition();
+    //
+    // leftMaster.reverseSensor(false);
+    //
+    // leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+    // rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+    // leftMaster.set(-currentEncoderLeft);
+    // rightMaster.set(currentEncoderRight);
+    // }
   }
   
   /**

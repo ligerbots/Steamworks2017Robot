@@ -85,12 +85,12 @@ Checkstyle configuration that checks the Google coding conventions from Google J
     </module>
     <module name="ParameterName">
       <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
-      <property name="excludeScope" value="public"/>
+      <!-- <property name="excludeScope" value="public"/> -->
       <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="ParameterName">
       <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
-      <property name="scope" value="public"/>
+      <!-- <property name="scope" value="public"/> -->
       <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="CatchParameterName">
