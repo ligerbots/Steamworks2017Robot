@@ -30,6 +30,7 @@ import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
+import org.ligerbots.steamworks.commands.TankDriveCommand;
 import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
@@ -117,6 +118,9 @@ public class OperatorInterface {
       // CAMERAS
       JoystickButton gearCam = new JoystickButton(farmController, 22);
       gearCam.whenPressed(new CameraFeedCommand(StreamType.GEAR_CAM));
+      
+      JoystickButton tankRotateThing = new JoystickButton(farmController, 7);
+      tankRotateThing.whenPressed(new TankDriveCommand(-10.0, true));
       
       JoystickButton boilerCam = new JoystickButton(farmController, 23);
       boilerCam.whenPressed(new CameraFeedCommand(StreamType.BOILER_CAM));

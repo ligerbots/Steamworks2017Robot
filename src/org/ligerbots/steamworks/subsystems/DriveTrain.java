@@ -233,6 +233,22 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
           Math.abs(limitedThrottle) < 0.01 ? turn : compensatedTurn);
     }
   }
+  
+  /**
+   * Tank drives the robot.
+   * @param left Left side of drivetrain value
+   * @param right Right side value
+   */
+  public void rawTankDrive(double left, double right) {
+    if (isHoldingPosition) {
+      return;
+    }
+    
+    logger.trace(
+        String.format("Tank drive raw %f / %f", left, right));
+    
+    robotDrive.tankDrive(left, right, false);
+  }
 
   /**
    * Arcade drive but without squared inputs or high speed turn compensation. Flips direction for
