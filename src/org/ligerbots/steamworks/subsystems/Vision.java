@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Vision extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(Vision.class);
+  
+  private static final Mat nullMat = new Mat();
 
   /**
    * This is a container for vision data.
@@ -258,13 +260,15 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
     // 10fps refresh rate, so here we set up a receiver for the data
     logger.info("Data thread init");
     DatagramChannel udpChannel = null;
-    ByteBuffer dataPacket = ByteBuffer.allocateDirect(Double.SIZE / 8 * 8 + 1);
+    ByteBuffer dataPacket = null;
 
     try {
       udpChannel = DatagramChannel.open();
       udpChannel.socket().setReuseAddress(true);
       udpChannel.socket().bind(new InetSocketAddress(DATA_PORT));
       udpChannel.configureBlocking(true);
+      
+      dataPacket = ByteBuffer.allocateDirect(udpChannel.socket().getReceiveBufferSize());
     } catch (Exception ex) {
       logger.error("Data thread init error", ex);
       ex.printStackTrace();
@@ -272,6 +276,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
     while (true) {
       try {
+        logger.debug("Waiting for new packet");
         dataPacket.position(0);
         SocketAddress from = udpChannel.receive(dataPacket);
         if (from == null) {
@@ -285,8 +290,10 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         VisionContainer container;
         if (code == DATA_CODE_BOILER) {
           container = boilerVision;
+          logger.debug("Got boiler data");
         } else if (code == DATA_CODE_GEAR) {
           container = gearVision;
+          logger.debug("Got gear data");
         } else {
           logger.error(String.format("Invalid data code: %x", code));
           continue;
@@ -302,11 +309,20 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         double tvecZ = dataPacket.getDouble();
         double centerX = dataPacket.getDouble();
         double centerY = dataPacket.getDouble();
+        double p0x = dataPacket.getDouble();
+        double p0y = dataPacket.getDouble();
+        double p1x = dataPacket.getDouble();
+        double p1y = dataPacket.getDouble();
+        double p2x = dataPacket.getDouble();
+        double p2y = dataPacket.getDouble();
+        double p3x = dataPacket.getDouble();
+        double p3y = dataPacket.getDouble();
 
         // if the data is garbage or no target was located, keep the old data
         if (Double.isNaN(rvec0) || Double.isNaN(rvec1) || Double.isNaN(rvec2)
             || Double.isNaN(tvecX) || Double.isNaN(tvecY) || Double.isNaN(tvecZ)
             || Double.isNaN(centerX) || Double.isNaN(centerY)) {
+          logger.warn("NaN in data");
           continue;
         }
         
@@ -325,11 +341,11 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
               0,     Math.sin(alpha),  Math.cos(alpha));
           // @formatter:on
           
-          rotationMatrix = rotationMatrix.mul(transform);
+          Core.gemm(rotationMatrix, transform, 1, nullMat, 0, rotationMatrix);
           
           Mat translation = new Mat(3, 1, CvType.CV_64F);
           translation.put(0, 0, tvecX, tvecY, tvecZ);
-          translation = transform.mul(translation);
+          Core.gemm(transform, translation, 1, nullMat, 0, translation);
           tvecX = translation.get(0, 0)[0];
           tvecY = translation.get(0, 1)[0];
           tvecZ = translation.get(0, 2)[0];
@@ -357,8 +373,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         container.currentVisionDataIndex = 1 - container.currentVisionDataIndex;
 
         container.lastPhoneDataTimestamp = System.nanoTime();
-      } catch (IOException ex) {
-        logger.error("Data thread communication error", ex);
+      } catch (Exception ex) {
+        logger.error("Data thread error", ex);
         ex.printStackTrace();
       }
     }
