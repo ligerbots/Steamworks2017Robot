@@ -88,6 +88,8 @@ public class RobotMap {
   
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
   
+  public static final double GEAR_ALIGNMENT_OFFSET = 2.25; // in
+  
   @Preference
   public static double JOYSTICK_RAMP_RATE = 0.08; // volts per tick
   
@@ -183,6 +185,9 @@ public class RobotMap {
   
   @Preference
   public static boolean JOYSTICK_DRIVE_COMPENSATION_ENABLED = true;
+
+  @Preference
+  public static double JOYSTICK_DRIVE_DEAD_AREA = 0.05;
   
   /**
    * Sets up Preferences variables. Must be called first in robotInit().

@@ -113,10 +113,17 @@ public class DriveToGearCommand extends StatefulCommand {
           // double distanceSide = 6.0;
           
           if (distanceToGearLift < distanceBack) {
-            driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
-            driveBackCommand.initialize();
-            currentState = State.DRIVE_BACK;
-            logger.info("state=DRIVE_BACK");
+            if (Math.abs(tx) < 6.0 && ((ry <= 360 && ry > 340) || (ry >= 0 && ry < 20))) {
+              currentState = State.DRIVE_TO_GEAR;
+              driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
+              driveToGearCommand.initialize();
+              logger.info("state=DRIVE_TO_GEAR");
+            } else {
+              driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
+              driveBackCommand.initialize();
+              currentState = State.DRIVE_BACK;
+              logger.info("state=DRIVE_BACK");
+            }
           } else {
             // calculate the location that is distanceBack inches back from the target in the robot
             // frame

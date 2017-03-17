@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.util.Arrays;
 import org.ligerbots.steamworks.RobotMap;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -327,6 +328,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         }
         
         Mat rvec = new Mat(1, 3, CvType.CV_64F);
+        rvec.put(0, 0, rvec0, rvec1, rvec2);
         Mat rotationMatrix = new Mat();
         // turn condensed axis-angle representation into useful rotation matrix
         Calib3d.Rodrigues(rvec, rotationMatrix);
@@ -345,10 +347,12 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           
           Mat translation = new Mat(3, 1, CvType.CV_64F);
           translation.put(0, 0, tvecX, tvecY, tvecZ);
+          logger.info(Arrays.toString(new double[]{tvecX, tvecY, tvecZ}));
           Core.gemm(transform, translation, 1, nullMat, 0, translation);
           tvecX = translation.get(0, 0)[0];
-          tvecY = translation.get(0, 1)[0];
-          tvecZ = translation.get(0, 2)[0];
+          tvecY = translation.get(1, 0)[0];
+          tvecZ = translation.get(2, 0)[0];
+          logger.info(Arrays.toString(new double[]{tvecX, tvecY, tvecZ}));
         }
 
         double[] eulers = rotationMatrixToEulerAngles(rotationMatrix);

@@ -204,6 +204,10 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       turn = -turn;
     }
     
+    // pre-square inputs so the rate limiter works correctly
+    throttle = Math.signum(throttle) * throttle * throttle;
+    turn = Math.signum(turn) * turn * turn;
+    
     // slew rate limiter, https://www.chiefdelphi.com/forums/showpost.php?p=1334827&postcount=8
     // rate limit if accelerating, but not if decelerating
     double change = throttle - limitedThrottle;
@@ -223,14 +227,16 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     
     logger.trace(String.format("Driving with throttle %f limited to %f and turn %f quickTurn %b",
         throttle, limitedThrottle, turn, quickTurn));
+    
+    // we already squared, so tell robotdrive not to square again
     if (quickTurn || !RobotMap.JOYSTICK_DRIVE_COMPENSATION_ENABLED) {
-      robotDrive.arcadeDrive(limitedThrottle, turn);
+      robotDrive.arcadeDrive(limitedThrottle, turn, false);
     } else {
       // auto quick turn if throttle is zero
       double compensatedTurn =
           Math.abs(limitedThrottle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY;
       robotDrive.arcadeDrive(limitedThrottle,
-          Math.abs(limitedThrottle) < 0.01 ? turn : compensatedTurn);
+          Math.abs(limitedThrottle) < RobotMap.JOYSTICK_DRIVE_DEAD_AREA ? turn : compensatedTurn, false);
     }
   }
   
