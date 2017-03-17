@@ -2,8 +2,6 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 
-import java.util.Arrays;
-
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
@@ -21,7 +19,6 @@ public class DriveUltrasonicCommand extends Command {
   double targetDistance;
   double currentDistance;
   double startYaw;
-  boolean isGearLift;
   
   double[] ultrasonicValues;
   int ultrasonicValuesIndex;
@@ -34,19 +31,13 @@ public class DriveUltrasonicCommand extends Command {
   /**
    * Creates a new DriveUltrasonicCommand.
    * @param targetDistance The ultrasonic measurement to go to
-   * @param isGearLift Whether to wiggle for gear lift or not
    */
-  public DriveUltrasonicCommand(double targetDistance, boolean isGearLift) {
+  public DriveUltrasonicCommand(double targetDistance) {
     super("DriveByUltrasonicCommand_" + targetDistance);
     this.targetDistance = targetDistance;
-    this.isGearLift = isGearLift;
     requires(Robot.driveTrain);
   }
   
-  public DriveUltrasonicCommand(double targetDistance) {
-    this(targetDistance, false);
-  }
-
   protected void initialize() {
     logger.info(String.format("Init, target=%f", targetDistance));
 
@@ -115,33 +106,7 @@ public class DriveUltrasonicCommand extends Command {
   protected boolean isFinished() {
     if (Robot.operatorInterface.isCancelled()) {
       logger.warn("Aborted");
-      return true;
-    }
-    
-    if (ultrasonicValuesFilled) {
-      double[] localCopy = new double[ultrasonicValues.length];
-      System.arraycopy(ultrasonicValues, 0, localCopy, 0, ultrasonicValues.length);
-      Arrays.sort(localCopy);
-      double range = Math.abs(localCopy[0] - localCopy[localCopy.length - 1]);
-      if (range < 2 && System.nanoTime() - startTime > 3_000_000_000L) {
-        if (currentDistance < 14.8) {
-          logger.info("Stopping distance isn't changing and <14.8in");
-          return true;
-        } else {
-          aborted = true;
-          logger.warn("Aborting because distance isn't changing");
-          return true;
-        }
-      }
-    }
-    
-    if (isGearLift && System.nanoTime() - startTime > 7_000_000_000L) {
-      if (currentDistance < 14.8) {
-        logger.warn("Stopping because timeout and < 14.8in");
-      } else {
-        aborted = true;
-        logger.warn("Aborting because timeout");
-      }
+      aborted = true;
       return true;
     }
 

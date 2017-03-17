@@ -27,10 +27,11 @@ public class DriveToGearCommand extends StatefulCommand {
   private static final long WAIT_GEAR_NANOS = 1_000_000_000;
 
   enum State {
-    INITIAL_WAIT_FOR_VISION,
+    VISION,
     INITIAL_DRIVE,
     DRIVE_BACK,
-    TURN_TO_GEAR,
+    TURN_TO_PEG,
+    TURN_BACK_ON_TARGET,
     DRIVE_TO_GEAR,
     DELIVER_GEAR,
     DRIVE_AWAY,
@@ -38,11 +39,12 @@ public class DriveToGearCommand extends StatefulCommand {
     ABORTED
   }
 
-  State currentState = State.INITIAL_WAIT_FOR_VISION;
+  State currentState = State.VISION;
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
   DriveDistanceCommand driveBackCommand;
-  DriveUltrasonicCommand driveToGearCommand;
+  DriveUltrasonicCommand driveToGearCommand =
+      new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST);
   boolean deliverOnly = false;
   
   double finalAngle;
@@ -51,7 +53,7 @@ public class DriveToGearCommand extends StatefulCommand {
 
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
-  TurnCommand turnBackOnTargetCommand;
+  TurnCommand turnCommand;
 
   /**
    * Creates a new DriveToGearCommand.
@@ -70,8 +72,8 @@ public class DriveToGearCommand extends StatefulCommand {
 
   protected void initialize() {
     if (!deliverOnly) {
-      logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
-      currentState = State.INITIAL_WAIT_FOR_VISION;
+      logger.info("Initialize, state=VISION");
+      currentState = State.VISION;
       nanosAtWaitForVisionStart = System.nanoTime();
     } else {
       currentState = State.DELIVER_GEAR;
@@ -94,7 +96,7 @@ public class DriveToGearCommand extends StatefulCommand {
     // 6. Drive up
 
     switch (currentState) {
-      case INITIAL_WAIT_FOR_VISION:
+      case VISION:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
         if (System.nanoTime() - nanosAtWaitForVisionStart >= WAIT_VISION_NANOS
             && Robot.vision.isGearVisionDataValid()) {
@@ -114,10 +116,25 @@ public class DriveToGearCommand extends StatefulCommand {
           
           if (distanceToGearLift < distanceBack) {
             if (Math.abs(tx) < 6.0 && ((ry <= 360 && ry > 340) || (ry >= 0 && ry < 20))) {
-              currentState = State.DRIVE_TO_GEAR;
-              driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
-              driveToGearCommand.initialize();
-              logger.info("state=DRIVE_TO_GEAR");
+              double pegTipOffset = 14.0; // measured in CAD
+              double px = -pegTipOffset * Math.sin(Math.toRadians(ry)) + tx;
+              double pz = -pegTipOffset * Math.cos(Math.toRadians(ry)) + tz;
+              
+              double deltaAngle = 90 - Math.toDegrees(Math.atan2(pz, px));
+              double angleToGearWedge;
+              // choose the wedge to use
+              if (deltaAngle > 0) {
+                angleToGearWedge = Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
+                    RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
+              } else {
+                angleToGearWedge = -Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
+                    RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
+              }
+              
+              turnCommand = new TurnCommand(deltaAngle - angleToGearWedge);
+              turnCommand.initialize();
+              logger.info("state=TURN_TO_PEG");
+              currentState = State.TURN_TO_PEG;
             } else {
               driveBackCommand = new DriveDistanceCommand(distanceToGearLift - distanceBack - 6);
               driveBackCommand.initialize();
@@ -207,20 +224,26 @@ public class DriveToGearCommand extends StatefulCommand {
         if (driveBackCommand.isFinished()) {
           driveBackCommand.end();
           
-          logger.info("Initialize, state=INITIAL_WAIT_FOR_VISION");
-          currentState = State.INITIAL_WAIT_FOR_VISION;
+          logger.info("Initialize, state=VISION");
+          currentState = State.VISION;
           nanosAtWaitForVisionStart = System.nanoTime();
         }
         break;
-      case TURN_TO_GEAR:
-        turnBackOnTargetCommand.execute();
-        if (turnBackOnTargetCommand.isFinished()) {
-          turnBackOnTargetCommand.end();
+      case TURN_BACK_ON_TARGET:
+      case TURN_TO_PEG:
+        turnCommand.execute();
+        if (turnCommand.isFinished()) {
+          turnCommand.end();
           
-          currentState = State.DRIVE_TO_GEAR;
-          driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
-          driveToGearCommand.initialize();
-          logger.info("state=DRIVE_TO_GEAR");
+          if (currentState == State.TURN_TO_PEG) {
+            currentState = State.DRIVE_TO_GEAR;
+            driveToGearCommand.initialize();
+            logger.info("state=DRIVE_TO_GEAR");
+          } else {
+            logger.info("Initialize, state=VISION");
+            currentState = State.VISION;
+            nanosAtWaitForVisionStart = System.nanoTime();
+          }
         }
         break;
       case INITIAL_DRIVE:
@@ -234,21 +257,23 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
-          turnBackOnTargetCommand = new TurnCommand(DriveTrain
+          turnCommand = new TurnCommand(DriveTrain
               .fixDegrees(
                   finalAngle - Robot.driveTrain.getRobotPosition().getDirection()));
-          turnBackOnTargetCommand.initialize();
-          logger.info("state=TURN_TO_GEAR");
-          currentState = State.TURN_TO_GEAR;
+          turnCommand.initialize();
+          logger.info("state=TURN_BACK_ON_TARGET");
+          currentState = State.TURN_BACK_ON_TARGET;
         }
         break;
       case DRIVE_TO_GEAR:
         driveToGearCommand.execute();
         
-        if (driveToGearCommand.isFinished()) {
+        // TODO: check for pressure plate pressed
+        
+        if (driveToGearCommand.isFinished() /* || pressurePlatePressed */) {
           driveToGearCommand.end();
           
-          if (driveToGearCommand.aborted) {
+          if (driveToGearCommand.aborted /* || !pressurePlatePressed */) {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
             currentState = State.DRIVE_AWAY;
             logger.info("state=DRIVE_AWAY");
@@ -287,7 +312,6 @@ public class DriveToGearCommand extends StatefulCommand {
           if (doRetry) {
             doRetry = false;
             currentState = State.DRIVE_TO_GEAR;
-            driveToGearCommand = new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true);
             driveToGearCommand.initialize();
             logger.info("state=DRIVE_TO_GEAR");
           } else {

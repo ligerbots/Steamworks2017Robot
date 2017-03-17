@@ -87,7 +87,7 @@ public class RobotMap {
   public static final double SHOOTER_MAX_RPM = 6000;
   
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
-  
+  public static final double GEAR_DELIVERY_DIST = 9.5; // in
   public static final double GEAR_ALIGNMENT_OFFSET = 2.25; // in
   
   @Preference
@@ -116,9 +116,6 @@ public class RobotMap {
   public static double GEARMECH_RECEIVE = 0.8;
   @Preference
   public static double GEARMECH_RECEIVE_DIST = 5.0; // in
-  
-  @Preference
-  public static double GEAR_DELIVERY_DIST = 9.5; // in
   
   @Preference
   public static double STIRRER_SERVO_VALUE_STIR = 1.0;
