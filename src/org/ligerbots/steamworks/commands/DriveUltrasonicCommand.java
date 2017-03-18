@@ -80,7 +80,7 @@ public class DriveUltrasonicCommand extends Command {
     }
     
     if (alignSquare) {
-      if (distLeft - targetDistance < 5.0 || distRight - targetDistance < 5.0) {
+      if (distLeft - targetDistance < 12.0 || distRight - targetDistance < 12.0) {
         turn = RobotMap.AUTO_DRIVE_ULTRASONIC_TURN_P * (distRight - distLeft);
       } else {
         turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;

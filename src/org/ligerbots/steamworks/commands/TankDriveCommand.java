@@ -11,6 +11,9 @@ public class TankDriveCommand extends Command {
 
   boolean right;
   double dist; // inches
+  
+  double startRight;
+  double startLeft;
 
   public TankDriveCommand(double dist, boolean right) {
     this.right = right;
@@ -18,10 +21,11 @@ public class TankDriveCommand extends Command {
     requires(Robot.driveTrain);
   }
 
-  // Called just before this Command runs the first time
-  protected void initialize() {}
+  protected void initialize() {
+    startRight = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT);
+    startLeft = Robot.driveTrain.getEncoderDistance(DriveTrainSide.LEFT);
+  }
 
-  // Called repeatedly when this Command is scheduled to run
   protected void execute() {
     if (right) {
       Robot.driveTrain.rawTankDrive(dist >= 0 ? 0.4 : -0.4, 0.0);
@@ -30,23 +34,21 @@ public class TankDriveCommand extends Command {
     }
   }
 
-  // Make this return true when this Command no longer needs to run execute()
   protected boolean isFinished() {
-    double startRight = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT);
-    double startLeft = Robot.driveTrain.getEncoderDistance(DriveTrainSide.LEFT);
     if (right) {
       double distTraveled = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT) - startRight;
-      return distTraveled >= Math.abs(dist);
+      return Math.abs(distTraveled) >= Math.abs(dist);
     } else {
       double distTraveled = Robot.driveTrain.getEncoderDistance(DriveTrainSide.LEFT) - startLeft;
-      return distTraveled >= Math.abs(dist);
+      return Math.abs(distTraveled) >= Math.abs(dist);
     }
   }
 
-  // Called once after isFinished returns true
-  protected void end() {}
+  protected void end() {
+    Robot.driveTrain.rawTankDrive(0, 0);
+  }
 
-  // Called when another command which requires one or more of the same
-  // subsystems is scheduled to run
-  protected void interrupted() {}
+  protected void interrupted() {
+    Robot.driveTrain.rawTankDrive(0, 0);
+  }
 }

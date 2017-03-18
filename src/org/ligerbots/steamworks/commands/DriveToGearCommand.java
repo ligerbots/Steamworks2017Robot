@@ -238,7 +238,7 @@ public class DriveToGearCommand extends StatefulCommand {
             driveToGearCommand.initialize();
             logger.info("state=DRIVE_TO_GEAR");
           } else {
-            logger.info("Initialize, state=VISION");
+            logger.info("state=VISION");
             currentState = State.VISION;
             nanosAtWaitForVisionStart = System.nanoTime();
           }
@@ -309,9 +309,9 @@ public class DriveToGearCommand extends StatefulCommand {
           
           if (doRetry) {
             doRetry = false;
-            currentState = State.DRIVE_TO_GEAR;
-            driveToGearCommand.initialize();
-            logger.info("state=DRIVE_TO_GEAR");
+            logger.info("state=VISION");
+            currentState = State.VISION;
+            nanosAtWaitForVisionStart = System.nanoTime();
           } else {
             currentState = State.DONE;
           }

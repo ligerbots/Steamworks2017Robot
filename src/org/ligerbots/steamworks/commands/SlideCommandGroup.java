@@ -11,14 +11,17 @@ public class SlideCommandGroup extends CommandGroup {
 
   public SlideCommandGroup(double inches, boolean right) {
 
-    double a = Math.acos(RobotMap.ROBOT_WIDTH - inches / RobotMap.ROBOT_WIDTH);
-    double arc = a * RobotMap.ROBOT_WIDTH;
+    double angle = Math.acos((RobotMap.ROBOT_WIDTH - inches) / RobotMap.ROBOT_WIDTH);
+    double arc = angle * RobotMap.ROBOT_WIDTH;
+    double distBack = Math.sin(angle) * RobotMap.ROBOT_WIDTH;
     if (right) {
-      addSequential(new TankDriveCommand(-arc, false));
-      addSequential(new TankDriveCommand(-arc, true));
+      addSequential(new TankDriveCommand(arc, false));
+      addSequential(new TankDriveCommand(arc, true));
+      addSequential(new DriveDistanceCommand(distBack));
     } else {
-      addSequential(new TankDriveCommand(-arc, true));
-      addSequential(new TankDriveCommand(-arc, false));
+      addSequential(new TankDriveCommand(arc, true));
+      addSequential(new TankDriveCommand(arc, false));
+      addSequential(new DriveDistanceCommand(distBack));
     }
 
     // Add Commands here:

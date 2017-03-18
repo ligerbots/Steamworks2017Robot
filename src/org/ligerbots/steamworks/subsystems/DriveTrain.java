@@ -252,8 +252,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     
     logger.trace(
         String.format("Tank drive raw %f / %f", left, right));
-    
-    robotDrive.tankDrive(left, right, false);
+    // something is reversed somewhere
+    robotDrive.tankDrive(right, left, false);
   }
 
   /**
