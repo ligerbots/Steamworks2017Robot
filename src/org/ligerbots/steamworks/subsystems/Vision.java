@@ -277,7 +277,6 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
 
     while (true) {
       try {
-        logger.debug("Waiting for new packet");
         dataPacket.position(0);
         SocketAddress from = udpChannel.receive(dataPacket);
         if (from == null) {
@@ -291,10 +290,8 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         VisionContainer container;
         if (code == DATA_CODE_BOILER) {
           container = boilerVision;
-          logger.debug("Got boiler data");
         } else if (code == DATA_CODE_GEAR) {
           container = gearVision;
-          logger.debug("Got gear data");
         } else {
           logger.error(String.format("Invalid data code: %x", code));
           continue;
@@ -335,7 +332,7 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         
         if (code == DATA_CODE_GEAR) {
           Mat transform = Mat.eye(3, 3, CvType.CV_64F);
-          double alpha = Math.toRadians(-15);
+          double alpha = Math.toRadians(15);
           // @formatter:off
           transform.put(0, 0,
               1,     0,                0,
@@ -347,12 +344,10 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
           
           Mat translation = new Mat(3, 1, CvType.CV_64F);
           translation.put(0, 0, tvecX, tvecY, tvecZ);
-          logger.info(Arrays.toString(new double[]{tvecX, tvecY, tvecZ}));
           Core.gemm(transform, translation, 1, nullMat, 0, translation);
           tvecX = translation.get(0, 0)[0];
           tvecY = translation.get(1, 0)[0];
           tvecZ = translation.get(2, 0)[0];
-          logger.info(Arrays.toString(new double[]{tvecX, tvecY, tvecZ}));
         }
 
         double[] eulers = rotationMatrixToEulerAngles(rotationMatrix);

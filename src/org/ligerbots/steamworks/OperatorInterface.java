@@ -19,8 +19,8 @@ import org.ligerbots.steamworks.commands.ClimberEngageRatchetCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DrivePathCommand;
+import org.ligerbots.steamworks.commands.DriveToFeederCommand;
 import org.ligerbots.steamworks.commands.DriveToGearCommand;
-import org.ligerbots.steamworks.commands.DriveUltrasonicCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand;
@@ -145,9 +145,9 @@ public class OperatorInterface {
       JoystickButton gearmechDeliver = new JoystickButton(farmController, 3);
       gearmechDeliver.whenPressed(new GearCommand(Position.DELIVER_GEAR));
       
-      // drive to 3 inches
+      // drive to 6 inches
       JoystickButton driveToGearFeed = new JoystickButton(farmController, 6);
-      driveToGearFeed.whenPressed(new DriveUltrasonicCommand(8.0));
+      driveToGearFeed.whenPressed(new DriveToFeederCommand());
       
       // LEDs
       JoystickButton ledsOff = new JoystickButton(farmController, 11);
@@ -193,8 +193,6 @@ public class OperatorInterface {
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 10));
     SmartDashboard.putData(new DriveToGearCommand());
-
-    SmartDashboard.putData(new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, true));
 
     SmartDashboard.putData(new ClimberEngageRatchetCommand());
 

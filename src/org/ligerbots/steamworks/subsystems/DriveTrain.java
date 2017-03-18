@@ -86,7 +86,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
       configureMaster(leftMaster);
-      leftMaster.reverseSensor(false);
+      leftMaster.reverseSensor(RobotMap.IS_SECOND_ROBOT);
       leftSlave = new CANTalon(RobotMap.CT_ID_LEFT_2);
       configureSlave(leftSlave, RobotMap.CT_ID_LEFT_1);
     } else {
@@ -102,7 +102,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_RIGHT_1)) {
       rightMaster = new CANTalon(RobotMap.CT_ID_RIGHT_1);
       configureMaster(rightMaster);
-      rightMaster.reverseSensor(true);
+      rightMaster.reverseSensor(!RobotMap.IS_SECOND_ROBOT);
       rightSlave = new CANTalon(RobotMap.CT_ID_RIGHT_2);
       configureSlave(rightSlave, RobotMap.CT_ID_RIGHT_1);
     } else {

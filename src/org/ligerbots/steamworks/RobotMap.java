@@ -19,6 +19,7 @@ public class RobotMap {
   }
   
   public static final boolean IS_ROADKILL = new File("/home/lvuser/roadkill").exists();
+  public static final boolean IS_SECOND_ROBOT = new File("/home/lvuser/eviltwin").exists();
   
   public static final int PCM_CAN_ID = 9;
 
@@ -87,8 +88,15 @@ public class RobotMap {
   public static final double SHOOTER_MAX_RPM = 6000;
   
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
-  public static final double GEAR_DELIVERY_DIST = 9.5; // in
-  public static final double GEAR_ALIGNMENT_OFFSET = 2.25; // in
+  
+  @Preference
+  public static double GEAR_ALIGNMENT_OFFSET = 1.0; // in
+  
+  @Preference
+  public static double GEAR_BACKOFF_SPEED = 0.2;
+  
+  @Preference
+  public static double GEAR_DELIVERY_DIST = 13.0; // in
   
   @Preference
   public static double JOYSTICK_RAMP_RATE = 0.08; // volts per tick
@@ -149,6 +157,8 @@ public class RobotMap {
   public static double AUTO_DRIVE_TURN_P_HIGH = 0.02;
   @Preference
   public static double AUTO_DRIVE_TURN_P_LOW = 0.02;
+  @Preference
+  public static double AUTO_DRIVE_ULTRASONIC_TURN_P = 1.0;
   
   @Preference
   public static double AUTO_DRIVE_MIN_SPEED_HIGH = 0.1; // percent voltage from 12.5V

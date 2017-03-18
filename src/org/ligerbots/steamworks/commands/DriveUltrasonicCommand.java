@@ -27,14 +27,17 @@ public class DriveUltrasonicCommand extends Command {
   boolean aborted;
   
   long startTime;
+  
+  boolean alignSquare;
 
   /**
    * Creates a new DriveUltrasonicCommand.
    * @param targetDistance The ultrasonic measurement to go to
    */
-  public DriveUltrasonicCommand(double targetDistance) {
+  public DriveUltrasonicCommand(double targetDistance, boolean alignSquare) {
     super("DriveByUltrasonicCommand_" + targetDistance);
     this.targetDistance = targetDistance;
+    this.alignSquare = alignSquare;
     requires(Robot.driveTrain);
   }
   
@@ -76,12 +79,15 @@ public class DriveUltrasonicCommand extends Command {
       ultrasonicValuesIndex = 0;
     }
     
-    if (Math.abs(distLeft - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR
-        || Math.abs(distRight - targetDistance) < RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR) {
-      turn = Math.signum(distRight - distLeft) * RobotMap.AUTO_TURN_MIN_SPEED_LOW;
+    if (alignSquare) {
+      if (distLeft - targetDistance < 5.0 || distRight - targetDistance < 5.0) {
+        turn = RobotMap.AUTO_DRIVE_ULTRASONIC_TURN_P * (distRight - distLeft);
+      } else {
+        turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
+      }
+    } else {
+      turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
     }
-
-    turn = RobotMap.AUTO_DRIVE_TURN_P_LOW * yawDifference;
     if (turn > 1.0) {
       turn = 1.0;
     } else if (turn < -1.0) {
@@ -110,8 +116,7 @@ public class DriveUltrasonicCommand extends Command {
       return true;
     }
 
-    return distLeft - RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR < targetDistance
-        && distRight - RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR < targetDistance;
+    return currentDistance - RobotMap.AUTO_FINE_DRIVE_ACCEPTABLE_ERROR < targetDistance;
   }
 
   protected void end() {

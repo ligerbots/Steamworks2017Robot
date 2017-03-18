@@ -10,6 +10,7 @@ import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
+import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class DriveToGearCommand extends StatefulCommand {
   long nanosAtGearDeliverStart;
   DriveDistanceCommand driveBackCommand;
   DriveUltrasonicCommand driveToGearCommand =
-      new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST);
+      new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, false);
   boolean deliverOnly = false;
   
   double finalAngle;
@@ -62,7 +63,7 @@ public class DriveToGearCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
 
-    driveAwayCommand = new DriveDistanceCommand(-12.0, 0.3);
+    driveAwayCommand = new DriveDistanceCommand(-12.0, RobotMap.GEAR_BACKOFF_SPEED);
   }
   
   public DriveToGearCommand(boolean deliverOnly) {
@@ -81,6 +82,8 @@ public class DriveToGearCommand extends StatefulCommand {
       logger.info("Initialize, state=DELIVER_GEAR");
     }
     
+    Robot.gearManipulator.setPosition(Position.CLOSED);
+    
     doRetry = false;
   }
 
@@ -88,12 +91,7 @@ public class DriveToGearCommand extends StatefulCommand {
     super.execute();
     
     // procedure
-    // 1. Find where the target is (initialize)
-    // 2. Turn to the place 48 inches back from target
-    // 3. Drive to above place
-    // 4. Turn to target based on initialize() calculation
-    // 5. Take new vision frame and finely align
-    // 6. Drive up
+    // completely changed, insert description here
 
     switch (currentState) {
       case VISION:
