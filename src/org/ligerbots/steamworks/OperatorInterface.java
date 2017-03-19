@@ -183,9 +183,9 @@ public class OperatorInterface {
     });
 
     SmartDashboard.putData(new CompressorCommand(CompressorState.TOGGLE));
-    SmartDashboard.putData(new TurnCommand(45));
-    SmartDashboard.putData(new TurnCommand(90));
-    SmartDashboard.putData(new TurnCommand(180));
+    SmartDashboard.putData(new TurnCommand(45.0, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR));
+    SmartDashboard.putData(new TurnCommand(90.0, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR));
+    SmartDashboard.putData(new TurnCommand(180.0, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 5));
     SmartDashboard.putData(new DriveDistanceCommand(12 * 10));
     SmartDashboard.putData(new DriveToGearCommand());

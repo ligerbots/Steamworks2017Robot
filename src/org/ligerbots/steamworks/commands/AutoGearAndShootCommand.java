@@ -4,6 +4,7 @@ import org.ligerbots.steamworks.FieldMap;
 import org.ligerbots.steamworks.FieldMap.FieldSide;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -154,7 +155,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   private TurnCommand generateAlign(FieldPosition targetPosition) {
     RobotPosition pos = Robot.driveTrain.getRobotPosition();
     double angle = 90 - pos.angleTo(targetPosition);
-    return new TurnCommand(angle - pos.getDirection());
+    return new TurnCommand(angle - pos.getDirection(),  RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
   }
   
   private void generateBoilerAlign() {

@@ -163,7 +163,7 @@ public class DriveToFeederCommand extends StatefulCommand {
   
           turnCommand = new TurnCommand(DriveTrain
               .fixDegrees(
-                  finalAngle - Robot.driveTrain.getRobotPosition().getDirection()));
+                  finalAngle - Robot.driveTrain.getRobotPosition().getDirection()), RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
           turnCommand.initialize();
           logger.info("state=TURN_BACK_ON_TARGET");
           currentState = State.TURN_BACK_ON_TARGET;
