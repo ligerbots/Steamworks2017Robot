@@ -87,7 +87,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           double distanceToTarget = boilerCenterHeight / Math.tan(Math.toRadians(angleFromGround));
           logger.info(String.format("distance %f", distanceToTarget));
           
-          if (Math.abs(cy - 0.5) >= 0.02) {
+          if (Math.abs(cy - 0.5) >= 0.01) {
             currentState = State.TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
@@ -118,15 +118,18 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           VisionData data = Robot.vision.getBoilerVisionData();
           
-          if (Math.abs(data.getCenterY() - 0.5) < 0.02) {
+          if (Math.abs(data.getCenterY() - 0.5) < 0.01) {
             Robot.driveTrain.rawThrottleTurnDrive(0, 0);
             logger.info("Completed turn, state=WAIT_FOR_VISION");
             nanosStartOfWait = System.nanoTime();
             currentState = State.WAIT_FOR_VISION;
           }
           
-          double turn = RobotMap.AUTO_TURN_MIN_SPEED_LOW
-              + Math.abs(data.getCenterY() - 0.5) * (1 - RobotMap.AUTO_TURN_MIN_SPEED_LOW);
+          double turn = RobotMap.AUTO_BOILER_TURN_SPEED
+              + Math.abs(data.getCenterY() - 0.5) * (1 - RobotMap.AUTO_BOILER_TURN_SPEED);
+          if (Math.abs(data.getCenterY() - 0.5) < 0.2) {
+            turn = RobotMap.AUTO_BOILER_TURN_SPEED;
+          }
           // turn clockwise if necessary, otherwise counterclockwise
           if (data.getCenterY() < 0.5) {
             turn = -turn;

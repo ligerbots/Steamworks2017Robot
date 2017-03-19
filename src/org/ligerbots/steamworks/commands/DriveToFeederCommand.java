@@ -48,7 +48,7 @@ public class DriveToFeederCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
     
-    driveUltrasonicCommand = new DriveUltrasonicCommand(6.5, true);
+    driveUltrasonicCommand = new DriveUltrasonicCommand(7.5, true);
   }
 
   protected void initialize() {
@@ -72,7 +72,7 @@ public class DriveToFeederCommand extends StatefulCommand {
   
           double tx = data.getTvecX();
           double tz = data.getTvecZ() + RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST;
-          double ry = 0;//data.getRvecYaw();
+          double ry = data.getRvecYaw();
   
           logger.debug(String.format("tx: %f, tz: %f, ry: %f", tx, tz, ry));
           

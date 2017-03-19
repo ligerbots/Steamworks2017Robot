@@ -41,7 +41,7 @@ public class ShiftCommand extends Command {
     lastOutputLeft = Robot.driveTrain.getLastOutput(DriveTrainSide.LEFT);
     lastOutputRight = Robot.driveTrain.getLastOutput(DriveTrainSide.RIGHT);
 
-    if (Math.abs(lastOutputLeft) < 0.02 && Math.abs(lastOutputRight) < 0.02) {
+    if (Math.abs(lastOutputLeft) < 0.1 && Math.abs(lastOutputRight) < 0.1) {
       doWait = false;
     } else {
       Robot.driveTrain.setBrakeOn(false);

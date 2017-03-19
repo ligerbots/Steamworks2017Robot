@@ -34,6 +34,9 @@ public class RobotMap {
   public static final int CT_ID_INTAKE = IS_ROADKILL ? 7 : 8;
   public static final int CT_ID_FEEDER = IS_ROADKILL ? 8 : 5;
   
+  public static final int AI_LS_SPOKE_DOWN = 0;
+  public static final int AI_LS_WEDGE_DOWN = 1;
+  
   public static final int CT_ID_CLIMBER = 9;
   
   public static final int ANALOG_INPUT_PROXIMITY_SENSOR = 0;
@@ -138,6 +141,8 @@ public class RobotMap {
   public static double AUTO_TURN_MIN_SPEED_HIGH = 0.1;
   @Preference
   public static double AUTO_TURN_MIN_SPEED_LOW = 0.1;
+  @Preference
+  public static double AUTO_BOILER_TURN_SPEED = 0.15;
   @Preference
   public static double AUTO_TURN_RAMP_ZONE_HIGH = 80.0;
   @Preference

@@ -1,5 +1,6 @@
 package org.ligerbots.steamworks.subsystems;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -17,9 +18,18 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   public enum Position {
     DELIVER_GEAR, RECEIVE_GEAR, CLOSED
   }
+  
+  public enum GearOrientation {
+    WEDGE_DOWN,
+    SPOKE_DOWN,
+    NO_GEAR
+  }
 
   Servo gearServo;
   Position position = Position.CLOSED;
+  
+  AnalogInput lsSpokeDown;
+  AnalogInput lsWedgeDown;
 
   /**
    * Creates the GearManipulator, and sets servo to closed position.
@@ -32,9 +42,28 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     gearServo.setPeriodMultiplier(PeriodMultiplier.k4X);
     
     setPosition(Position.CLOSED);
+    
+    lsSpokeDown = new AnalogInput(RobotMap.AI_LS_SPOKE_DOWN);
+    lsWedgeDown = new AnalogInput(RobotMap.AI_LS_WEDGE_DOWN);
   }
 
   public void initDefaultCommand() {}
+  
+  /**
+   * Returns the detected orientation of the gear.
+   * @return {@link GearOrientation} representing what the gear is at
+   */
+  public GearOrientation getGearOrientation() {
+    double spokeDownV = lsSpokeDown.getAverageVoltage();
+    double wedgeDownV = lsWedgeDown.getAverageVoltage();
+    if (Math.abs(wedgeDownV - spokeDownV) < 0.2) {
+      return GearOrientation.NO_GEAR;
+    } else if (wedgeDownV < spokeDownV) {
+      return GearOrientation.WEDGE_DOWN;
+    } else {
+      return GearOrientation.SPOKE_DOWN;
+    }
+  }
 
   /**
    * Sets the gear mechanism position.
@@ -72,7 +101,14 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     return position;
   }
 
+  /**
+   * Sends all diagnostics.
+   */
   public void sendDataToSmartDashboard() {
     SmartDashboard.putString("Gear_Mechanism_Position", position.toString());
+    
+    SmartDashboard.putNumber("Light_Spoke_Down", lsSpokeDown.getAverageVoltage());
+    SmartDashboard.putNumber("Light_Wedge_Down", lsWedgeDown.getAverageVoltage());
+    SmartDashboard.putString("Gear_Orientation", getGearOrientation().toString());
   }
 }
