@@ -134,19 +134,19 @@ public class RobotMap {
   public static double STIRRER_SERVO_VALUE_STOP = 0.5;
 
   @Preference
-  public static double AUTO_TURN_MAX_SPEED_HIGH = 0.3;
+  public static double AUTO_TURN_MAX_SPEED_HIGH = 0.5;
   @Preference
-  public static double AUTO_TURN_MAX_SPEED_LOW = 0.3;
+  public static double AUTO_TURN_MAX_SPEED_LOW = 0.5;
   @Preference
-  public static double AUTO_TURN_MIN_SPEED_HIGH = 0.1;
+  public static double AUTO_TURN_MIN_SPEED_HIGH = 0.22;
   @Preference
-  public static double AUTO_TURN_MIN_SPEED_LOW = 0.1;
+  public static double AUTO_TURN_MIN_SPEED_LOW = 0.22;
   @Preference
-  public static double AUTO_BOILER_TURN_SPEED = 0.15;
+  public static double AUTO_BOILER_TURN_SPEED = 0.22;
   @Preference
-  public static double AUTO_TURN_RAMP_ZONE_HIGH = 80.0;
+  public static double AUTO_TURN_RAMP_ZONE_HIGH = 40.0;
   @Preference
-  public static double AUTO_TURN_RAMP_ZONE_LOW = 80.0;
+  public static double AUTO_TURN_RAMP_ZONE_LOW = 10.0;
   @Preference
   public static double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
   @Preference

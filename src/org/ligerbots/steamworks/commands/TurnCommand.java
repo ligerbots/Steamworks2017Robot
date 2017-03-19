@@ -32,6 +32,8 @@ public class TurnCommand extends AccessibleCommand {
   double autoTurnMaxSpeed;
   double autoTurnMinSpeed;
   double acceptableError;
+  
+  String turnZones[] = {"RAMPZONE", "MINSPEED", "MAXSPEED",};
 
   /**
    * Create a new TurnCommand.
@@ -104,24 +106,30 @@ public class TurnCommand extends AccessibleCommand {
     error1 = Math.abs(targetRotation - currentRotation);
     error2 = Math.abs(360 - error1);
     double actualError = Math.min(error1, error2);
+    double driveSpeed;
+    int zone;
     if (actualError <= autoTurnRampZone) {
-      double driveSpeed = autoTurnMaxSpeed * actualError / autoTurnRampZone;
-      if (driveSpeed < autoTurnMinSpeed) {
+      zone = 0;
+      driveSpeed = autoTurnMaxSpeed * actualError / autoTurnRampZone;
+      if (Math.abs(driveSpeed) < autoTurnMinSpeed) {
+        zone = 1;
         driveSpeed = autoTurnMinSpeed;
       }
-      Robot.driveTrain.rawThrottleTurnDrive(0, isClockwise ? -driveSpeed : driveSpeed);
     } else {
-      Robot.driveTrain.rawThrottleTurnDrive(0,
-          isClockwise ? -autoTurnMaxSpeed : autoTurnMaxSpeed);
+      zone = 2;
+      driveSpeed = autoTurnMaxSpeed;
     }
+    driveSpeed = isClockwise ? -driveSpeed : driveSpeed;
+    Robot.driveTrain.rawThrottleTurnDrive(0, driveSpeed);  
+    logger.debug(String.format("Zone %s, drivespeed %5.3f", turnZones[zone], driveSpeed));
   }
 
   protected boolean isFinished() {
     boolean outOfTime = System.nanoTime() - startTime > (maxTime * RobotMap.NANOS_PER_SECOND);
     logger.debug(
         String.format("Error %f %f, absolute yaw %f", error1, error2, Robot.driveTrain.getYaw()));
-    boolean onTarget = error1 < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR
-        || error2 < RobotMap.AUTO_TURN_ACCEPTABLE_ERROR;
+    boolean onTarget = error1 < acceptableError
+        || error2 < acceptableError;
     if (onTarget) {
       succeeded = true;
     }
@@ -130,7 +138,9 @@ public class TurnCommand extends AccessibleCommand {
   }
 
   protected void end() {
-    logger.info("Finish");
+    logger.info(String.format("Finished due to %s, final error = %f, acceptableError = %5.2f in %5.2f seconds",
+        succeeded ? "Succeded" : (Robot.operatorInterface.isCancelled() ?  "Cancelled" : "Timeout"),                  
+        error1, acceptableError, (System.nanoTime() - startTime) / RobotMap.NANOS_PER_SECOND)); 
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     ended = true;
   }

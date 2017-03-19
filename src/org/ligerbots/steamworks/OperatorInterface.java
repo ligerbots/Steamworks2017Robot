@@ -154,6 +154,16 @@ public class OperatorInterface {
 
       JoystickButton ledsFuel = new JoystickButton(farmController, 15);
       ledsFuel.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.FUEL));
+      
+      // For testing turns
+      JoystickButton turn5 = new JoystickButton(farmController, 12);
+      turn5.whenPressed(new TurnCommand(1.0, 0.5));
+      
+      JoystickButton turn2 = new JoystickButton(farmController, 14);
+      turn2.whenPressed(new TurnCommand(2.0, 0.5));
+      
+      JoystickButton turn30 = new JoystickButton(farmController, 16);
+      turn30.whenPressed(new TurnCommand(30.0, 3.0));
 
       // duplicated controls
       JoystickButton manualShoot = new JoystickButton(farmController, 4);
