@@ -26,6 +26,7 @@ public class DriveToGearCommand extends StatefulCommand {
   private static final long WAIT_VISION_NANOS = 100_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
   private static final long WAIT_GEAR_NANOS = 1_000_000_000;
+  private static final long WAIT_ULTRASONIC_NANOS = 3_000_000_000L;
 
   enum State {
     VISION,
@@ -267,12 +268,14 @@ public class DriveToGearCommand extends StatefulCommand {
       case DRIVE_TO_GEAR:
         driveToGearCommand.execute();
         
-        // TODO: check for pressure plate pressed
+        boolean pressurePlatePressed = Robot.gearManipulator.isPressurePlatePressed();
+        boolean tooMuchTime =
+            System.nanoTime() - driveToGearCommand.startTime > WAIT_ULTRASONIC_NANOS;
         
-        if (driveToGearCommand.isFinished() /* || pressurePlatePressed */) {
+        if (driveToGearCommand.isFinished() || pressurePlatePressed || tooMuchTime) {
           driveToGearCommand.end();
           
-          if (driveToGearCommand.aborted /* || !pressurePlatePressed */) {
+          if (driveToGearCommand.aborted || !pressurePlatePressed) {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
             
             if (DriverStation.getInstance().isAutonomous()) {
