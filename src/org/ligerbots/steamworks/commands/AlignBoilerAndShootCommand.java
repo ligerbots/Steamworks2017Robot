@@ -29,6 +29,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   long nanosStartOfWait;
   double currentAngle;
   double angleToBoiler;
+  long startTime;
 
   /**
    * Creates a new AlignBoilerAndShootCommand.
@@ -52,6 +53,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     Robot.driveTrain.shift(ShiftType.DOWN);
     
     justStarted = true;
+    startTime = System.nanoTime();
   }
 
   @Override
@@ -91,7 +93,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           
           logger.info(String.format("distance %f", distanceToTarget));
           
-          if (Math.abs(cy - 0.5) >= 0.015) {
+          if (Math.abs(cy - 0.5) >= 0.01) {
             currentState = State.START_TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
@@ -109,7 +111,8 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             shooterFeederCommand.setWithholdShooting(false);
             currentState = State.SHOOT;
             justStarted = false;
-            logger.info("state=SHOOT");
+            logger.info(String.format("state=SHOOT, time to prepare=%5.2f seconds", 
+                                      (System.nanoTime() - startTime) / RobotMap.NANOS_PER_SECOND));
           }
         }
         break;
@@ -122,8 +125,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           // we got data from WAIT_FOR_VISION
 
-          
-          turnCommand.SetParameters(angleToBoiler, 0.5);
+          turnCommand.SetParameters(angleToBoiler, 0.3);
           turnCommand.initialize();
           
           currentState = State.TURNING;
