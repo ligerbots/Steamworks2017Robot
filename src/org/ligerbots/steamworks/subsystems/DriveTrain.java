@@ -236,7 +236,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       double compensatedTurn =
           Math.abs(limitedThrottle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY;
       robotDrive.arcadeDrive(limitedThrottle,
-          Math.abs(limitedThrottle) < RobotMap.JOYSTICK_DRIVE_DEAD_AREA ? turn : compensatedTurn, false);
+          Math.abs(limitedThrottle) < RobotMap.JOYSTICK_DRIVE_DEAD_AREA ? turn : compensatedTurn,
+          false);
     }
   }
   

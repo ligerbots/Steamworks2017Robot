@@ -35,6 +35,7 @@ public class DriveToGearCommand extends StatefulCommand {
     TURN_BACK_ON_TARGET,
     DRIVE_TO_GEAR,
     DELIVER_GEAR,
+    RETRY,
     DRIVE_AWAY,
     DONE,
     ABORTED
@@ -50,11 +51,12 @@ public class DriveToGearCommand extends StatefulCommand {
   
   double finalAngle;
   
-  boolean doRetry;
-
   DrivePathCommand initialDriveCommand;
   DriveDistanceCommand driveAwayCommand;
   TurnCommand turnCommand;
+  TankDriveCommand tankDrive;
+  
+  boolean approachedPegFromRight;
 
   /**
    * Creates a new DriveToGearCommand.
@@ -83,8 +85,6 @@ public class DriveToGearCommand extends StatefulCommand {
     }
     
     Robot.gearManipulator.setPosition(Position.CLOSED);
-    
-    doRetry = false;
   }
 
   protected void execute() {
@@ -122,9 +122,11 @@ public class DriveToGearCommand extends StatefulCommand {
               double angleToGearWedge;
               // choose the wedge to use
               if (deltaAngle > 0) {
+                approachedPegFromRight = true;
                 angleToGearWedge = Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
                     RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
               } else {
+                approachedPegFromRight = false;
                 angleToGearWedge = -Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
                     RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
               }
@@ -272,18 +274,32 @@ public class DriveToGearCommand extends StatefulCommand {
           
           if (driveToGearCommand.aborted /* || !pressurePlatePressed */) {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
-            currentState = State.DRIVE_AWAY;
-            logger.info("state=DRIVE_AWAY");
-            driveAwayCommand.initialize();
             
             if (DriverStation.getInstance().isAutonomous()) {
-              doRetry = true;
+              tankDrive = new TankDriveCommand(1.0, approachedPegFromRight);
+              tankDrive.initialize();
+              currentState = State.RETRY;
+              logger.info("state=RETRY");
+            } else {
+              currentState = State.DRIVE_AWAY;
+              logger.info("state=DRIVE_AWAY");
+              driveAwayCommand.initialize();
             }
           } else {
             currentState = State.DELIVER_GEAR;
             nanosAtGearDeliverStart = System.nanoTime();
             logger.info("state=DELIVER_GEAR");
           }
+        }
+        break;
+      case RETRY:
+        tankDrive.execute();
+        if (tankDrive.isFinished()) {
+          tankDrive.end();
+          
+          currentState = State.DRIVE_TO_GEAR;
+          driveToGearCommand.initialize();
+          logger.info("state=DRIVE_TO_GEAR");
         }
         break;
       case DELIVER_GEAR:
@@ -306,14 +322,7 @@ public class DriveToGearCommand extends StatefulCommand {
             // we'll count this as "gear delivered" and not set state to ABORTED
           }
           
-          if (doRetry) {
-            doRetry = false;
-            logger.info("state=VISION");
-            currentState = State.VISION;
-            nanosAtWaitForVisionStart = System.nanoTime();
-          } else {
-            currentState = State.DONE;
-          }
+          currentState = State.DONE;
         }
         break;
       default:
