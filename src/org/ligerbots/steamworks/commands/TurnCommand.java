@@ -12,6 +12,12 @@ import org.slf4j.LoggerFactory;
  */
 public class TurnCommand extends AccessibleCommand {
   private static final Logger logger = LoggerFactory.getLogger(TurnCommand.class);
+  
+  enum TurnZone {
+    RAMP_ZONE,
+    MIN_SPEED,
+    MAX_SPEED
+  }
 
   double offsetDegrees;
   double maxTime; // seconds
@@ -33,40 +39,36 @@ public class TurnCommand extends AccessibleCommand {
   double autoTurnMinSpeed;
   double acceptableError;
   
-  String turnZones[] = {"RAMPZONE", "MINSPEED", "MAXSPEED",};
-
   /**
    * Create a new TurnCommand.
    * 
    * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
    * @param acceptableError How many degrees off the turn is allowed to be. 
    */
-  
   public TurnCommand(double offsetDegrees, double acceptableError) {
-	    super("TurnCommand_" + offsetDegrees + "_" + acceptableError);
-	    requires(Robot.driveTrain);
-	    SetParameters(offsetDegrees, acceptableError);
-	  }
+    super("TurnCommand_" + offsetDegrees + "_" + acceptableError);
+    requires(Robot.driveTrain);
+    setParameters(offsetDegrees, acceptableError);
+  }
 
   /**
    * Create a new TurnCommand.
    * 
    * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
    */
-public TurnCommand(double offsetDegrees) {
+  public TurnCommand(double offsetDegrees) {
     super("TurnCommand_" + offsetDegrees + "_" + RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
     requires(Robot.driveTrain);
-    SetParameters(offsetDegrees,  RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+    setParameters(offsetDegrees, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
   }
 
-/**
- * Set parameters for turn command
- * 
- * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
- * @param acceptableError How many degrees off the turn is allowed to be. 
- */
-
-public void SetParameters(double offsetDegrees, double acceptableError) {
+  /**
+   * Set parameters for turn command
+   * 
+   * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
+   * @param acceptableError How many degrees off the turn is allowed to be.
+   */
+  public void setParameters(double offsetDegrees, double acceptableError) {
     this.acceptableError = acceptableError;
     offsetDegrees = DriveTrain.fixDegrees(offsetDegrees);
     if (offsetDegrees > 180) {
@@ -121,21 +123,21 @@ public void SetParameters(double offsetDegrees, double acceptableError) {
     error2 = Math.abs(360 - error1);
     double actualError = Math.min(error1, error2);
     double driveSpeed;
-    int zone;
+    TurnZone zone;
     if (actualError <= autoTurnRampZone) {
-      zone = 0;
+      zone = TurnZone.RAMP_ZONE;
       driveSpeed = autoTurnMaxSpeed * actualError / autoTurnRampZone;
       if (Math.abs(driveSpeed) < autoTurnMinSpeed) {
-        zone = 1;
+        zone = TurnZone.MIN_SPEED;
         driveSpeed = autoTurnMinSpeed;
       }
     } else {
-      zone = 2;
+      zone = TurnZone.MAX_SPEED;
       driveSpeed = autoTurnMaxSpeed;
     }
     driveSpeed = isClockwise ? -driveSpeed : driveSpeed;
     Robot.driveTrain.rawThrottleTurnDrive(0, driveSpeed);  
-    logger.debug(String.format("Zone %s, drivespeed %5.3f", turnZones[zone], driveSpeed));
+    logger.debug(String.format("Zone %s, drivespeed %5.3f", zone.toString(), driveSpeed));
   }
 
   protected boolean isFinished() {
@@ -152,9 +154,10 @@ public void SetParameters(double offsetDegrees, double acceptableError) {
   }
 
   protected void end() {
-    logger.info(String.format("Finished due to %s, final error = %f, acceptableError = %5.2f in %5.2f seconds",
-        succeeded ? "Succeded" : (Robot.operatorInterface.isCancelled() ?  "Cancelled" : "Timeout"),                  
-        error1, acceptableError, (System.nanoTime() - startTime) / RobotMap.NANOS_PER_SECOND)); 
+    logger.info(String.format(
+        "Finished due to %s, final error = %f, acceptableError = %5.2f in %5.2f seconds",
+        succeeded ? "Succeded" : (Robot.operatorInterface.isCancelled() ? "Cancelled" : "Timeout"),
+        error1, acceptableError, (System.nanoTime() - startTime) / RobotMap.NANOS_PER_SECOND));
     Robot.driveTrain.rawThrottleTurnDrive(0, 0);
     ended = true;
   }

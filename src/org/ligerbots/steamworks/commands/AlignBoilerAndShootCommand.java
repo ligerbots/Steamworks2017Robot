@@ -38,7 +38,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.shooter);
     requires(Robot.feeder);
-    turnCommand = new TurnCommand(0.0);		// fill in actual angle from Vision
+    turnCommand = new TurnCommand(0.0); // fill in actual angle from Vision
   }
 
   @Override
@@ -97,11 +97,13 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             currentState = State.START_TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
-            logger.info(String.format("state=START_TURN, cy=%5.2f, angleToBoiler=%5.2f", cy, angleToBoiler));
+            logger.info(String.format("state=START_TURN, cy=%5.2f, angleToBoiler=%5.2f", cy,
+                angleToBoiler));
           } else if (cx < 0.615 || cx > 0.625) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
-            logger.info(String.format("state=DRIVE_TO_RANGE, cx=%5.2f, distance=%5.2f", cx, distanceToTarget));
+            logger.info(String.format("state=DRIVE_TO_RANGE, cx=%5.2f, distance=%5.2f", cx,
+                distanceToTarget));
           } else {
             // calculate shooter rpm
             double calculatedRpm = RobotMap.SHOOTING_RPM;
@@ -125,23 +127,23 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           // we got data from WAIT_FOR_VISION
 
-          turnCommand.SetParameters(angleToBoiler, 0.3);
+          turnCommand.setParameters(angleToBoiler, 0.3);
           turnCommand.initialize();
           
           currentState = State.TURNING;
         }
         // fall through
       case TURNING:
-    	  turnCommand.execute();
-    	  if (turnCommand.isFinished()) {
-    		  turnCommand.end();
-    		  currentState = State.WAIT_FOR_VISION;
-    	  }
-    	 
+        turnCommand.execute();
+        if (turnCommand.isFinished()) {
+          turnCommand.end();
+          currentState = State.WAIT_FOR_VISION;
+        }
+
          
-    	  /*
-    	   * old way based on constant feedback from Vision
-	      // VisionData data = Robot.vision.getBoilerVisionData();
+        /*
+         * old way based on constant feedback from Vision
+        // VisionData data = Robot.vision.getBoilerVisionData();
           if (Math.abs(data.getCenterY() - 0.5) < 0.01) {
             Robot.driveTrain.rawThrottleTurnDrive(0, 0);
             logger.info("Completed turn, state=WAIT_FOR_VISION");
@@ -161,9 +163,6 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           Robot.driveTrain.rawThrottleTurnDrive(0, turn);
         } */
         break;
-    	  
-        
-        
       case DRIVE_TO_RANGE:
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);

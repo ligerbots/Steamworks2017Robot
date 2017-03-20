@@ -30,12 +30,15 @@ import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
+import org.ligerbots.steamworks.commands.SlideCommandGroup;
 import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
 import org.ligerbots.steamworks.subsystems.Vision.StreamType;
+import org.ligerbots.steamworks.triggers.JoystickPov;
+import org.ligerbots.steamworks.triggers.JoystickPov.Direction;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -102,7 +105,13 @@ public class OperatorInterface {
 
     JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
     xboxStartButton.whenPressed(new ClimberEngageRatchetCommand());
-
+    
+    JoystickPov povTriggerRight = new JoystickPov(xboxController, Direction.EAST);
+    povTriggerRight.whenPressed(new SlideCommandGroup(2.0, true));
+    
+    JoystickPov povTriggerLeft = new JoystickPov(xboxController, Direction.WEST);
+    povTriggerLeft.whenPressed(new SlideCommandGroup(2.0, false));
+    
     if (isFarmControllerPresent()) {
       LoggerFactory.getLogger(OperatorInterface.class).info("Farm controller found!");
 

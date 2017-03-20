@@ -7,7 +7,6 @@ import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
-import org.ligerbots.steamworks.commands.DriveToGearCommand.State;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
@@ -161,8 +160,8 @@ public class DriveToFeederCommand extends StatefulCommand {
         if (initialDriveCommand.isFinished()) {
           initialDriveCommand.end();
   
-          turnCommand = new TurnCommand(DriveTrain.fixDegrees(finalAngle - 
-        		  											  Robot.driveTrain.getRobotPosition().getDirection()));
+          turnCommand = new TurnCommand(DriveTrain
+              .fixDegrees(finalAngle - Robot.driveTrain.getRobotPosition().getDirection()));
           turnCommand.initialize();
           logger.info("state=TURN_BACK_ON_TARGET");
           currentState = State.TURN_BACK_ON_TARGET;

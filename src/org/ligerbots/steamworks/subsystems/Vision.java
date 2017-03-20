@@ -7,12 +7,10 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.tables.ITable;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.util.Arrays;
 import org.ligerbots.steamworks.RobotMap;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -307,14 +305,14 @@ public class Vision extends Subsystem implements SmartDashboardLogger {
         double tvecZ = dataPacket.getDouble();
         double centerX = dataPacket.getDouble();
         double centerY = dataPacket.getDouble();
-        double p0x = dataPacket.getDouble();
-        double p0y = dataPacket.getDouble();
-        double p1x = dataPacket.getDouble();
-        double p1y = dataPacket.getDouble();
-        double p2x = dataPacket.getDouble();
-        double p2y = dataPacket.getDouble();
-        double p3x = dataPacket.getDouble();
-        double p3y = dataPacket.getDouble();
+        // double p0x = dataPacket.getDouble();
+        // double p0y = dataPacket.getDouble();
+        // double p1x = dataPacket.getDouble();
+        // double p1y = dataPacket.getDouble();
+        // double p2x = dataPacket.getDouble();
+        // double p2y = dataPacket.getDouble();
+        // double p3x = dataPacket.getDouble();
+        // double p3y = dataPacket.getDouble();
 
         // if the data is garbage or no target was located, keep the old data
         if (Double.isNaN(rvec0) || Double.isNaN(rvec1) || Double.isNaN(rvec2)

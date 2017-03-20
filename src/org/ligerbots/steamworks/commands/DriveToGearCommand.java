@@ -255,8 +255,8 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
-          turnCommand = new TurnCommand(DriveTrain.fixDegrees(finalAngle -
-        		  										      Robot.driveTrain.getRobotPosition().getDirection()));
+          turnCommand = new TurnCommand(DriveTrain
+              .fixDegrees(finalAngle - Robot.driveTrain.getRobotPosition().getDirection()));
           turnCommand.initialize();
           logger.info("state=TURN_BACK_ON_TARGET");
           currentState = State.TURN_BACK_ON_TARGET;

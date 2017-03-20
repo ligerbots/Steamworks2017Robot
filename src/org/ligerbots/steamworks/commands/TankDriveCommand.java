@@ -5,7 +5,7 @@ import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
 
 /**
- *
+ * Tank drives the left or right side a certain distance.
  */
 public class TankDriveCommand extends Command {
 
@@ -15,6 +15,11 @@ public class TankDriveCommand extends Command {
   double startRight;
   double startLeft;
 
+  /**
+   * Creates a new TankDriveCommand.
+   * @param dist the distance to move the side
+   * @param right true for the right side, false for left
+   */
   public TankDriveCommand(double dist, boolean right) {
     this.right = right;
     this.dist = dist;
@@ -35,6 +40,10 @@ public class TankDriveCommand extends Command {
   }
 
   protected boolean isFinished() {
+    if (Robot.operatorInterface.isCancelled()) {
+      return true;
+    }
+    
     if (right) {
       double distTraveled = Robot.driveTrain.getEncoderDistance(DriveTrainSide.RIGHT) - startRight;
       return Math.abs(distTraveled) >= Math.abs(dist);
