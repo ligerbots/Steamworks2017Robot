@@ -129,7 +129,7 @@ public class DriveToGearCommand extends StatefulCommand {
                     RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
               }
               
-              turnCommand = new TurnCommand(deltaAngle - angleToGearWedge,  RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+              turnCommand = new TurnCommand(deltaAngle - angleToGearWedge);
               turnCommand.initialize();
               logger.info("state=TURN_TO_PEG");
               currentState = State.TURN_TO_PEG;
@@ -255,9 +255,8 @@ public class DriveToGearCommand extends StatefulCommand {
           // return;
           // }
 
-          turnCommand = new TurnCommand(DriveTrain
-              .fixDegrees(
-                  finalAngle - Robot.driveTrain.getRobotPosition().getDirection()), RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+          turnCommand = new TurnCommand(DriveTrain.fixDegrees(finalAngle -
+        		  										      Robot.driveTrain.getRobotPosition().getDirection()));
           turnCommand.initialize();
           logger.info("state=TURN_BACK_ON_TARGET");
           currentState = State.TURN_BACK_ON_TARGET;

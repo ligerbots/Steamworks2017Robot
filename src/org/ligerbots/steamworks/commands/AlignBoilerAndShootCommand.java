@@ -18,7 +18,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   private static final long WAIT_NANOS = 250_000_000;
 
   enum State {
-    WAIT_FOR_VISION, TURN, SHOOT, DONE, ABORTED, DRIVE_TO_RANGE
+    WAIT_FOR_VISION, START_TURN, TURNING, SHOOT, DONE, ABORTED, DRIVE_TO_RANGE
   }
 
   State currentState;
@@ -28,6 +28,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   boolean justStarted;
   long nanosStartOfWait;
   double currentAngle;
+  double angleToBoiler;
 
   /**
    * Creates a new AlignBoilerAndShootCommand.
@@ -36,6 +37,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.shooter);
     requires(Robot.feeder);
+    turnCommand = new TurnCommand(0.0);		// fill in actual angle from Vision
   }
 
   @Override
@@ -85,10 +87,12 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           double angleOnCamera = (cx - 0.5) * 30 / 0.5;
           double angleFromGround = angleOnCamera + RobotMap.VISION_BOILER_CAMERA_ANGLE;
           double distanceToTarget = boilerCenterHeight / Math.tan(Math.toRadians(angleFromGround));
+          angleToBoiler = (cy - 0.5) * 24 / 0.5;
+          
           logger.info(String.format("distance %f", distanceToTarget));
           
-          if (Math.abs(cy - 0.5) >= 0.01) {
-            currentState = State.TURN;
+          if (Math.abs(cy - 0.5) >= 0.015) {
+            currentState = State.START_TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
             logger.info("state=TURN");
@@ -109,15 +113,33 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           }
         }
         break;
-      case TURN:
+      case START_TURN:
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
           logger.info("Lost vision, state=WAIT_FOR_VISION");
           nanosStartOfWait = System.nanoTime();
           currentState = State.WAIT_FOR_VISION;
         } else {
-          VisionData data = Robot.vision.getBoilerVisionData();
+          // we got data from WAIT_FOR_VISION
+
           
+          turnCommand.SetParameters(angleToBoiler, 0.5);
+          turnCommand.initialize();
+          
+          currentState = State.TURNING;
+        }
+        // fall through
+      case TURNING:
+    	  turnCommand.execute();
+    	  if (turnCommand.isFinished()) {
+    		  turnCommand.end();
+    		  currentState = State.WAIT_FOR_VISION;
+    	  }
+    	 
+         
+    	  /*
+    	   * old way based on constant feedback from Vision
+	      // VisionData data = Robot.vision.getBoilerVisionData();
           if (Math.abs(data.getCenterY() - 0.5) < 0.01) {
             Robot.driveTrain.rawThrottleTurnDrive(0, 0);
             logger.info("Completed turn, state=WAIT_FOR_VISION");
@@ -135,8 +157,11 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             turn = -turn;
           }
           Robot.driveTrain.rawThrottleTurnDrive(0, turn);
-        }
+        } */
         break;
+    	  
+        
+        
       case DRIVE_TO_RANGE:
         if (!Robot.vision.isBoilerVisionDataValid()) {
           Robot.driveTrain.rawThrottleTurnDrive(0, 0);
