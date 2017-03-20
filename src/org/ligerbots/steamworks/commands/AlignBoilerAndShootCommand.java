@@ -87,7 +87,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           double angleOnCamera = (cx - 0.5) * 30 / 0.5;
           double angleFromGround = angleOnCamera + RobotMap.VISION_BOILER_CAMERA_ANGLE;
           double distanceToTarget = boilerCenterHeight / Math.tan(Math.toRadians(angleFromGround));
-          angleToBoiler = (cy - 0.5) * 24 / 0.5;
+          angleToBoiler = - ((cy - 0.5) * 24 / 0.5);
           
           logger.info(String.format("distance %f", distanceToTarget));
           
@@ -95,11 +95,11 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             currentState = State.START_TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
-            logger.info("state=TURN");
+            logger.info(String.format("state=START_TURN, cy=%5.2f, angleToBoiler=%5.2f", cy, angleToBoiler));
           } else if (cx < 0.615 || cx > 0.625) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
-            logger.info("state=DRIVE_TO_RANGE");
+            logger.info(String.format("state=DRIVE_TO_RANGE, cx=%5.2f, distance=%5.2f", cx, distanceToTarget));
           } else {
             // calculate shooter rpm
             double calculatedRpm = RobotMap.SHOOTING_RPM;
