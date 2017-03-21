@@ -107,7 +107,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   }
   
   public boolean isPressurePlatePressed() {
-    return pressurePlate.get();
+    return !pressurePlate.get();
   }
 
   /**

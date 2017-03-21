@@ -10,6 +10,7 @@ import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
+import org.ligerbots.steamworks.subsystems.GearManipulator.GearOrientation;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class DriveToGearCommand extends StatefulCommand {
   private static final long WAIT_VISION_NANOS = 100_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
   private static final long WAIT_GEAR_NANOS = 1_000_000_000;
-  private static final long WAIT_ULTRASONIC_NANOS = 3_000_000_000L;
+  private static final long WAIT_ULTRASONIC_NANOS = 5_000_000_000L;
 
   enum State {
     VISION,
@@ -121,15 +122,24 @@ public class DriveToGearCommand extends StatefulCommand {
               
               double deltaAngle = 90 - Math.toDegrees(Math.atan2(pz, px));
               double angleToGearWedge;
+              double gearAlignmentOffset;
+              if (Robot.gearManipulator.getGearOrientation() == GearOrientation.SPOKE_DOWN) {
+                gearAlignmentOffset = RobotMap.GEAR_ALIGNMENT_OFFSET_SPOKE_DOWN;
+              } else if (Robot.gearManipulator.getGearOrientation() == GearOrientation.WEDGE_DOWN) {
+                gearAlignmentOffset = RobotMap.GEAR_ALIGNMENT_OFFSET_WEDGE_DOWN;
+              } else {
+                logger.warn("No gear detected, using wedge down offset");
+                gearAlignmentOffset = RobotMap.GEAR_ALIGNMENT_OFFSET_WEDGE_DOWN;
+              }
               // choose the wedge to use
               if (deltaAngle > 0) {
                 approachedPegFromRight = true;
-                angleToGearWedge = Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
-                    RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
+                angleToGearWedge = Math.toDegrees(
+                    Math.atan2(gearAlignmentOffset, RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
               } else {
                 approachedPegFromRight = false;
-                angleToGearWedge = -Math.toDegrees(Math.atan2(RobotMap.GEAR_ALIGNMENT_OFFSET,
-                    RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
+                angleToGearWedge = -Math.toDegrees(
+                    Math.atan2(gearAlignmentOffset, RobotMap.ROBOT_GEAR_CAM_TURN_CENTER_DIST));
               }
               
               turnCommand = new TurnCommand(deltaAngle - angleToGearWedge);
@@ -271,11 +281,13 @@ public class DriveToGearCommand extends StatefulCommand {
         boolean pressurePlatePressed = Robot.gearManipulator.isPressurePlatePressed();
         boolean tooMuchTime =
             System.nanoTime() - driveToGearCommand.startTime > WAIT_ULTRASONIC_NANOS;
+        logger.info(
+            String.format("pressure plate %b toomuchtime %b", pressurePlatePressed, tooMuchTime));
         
-        if (driveToGearCommand.isFinished() || pressurePlatePressed || tooMuchTime) {
+        if (driveToGearCommand.isFinished() /*|| pressurePlatePressed || tooMuchTime*/) {
           driveToGearCommand.end();
           
-          if (driveToGearCommand.aborted || !pressurePlatePressed) {
+          if (driveToGearCommand.aborted /*|| !pressurePlatePressed*/) {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
             
             if (DriverStation.getInstance().isAutonomous()) {
