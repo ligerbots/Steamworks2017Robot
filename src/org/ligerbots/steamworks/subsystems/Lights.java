@@ -101,6 +101,7 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
     if (written != command.length) {
       logger.warn("Serial write failed!");
     }
+    teensyCommunication.flush();
   }
 
   @Override

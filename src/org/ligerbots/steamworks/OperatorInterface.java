@@ -80,13 +80,14 @@ public class OperatorInterface {
     final AlignBoilerAndShootCommand autoShootCommand = new AlignBoilerAndShootCommand();
     final GearCommand manualGearCommand = new GearCommand();
     final DriveToGearCommand autoGearCommand = new DriveToGearCommand();
+    final DriveToFeederCommand driveToFeeder = new DriveToFeederCommand();
 
     // Xbox main controls
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
     xboxAButton.whenPressed(autoShootCommand);
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
-    xboxBButton.whenPressed(manualGearCommand);
+    xboxBButton.whenPressed(driveToFeeder);
 
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
     xboxXButton.whileHeld(manualShootCommand);
@@ -152,7 +153,7 @@ public class OperatorInterface {
 
       // drive to 6 inches
       JoystickButton driveToGearFeed = new JoystickButton(farmController, 6);
-      driveToGearFeed.whenPressed(new DriveToFeederCommand());
+      driveToGearFeed.whenPressed(driveToFeeder);
 
       // LEDs
       JoystickButton ledsOff = new JoystickButton(farmController, 11);
