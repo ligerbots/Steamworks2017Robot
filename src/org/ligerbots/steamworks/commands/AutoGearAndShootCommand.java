@@ -57,14 +57,22 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   }
 
   protected void initialize() {
+    FieldSide startingPosition = Robot.operatorInterface.getStartingPosition();
     if (doGear) {
-      logger.info("Initialize, state=GEAR_NAVIGATION");
-      currentState = State.GEAR_NAVIGATION;
-      driveToGear = FieldMap.navigateStartToGearLift(Robot.operatorInterface.getStartingPosition(),
-          Robot.operatorInterface.getGearLiftPosition());
-      driveToGear.initialize();
+      FieldSide gearLiftPosition = Robot.operatorInterface.getGearLiftPosition();
+      
+      if (gearLiftPosition == FieldSide.CENTER) {
+        logger.info("Initialize center, state=GEAR_DELIVERY");
+        currentState = State.GEAR_DELIVERY;
+        gearCommand.initialize();
+      } else {
+        logger.info("Initialize, state=GEAR_NAVIGATION");
+        currentState = State.GEAR_NAVIGATION;
+        driveToGear = FieldMap.navigateStartToGearLift(startingPosition, gearLiftPosition);
+        driveToGear.initialize();
+      }
     } else if (doShoot) {
-      driveToBoiler = FieldMap.navigateStartToBoiler(Robot.operatorInterface.getStartingPosition());
+      driveToBoiler = FieldMap.navigateStartToBoiler(startingPosition);
       driveToBoiler.initialize();
       logger.info("state=BOILER_NAVIGATION");
       currentState = State.BOILER_NAVIGATION;

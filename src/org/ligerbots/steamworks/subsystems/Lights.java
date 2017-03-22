@@ -65,9 +65,26 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
    */
   public Lights() {
     teensyCommunication = new SerialPort(9600, SerialPort.Port.kMXP);
+    teensyCommunication.enableTermination();
+    
+    Thread serialThread = new Thread(this::serialThread);
+    serialThread.setName("LED UART Thread");
+    serialThread.setDaemon(true);
+    serialThread.start();
     
     setLedLight(Type.SIGN_FUEL, Pulse.SOLID, Color.OFF);
     setLedLight(Type.SIGN_GEAR, Pulse.SOLID, Color.OFF);
+  }
+  
+  private void serialThread() {
+    while (true) {
+      logger.debug(teensyCommunication.readString());
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+        ex.printStackTrace();
+      }
+    }
   }
   
   /**
