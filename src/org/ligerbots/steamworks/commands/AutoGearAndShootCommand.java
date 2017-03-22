@@ -35,7 +35,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   AlignBoilerAndShootCommand boilerCommand;
 
   DrivePathCommand driveToGear;
-  DrivePathCommand driveToBoiler;
+  AccessibleCommand driveToBoiler;
   
   boolean doGear;
   boolean doShoot;
@@ -101,9 +101,16 @@ public class AutoGearAndShootCommand extends StatefulCommand {
           gearCommand.end();
 
           if (doShoot) {
-            if (Robot.operatorInterface.getGearLiftPosition() == FieldSide.FEEDER) {
+            FieldSide gearLiftPosition = Robot.operatorInterface.getGearLiftPosition();
+            if (gearLiftPosition == FieldSide.FEEDER) {
               driveToBoiler =
                   FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
+              driveToBoiler.initialize();
+              logger.info("state=BOILER_NAVIGATION");
+              currentState = State.BOILER_NAVIGATION;
+            } else if (gearLiftPosition == FieldSide.CENTER) {
+              // clear the dividers
+              driveToBoiler = new DriveDistanceCommand(-24.0);
               driveToBoiler.initialize();
               logger.info("state=BOILER_NAVIGATION");
               currentState = State.BOILER_NAVIGATION;

@@ -27,7 +27,7 @@ public class DriveToGearCommand extends StatefulCommand {
   private static final long WAIT_VISION_NANOS = 100_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
   private static final long WAIT_GEAR_NANOS = 500_000_000;
-  private static final long WAIT_ULTRASONIC_NANOS = 5_000_000_000L;
+  private static final long WAIT_ULTRASONIC_NANOS = 2_000_000_000L;
 
   enum State {
     VISION,
@@ -46,6 +46,7 @@ public class DriveToGearCommand extends StatefulCommand {
   State currentState = State.VISION;
   long nanosAtWaitForVisionStart;
   long nanosAtGearDeliverStart;
+  long nanosAtCloseToTarget = -1;
   DriveDistanceCommand driveBackCommand;
   DriveUltrasonicCommand driveToGearCommand =
       new DriveUltrasonicCommand(RobotMap.GEAR_DELIVERY_DIST, false);
@@ -76,6 +77,8 @@ public class DriveToGearCommand extends StatefulCommand {
   }
 
   protected void initialize() {
+    nanosAtCloseToTarget = -1;
+    
     if (!deliverOnly) {
       logger.info("Initialize, state=VISION");
       currentState = State.VISION;
@@ -279,15 +282,28 @@ public class DriveToGearCommand extends StatefulCommand {
         driveToGearCommand.execute();
         
         boolean pressurePlatePressed = Robot.gearManipulator.isPressurePlatePressed();
-        boolean tooMuchTime =
-            System.nanoTime() - driveToGearCommand.startTime > WAIT_ULTRASONIC_NANOS;
-        logger.info(
-            String.format("pressure plate %b toomuchtime %b", pressurePlatePressed, tooMuchTime));
+        boolean closeToTarget =
+            Math.abs(driveToGearCommand.targetDistance - driveToGearCommand.targetDistance) < 2.0;
+        boolean tooMuchTime = false;
         
-        if (driveToGearCommand.isFinished() /*|| pressurePlatePressed || tooMuchTime*/) {
+        if (closeToTarget) {
+          if (nanosAtCloseToTarget < 0) {
+            nanosAtCloseToTarget = System.nanoTime();
+          }
+          tooMuchTime =
+              System.nanoTime() - nanosAtCloseToTarget > WAIT_ULTRASONIC_NANOS;
+        } else {
+          nanosAtCloseToTarget = -1;
+        }
+
+        logger.info(String.format("pressure plate %b | too much time %b | close to target %b",
+            pressurePlatePressed, tooMuchTime, closeToTarget));
+ 
+        
+        if (driveToGearCommand.isFinished() || pressurePlatePressed || tooMuchTime) {
           driveToGearCommand.end();
           
-          if (driveToGearCommand.aborted /*|| !pressurePlatePressed*/) {
+          if (driveToGearCommand.aborted || !pressurePlatePressed) {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
             
             if (DriverStation.getInstance().isAutonomous()) {
