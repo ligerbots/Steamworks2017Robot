@@ -68,7 +68,7 @@ public class RobotMap {
   public static final double MILLIMETERS_PER_INCH = 25.4;
   public static final double MILLIVOLTS_PER_MILLIMETER = 0.977;
 
-  public static final int DIO_PRESSURE_PLATE = 0;
+  public static final int AI_PRESSURE_PLATE = 3;
   public static final int ULTRASONIC_LEFT_TRIGGER = 1;
   public static final int ULTRASONIC_LEFT_ECHO = 2;
   public static final int ULTRASONIC_RIGHT_TRIGGER = 3;

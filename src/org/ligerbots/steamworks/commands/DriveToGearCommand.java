@@ -26,7 +26,7 @@ public class DriveToGearCommand extends StatefulCommand {
 
   private static final long WAIT_VISION_NANOS = 100_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
-  private static final long WAIT_GEAR_NANOS = 1_000_000_000;
+  private static final long WAIT_GEAR_NANOS = 500_000_000;
   private static final long WAIT_ULTRASONIC_NANOS = 5_000_000_000L;
 
   enum State {

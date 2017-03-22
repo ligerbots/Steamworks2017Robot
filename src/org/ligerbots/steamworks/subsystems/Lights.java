@@ -1,6 +1,6 @@
 package org.ligerbots.steamworks.subsystems;
 
-import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,13 +58,13 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
     }
   }
   
-  I2C teensyCommunication;
+  SerialPort teensyCommunication;
   
   /**
    * Creates a new Lights subsystem.
    */
   public Lights() {
-    teensyCommunication = new I2C(I2C.Port.kOnboard, 22);
+    teensyCommunication = new SerialPort(9600, SerialPort.Port.kMXP);
     
     setLedLight(Type.SIGN_FUEL, Pulse.SOLID, Color.OFF);
     setLedLight(Type.SIGN_GEAR, Pulse.SOLID, Color.OFF);
@@ -80,9 +80,9 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
     logger.debug(String.format("Setting lights %s %s %s", type.toString(), pulse.toString(),
         color.toString()));
     byte[] command = new byte[] {type.code, pulse.code, color.red, color.green, color.blue};
-    boolean aborted = teensyCommunication.writeBulk(command);
-    if (aborted) {
-      logger.warn("I2C write failed!");
+    int written = teensyCommunication.write(command, command.length);
+    if (written != command.length) {
+      logger.warn("Serial write failed!");
     }
   }
 

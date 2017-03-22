@@ -1,7 +1,6 @@
 package org.ligerbots.steamworks.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -32,7 +31,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   AnalogInput lsSpokeDown;
   AnalogInput lsWedgeDown;
   
-  DigitalInput pressurePlate;
+  AnalogInput pressurePlate;
 
   /**
    * Creates the GearManipulator, and sets servo to closed position.
@@ -49,7 +48,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     lsSpokeDown = new AnalogInput(RobotMap.AI_LS_SPOKE_DOWN);
     lsWedgeDown = new AnalogInput(RobotMap.AI_LS_WEDGE_DOWN);
     
-    pressurePlate = new DigitalInput(RobotMap.DIO_PRESSURE_PLATE);
+    pressurePlate = new AnalogInput(RobotMap.AI_PRESSURE_PLATE);
   }
 
   public void initDefaultCommand() {}
@@ -107,7 +106,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   }
   
   public boolean isPressurePlatePressed() {
-    return !pressurePlate.get();
+    return pressurePlate.getAverageVoltage() < 4;
   }
 
   /**
