@@ -78,7 +78,8 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
   
   private void serialThread() {
     while (true) {
-      logger.debug(teensyCommunication.readString());
+      //logger.debug(teensyCommunication.readString());
+      teensyCommunication.readString();
       try {
         Thread.sleep(100);
       } catch (InterruptedException ex) {

@@ -47,7 +47,7 @@ public class DriveToFeederCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.gearManipulator);
     
-    driveUltrasonicCommand = new DriveUltrasonicCommand(7.5, true);
+    driveUltrasonicCommand = new DriveUltrasonicCommand(8, true);
   }
 
   protected void initialize() {

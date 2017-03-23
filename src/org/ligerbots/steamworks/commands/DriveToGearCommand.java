@@ -26,7 +26,8 @@ public class DriveToGearCommand extends StatefulCommand {
 
   private static final long WAIT_VISION_NANOS = 100_000_000;
   private static final long MAX_WAIT_VISION_NANOS = 2_000_000_000;
-  private static final long WAIT_GEAR_NANOS = 500_000_000;
+  private static final long WAIT_GEAR_NANOS = 1_000_000_000;
+  private static final long DELAY_GEAR_NANOS = 250_000_000;
   private static final long WAIT_ULTRASONIC_NANOS = 2_000_000_000L;
 
   enum State {
@@ -330,12 +331,15 @@ public class DriveToGearCommand extends StatefulCommand {
           
           currentState = State.DRIVE_TO_GEAR;
           driveToGearCommand.initialize();
+          nanosAtCloseToTarget = -1;
           logger.info("state=DRIVE_TO_GEAR");
         }
         break;
       case DELIVER_GEAR:
         Robot.driveTrain.rawThrottleTurnDrive(0, 0);
-        Robot.gearManipulator.setPosition(GearManipulator.Position.DELIVER_GEAR);
+        if (System.nanoTime() - nanosAtGearDeliverStart > DELAY_GEAR_NANOS) {
+          Robot.gearManipulator.setPosition(GearManipulator.Position.DELIVER_GEAR);
+        }
         if (System.nanoTime() - nanosAtGearDeliverStart > WAIT_GEAR_NANOS) {
           currentState = State.DRIVE_AWAY;
           logger.info("state=DRIVE_AWAY");
