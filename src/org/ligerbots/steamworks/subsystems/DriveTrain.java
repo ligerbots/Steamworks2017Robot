@@ -163,7 +163,9 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
   
   public void enableTurningControl(double angle, double tolerance) {
-      turningController.setSetpoint(rotation + angle);
+      double targetAngle =  fixDegrees(rotation + angle);
+      logger.info(String.format("EnableTurnPID: current angle=%5.3f, asked angle=%5.3f, our angle=%5.3f", rotation, angle, targetAngle));
+      turningController.setSetpoint(targetAngle);
       turningController.enable();
   }
   	

@@ -15,7 +15,6 @@ public class TurnPIDTest extends Command {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
 	turnCommand = new TurnPIDCommand(1, 0.3); // fill in actual angle from dashboard
-	
     }
 
     // Called just before this Command runs the first time

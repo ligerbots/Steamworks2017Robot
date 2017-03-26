@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.command.Command;
 
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 
 
 /**
@@ -27,6 +28,10 @@ public class TurnPIDCommand extends Command {
 	   * @param acceptableError How many degrees off the turn is allowed to be.
 	   */
 	  public void setParameters(double offsetDegrees, double acceptableError) {
+	      offsetDegrees = DriveTrain.fixDegrees(offsetDegrees);
+	      if (offsetDegrees > 180) {
+	        offsetDegrees = offsetDegrees - 360;
+	      }
 	      this.offsetDegrees = offsetDegrees;
 	      this.acceptableError = acceptableError;
 	  }
