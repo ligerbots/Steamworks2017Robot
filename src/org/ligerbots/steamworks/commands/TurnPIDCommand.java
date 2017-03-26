@@ -20,6 +20,17 @@ public class TurnPIDCommand extends Command {
 	      this.acceptableError = acceptableError;
 	}
 
+	  /**
+	   * Set parameters for turn command
+	   * 
+	   * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
+	   * @param acceptableError How many degrees off the turn is allowed to be.
+	   */
+	  public void setParameters(double offsetDegrees, double acceptableError) {
+	      this.offsetDegrees = offsetDegrees;
+	      this.acceptableError = acceptableError;
+	  }
+	
 	// Called just before this Command runs the first time
 	@Override
 	protected void initialize() {
