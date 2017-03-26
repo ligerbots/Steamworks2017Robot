@@ -39,6 +39,12 @@ public class TurnCommand extends AccessibleCommand {
   double autoTurnMinSpeed;
   double acceptableError;
   
+  public TurnCommand(double offsetDegrees, double acceptableError, double turnConstant) {
+    super("TurnCommand_" + offsetDegrees + "_" + RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+    requires(Robot.driveTrain);
+    setParameters(offsetDegrees, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR, turnConstant);
+  }
+  
   /**
    * Create a new TurnCommand.
    * 
@@ -48,7 +54,7 @@ public class TurnCommand extends AccessibleCommand {
   public TurnCommand(double offsetDegrees, double acceptableError) {
     super("TurnCommand_" + offsetDegrees + "_" + acceptableError);
     requires(Robot.driveTrain);
-    setParameters(offsetDegrees, acceptableError);
+    setParameters(offsetDegrees, acceptableError, RobotMap.AUTO_TURN_MIN_SPEED_LOW);
   }
 
   /**
@@ -59,7 +65,7 @@ public class TurnCommand extends AccessibleCommand {
   public TurnCommand(double offsetDegrees) {
     super("TurnCommand_" + offsetDegrees + "_" + RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
     requires(Robot.driveTrain);
-    setParameters(offsetDegrees, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+    setParameters(offsetDegrees, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR, RobotMap.AUTO_TURN_MIN_SPEED_LOW);
   }
 
   /**
@@ -68,7 +74,7 @@ public class TurnCommand extends AccessibleCommand {
    * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
    * @param acceptableError How many degrees off the turn is allowed to be.
    */
-  public void setParameters(double offsetDegrees, double acceptableError) {
+  public void setParameters(double offsetDegrees, double acceptableError, double turnConstant) {
     this.acceptableError = acceptableError;
     offsetDegrees = DriveTrain.fixDegrees(offsetDegrees);
     if (offsetDegrees > 180) {
@@ -81,6 +87,8 @@ public class TurnCommand extends AccessibleCommand {
       maxTime = 5;
     }
     isClockwise = offsetDegrees > 0;
+    
+    autoTurnMinSpeed = turnConstant;
   }
   
   // Called just before this Command runs the first time
@@ -95,15 +103,8 @@ public class TurnCommand extends AccessibleCommand {
     Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
     isHighGear = false;
     
-    if (isHighGear) {
-      autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_HIGH;
-      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_HIGH;
-      autoTurnMinSpeed = RobotMap.AUTO_TURN_MIN_SPEED_HIGH;
-    } else {
-      autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_LOW;
-      autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_LOW;
-      autoTurnMinSpeed = RobotMap.AUTO_TURN_MIN_SPEED_LOW;
-    }
+    autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_LOW;
+    autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_LOW;
   }
   
   // Called repeatedly when this Command is scheduled to run

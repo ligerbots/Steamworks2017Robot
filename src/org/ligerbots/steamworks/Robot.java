@@ -333,9 +333,11 @@ public class Robot extends IterativeRobot {
       SmartDashboard.putNumber("wpilibOverhead", (System.nanoTime() - prevNanos) / 1000000.0);
       vision.setVisionEnabled(true);
       
-      if (System.nanoTime() - nanosAutoStart > 2_000_000_000L) {
-        intake.setIntakeOn(false);
-      }
+      //if (System.nanoTime() - nanosAutoStart > 5_000_000_000L) {
+      //  intake.setIntakeOn(false);
+      //} else {
+        intake.setIntakeOn(true);
+      //}
       
       logger.trace("autonomousPeriodic()");
     } catch (Throwable ex) {

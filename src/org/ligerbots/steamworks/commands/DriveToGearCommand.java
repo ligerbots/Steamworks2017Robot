@@ -308,7 +308,7 @@ public class DriveToGearCommand extends StatefulCommand {
             logger.warn("Ultrasonic drive aborted, not delivering gear");
             
             if (DriverStation.getInstance().isAutonomous()) {
-              tankDrive = new TankDriveCommand(1.0, approachedPegFromRight);
+              tankDrive = new TankDriveCommand(2.0, approachedPegFromRight);
               tankDrive.initialize();
               currentState = State.RETRY;
               logger.info("state=RETRY");

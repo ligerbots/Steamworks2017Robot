@@ -43,11 +43,11 @@ public class Intake extends Subsystem implements SmartDashboardLogger {
    * @param intakeOn true for on, false for off
    */
   public void setIntakeOn(boolean intakeOn) {
-    if (intakeTalon != null) {
+    //if (intakeTalon != null) {
       logger.info(String.format("Setting intake, on=%b", intakeOn));
-      intakeTalon.set(intakeOn ? RobotMap.INTAKE_SPEED : 0.0);
+      intakeTalon.set(intakeOn ? 1 : 0.0);
       this.intakeOn = intakeOn;
-    }
+    //}
   }
   
   public void setIntakeRaw(double value) {

@@ -20,6 +20,7 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   // @formatter:off
   enum State {
     GEAR_NAVIGATION,
+    GEAR_WAIT,
     GEAR_DELIVERY,
     BOILER_NAVIGATION,
     BOILER_ALIGN,
@@ -40,6 +41,8 @@ public class AutoGearAndShootCommand extends StatefulCommand {
   boolean doGear;
   boolean doShoot;
 
+  long gearWaitNanos;
+  
   /**
    * Creates a new AutoGearAndShootCommand.
    */
@@ -90,6 +93,13 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (driveToGear.isFinished()) {
           driveToGear.end();
 
+          logger.info("state=GEAR_WAIT");
+          currentState = State.GEAR_WAIT;
+          gearWaitNanos = System.nanoTime();
+        }
+        break;
+      case GEAR_WAIT:
+        if (System.nanoTime() - gearWaitNanos > 500_000_000) {
           logger.info("state=GEAR_DELIVERY");
           currentState = State.GEAR_DELIVERY;
           gearCommand.initialize();

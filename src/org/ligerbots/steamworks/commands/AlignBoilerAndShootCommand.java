@@ -127,7 +127,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           // we got data from WAIT_FOR_VISION
 
-          turnCommand.setParameters(angleToBoiler, 0.3);
+          turnCommand.setParameters(angleToBoiler, 0.3, 0.25);
           turnCommand.initialize();
           
           currentState = State.TURNING;
