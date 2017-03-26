@@ -162,6 +162,13 @@ public class RobotMap {
   public static double AUTO_FINE_DRIVE_ACCEPTABLE_ERROR = 0.5;
   
   @Preference
+  public static double TURN_P = 0.05;
+  @Preference
+  public static double TURN_I = 0.01;
+  @Preference
+  public static double TURN_D = 0.0;
+    
+  @Preference
   public static double AUTO_DRIVE_TURN_P_HIGH = 0.02;
   @Preference
   public static double AUTO_DRIVE_TURN_P_LOW = 0.02;

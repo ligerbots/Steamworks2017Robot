@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import com.ctre.CANTalon;
+
 import com.kauailabs.navx.AHRSProtocol.AHRSUpdateBase;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -24,8 +25,8 @@ import org.slf4j.LoggerFactory;
 /**
  * This subsystem handles driving (duh).
  */
-public class DriveTrain extends Subsystem implements SmartDashboardLogger {
-  private static final Logger logger = LoggerFactory.getLogger(DriveTrain.class);
+public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
+  private static final Logger logger = LoggerFactory.getLogger(DriveTrainPID.class);
 
   /**
    * This is a list of all shift actions. UP and DOWN shift up and down, and TOGGLE toggles. This is
@@ -46,7 +47,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   CANTalon leftSlave;
   CANTalon rightMaster;
   CANTalon rightSlave;
-  CANTalon climber;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DoubleSolenoid climberSolenoid;
@@ -71,20 +71,18 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   boolean isHoldingPosition;
   boolean isClimberLocked;
   
-  double limitedThrottle = 0;
-  
   PIDController turningController;
-  double turningOutput;
-  double currentAngle = 0;
+  double turningOutput, currentAngle = 0;
   double turnTolerance = 0.3;
 
   /**
    * Creates a new drive train instance.
    */
-  public DriveTrain() {
-    logger.info("Initialize");
+  public DriveTrainPID() {
 
+    logger.info("Initialize");
     swFieldDisplay = NetworkTable.getTable("SmartDashboard/SwField");
+
 
     isHoldingPosition = false;
     isClimberLocked = false;
@@ -92,7 +90,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
       configureMaster(leftMaster);
-      leftMaster.reverseSensor(RobotMap.IS_SECOND_ROBOT);
+      leftMaster.reverseSensor(true);
       leftSlave = new CANTalon(RobotMap.CT_ID_LEFT_2);
       configureSlave(leftSlave, RobotMap.CT_ID_LEFT_1);
     } else {
@@ -108,7 +106,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_RIGHT_1)) {
       rightMaster = new CANTalon(RobotMap.CT_ID_RIGHT_1);
       configureMaster(rightMaster);
-      rightMaster.reverseSensor(!RobotMap.IS_SECOND_ROBOT);
       rightSlave = new CANTalon(RobotMap.CT_ID_RIGHT_2);
       configureSlave(rightSlave, RobotMap.CT_ID_RIGHT_1);
     } else {
@@ -120,22 +117,24 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     }
 
     robotDrive = new RobotDrive(leftMaster, rightMaster) {
-      public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {        
+      public void setLeftRightMotorOutputs(double leftOutput, double rightOutput) {
+        // make sure we don't break the ratchet
+        if (isClimberLocked && rightOutput > 0) {
+          logger.warn("Attempt to drive forward while ratchet is engaged!");
+          rightOutput = 0;
+        }
+        
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;
         lastOutputRight = rightOutput;
       }
     };
     robotDrive.setMaxOutput(12.0);
-    
-    climber = new CANTalon(RobotMap.CT_ID_CLIMBER);
-    climber.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-    climber.enableBrakeMode(true);
 
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
-    climberSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK,
-        RobotMap.SOLENOID_CLIMBER_RETRACT);
+    climberSolenoid =
+        new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
@@ -157,23 +156,22 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
         }, new Object());
     
     turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, 
-  		  navX, output -> this.turningOutput = output);
-
+		  navX, output -> this.turningOutput = output);
     calibrateYaw();
   }
   
-  public void enableTurningControl(double angle, double tolerance) {
-      turningController.setSetpoint(rotation + angle);
-      turningController.enable();
-  }
-  	
-  public void disableTurningControl() {
-      turningController.disable();
-  }
-  	
-  public void controlTurning() {
-      robotDrive.arcadeDrive(0, turningOutput);
-  }
+    public void enableTurningControl(double angle, double tolerance) {
+        turningController.setSetpoint(currentAngle + angle);
+        turningController.enable();
+    }
+    	
+    public void disableTurningControl() {
+        turningController.disable();
+    }
+    	
+    public void controlTurning() {
+        robotDrive.arcadeDrive(0, turningOutput);
+    }
 
   private void configureMaster(CANTalon talon) {
     logger.info("init master: " + talon.getDeviceID());
@@ -225,58 +223,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       throttle = -throttle;
       turn = -turn;
     }
-    
-    // pre-square inputs so the rate limiter works correctly
-    throttle = Math.signum(throttle) * throttle * throttle;
-    turn = Math.signum(turn) * turn * turn;
-    
-    // slew rate limiter, https://www.chiefdelphi.com/forums/showpost.php?p=1334827&postcount=8
-    // rate limit if accelerating, but not if decelerating
-    double change = throttle - limitedThrottle;
-    if (throttle > 0 && change > 0) {
-      if (change > RobotMap.JOYSTICK_RAMP_RATE) {
-        change = RobotMap.JOYSTICK_RAMP_RATE;
-      }
-      limitedThrottle += change;
-    } else if (throttle < 0 && change < 0) {
-      if (change < -RobotMap.JOYSTICK_RAMP_RATE) {
-        change = -RobotMap.JOYSTICK_RAMP_RATE;
-      }
-      limitedThrottle += change;
-    } else {
-      limitedThrottle = throttle;
-    }
-    
-    logger.trace(String.format("Driving with throttle %f limited to %f and turn %f quickTurn %b",
-        throttle, limitedThrottle, turn, quickTurn));
-    
-    // we already squared, so tell robotdrive not to square again
+    logger.trace(String.format("Driving with throttle %f and turn %f quickTurn %b", throttle, turn,
+        quickTurn));
     if (quickTurn || !RobotMap.JOYSTICK_DRIVE_COMPENSATION_ENABLED) {
-      robotDrive.arcadeDrive(limitedThrottle, turn, false);
+      robotDrive.arcadeDrive(throttle, turn);
     } else {
-      // auto quick turn if throttle is zero
-      double compensatedTurn =
-          Math.abs(limitedThrottle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY;
-      robotDrive.arcadeDrive(limitedThrottle,
-          Math.abs(limitedThrottle) < RobotMap.JOYSTICK_DRIVE_DEAD_AREA ? turn : compensatedTurn,
-          false);
+      robotDrive.arcadeDrive(throttle,
+          Math.abs(throttle) * turn * RobotMap.JOYSTICK_DRIVE_TURN_SENSITIVITY);
     }
-  }
-  
-  /**
-   * Tank drives the robot.
-   * @param left Left side of drivetrain value
-   * @param right Right side value
-   */
-  public void rawTankDrive(double left, double right) {
-    if (isHoldingPosition) {
-      return;
-    }
-    
-    logger.trace(
-        String.format("Tank drive raw %f / %f", left, right));
-    // something is reversed somewhere
-    robotDrive.tankDrive(right, left, false);
   }
 
   /**
@@ -369,29 +323,29 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
       return;
     }
     
-    // setBrakeOn(true);
-    //
-    // isHoldingPosition = enabled;
-    //
-    // if (!enabled) {
-    // leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-    // rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-    // leftMaster.reverseSensor(true);
-    // robotDrive.setSafetyEnabled(true);
-    // rawLeftRightDrive(0, 0);
-    // } else {
-    // robotDrive.setSafetyEnabled(false);
-    //
-    // final double currentEncoderLeft = leftMaster.getPosition();
-    // final double currentEncoderRight = rightMaster.getPosition();
-    //
-    // leftMaster.reverseSensor(false);
-    //
-    // leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-    // rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
-    // leftMaster.set(-currentEncoderLeft);
-    // rightMaster.set(currentEncoderRight);
-    // }
+    setBrakeOn(true);
+    
+    isHoldingPosition = enabled;
+    
+    if (!enabled) {
+      leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+      rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+      leftMaster.reverseSensor(true);
+      robotDrive.setSafetyEnabled(true);
+      rawLeftRightDrive(0, 0);
+    } else {
+      robotDrive.setSafetyEnabled(false);
+      
+      final double currentEncoderLeft = leftMaster.getPosition();
+      final double currentEncoderRight = rightMaster.getPosition();
+      
+      leftMaster.reverseSensor(false);
+      
+      leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+      rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
+      leftMaster.set(-currentEncoderLeft);
+      rightMaster.set(currentEncoderRight);
+    }
   }
   
   /**
@@ -411,10 +365,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
     isClimberLocked = true;
     // just in case
     setHoldPositionEnabled(false);
-  }
-  
-  public void setClimberSpeed(double speed) {
-    climber.set(speed);
   }
 
   /**
@@ -528,9 +478,6 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
 
     SmartDashboard.putNumber("Encoder_Left", getEncoderDistance(DriveTrainSide.LEFT));
     SmartDashboard.putNumber("Encoder_Right", getEncoderDistance(DriveTrainSide.RIGHT));
-    
-    SmartDashboard.putNumber("Talon_6_Input", rightSlave.getBusVoltage());
-    SmartDashboard.putNumber("Talon_1_Input", leftMaster.getBusVoltage());
 
     // solenoid diagnostics
     if (pcmPresent) {

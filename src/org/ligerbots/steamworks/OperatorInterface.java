@@ -32,6 +32,7 @@ import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.SlideCommandGroup;
 import org.ligerbots.steamworks.commands.TurnCommand;
+import org.ligerbots.steamworks.commands.TurnPIDCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
@@ -167,13 +168,13 @@ public class OperatorInterface {
       
       // For testing turns
       JoystickButton turn5 = new JoystickButton(farmController, 12);
-      turn5.whenPressed(new TurnCommand(1.0, 0.5));
+      turn5.whenPressed(new TurnPIDCommand(1.0, 0.5));
       
       JoystickButton turn2 = new JoystickButton(farmController, 14);
-      turn2.whenPressed(new TurnCommand(2.0, 0.5));
+      turn2.whenPressed(new TurnPIDCommand(-2.0, 0.5));
       
       JoystickButton turn30 = new JoystickButton(farmController, 16);
-      turn30.whenPressed(new TurnCommand(30.0, 3.0));
+      turn30.whenPressed(new TurnPIDCommand(30.0, 3.0));
 
       // duplicated controls
       JoystickButton manualShoot = new JoystickButton(farmController, 4);
