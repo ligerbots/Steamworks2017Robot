@@ -25,7 +25,7 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
     // HSR-1425CR
     stirrerServo = new Servo(RobotMap.STIRRER_SERVO_CHANNEL);
     // values for the servo we have. http://hitecrcd.com/faqs/servos/general-servos
-    stirrerServo.setBounds(2.1, 0, 0, 0, 0.9);
+    stirrerServo.setBounds(2.4, 0, 0, 0, 0.9);
     stirrerServo.setPeriodMultiplier(PeriodMultiplier.k4X);
     setStirrer(RobotMap.STIRRER_SERVO_VALUE_STOP);
   }
@@ -36,11 +36,11 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
    * @param value The servo value, 0 to 1
    */
   public void setStirrer(double value) {
-    if (stirrerServo != null) {
-      logger.trace(String.format("Setting stirrer, value %f", value));
+//    if (stirrerServo != null) {
+      logger.info(String.format("Setting stirrer, value %f", value));
 
       stirrerServo.set(value);
-    }
+//    }
   }
 
   public void initDefaultCommand() {}

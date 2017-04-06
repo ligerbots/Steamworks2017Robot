@@ -92,7 +92,7 @@ public class ShooterFeederCommand extends StatefulCommand {
 
   protected void initialize() {
     if (getFromDashboard) {
-      desiredShooterRpm = SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
+      desiredShooterRpm = RobotMap.SHOOTING_RPM;//SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
     }
     logger.info(String.format("Initialize, desired rpm=%f", desiredShooterRpm));
     readyToStartFeeder = false;
@@ -106,7 +106,7 @@ public class ShooterFeederCommand extends StatefulCommand {
     super.execute();
 
     if (getFromDashboard) {
-      desiredShooterRpm = SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
+      desiredShooterRpm = RobotMap.SHOOTING_RPM;//SmartDashboard.getNumber("Shooter_Test_Rpm", Double.NaN);
     }
 
     if (!Double.isNaN(desiredShooterRpm)) {

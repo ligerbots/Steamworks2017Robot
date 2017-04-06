@@ -282,23 +282,23 @@ public class FieldMap {
       
       dx = 72 * Math.cos(Math.toRadians(angle));
       dy = 72 * Math.sin(Math.toRadians(angle));
-      splinePointX = gearLiftPosition.getX() + dx + (alliance == Alliance.Red ? -12 : 12);
+      splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
       
       dx = 66 * Math.cos(Math.toRadians(angle));
       dy = 66 * Math.sin(Math.toRadians(angle));
-      splinePoint2X = gearLiftPosition.getX() + dx + (alliance == Alliance.Red ? -6 : 6);
+      splinePoint2X = gearLiftPosition.getX() + dx;
       splinePoint2Y = gearLiftPosition.getY() + dy;
     } else {
       double angle = alliance == Alliance.Red ? 120 : 60;
       double dx = 84 * Math.cos(Math.toRadians(angle));
       double dy = 84 * Math.sin(Math.toRadians(angle));
-      initialDriveToX = gearLiftPosition.getX() + dx  + (alliance == Alliance.Red ? -12 : 12);
+      initialDriveToX = gearLiftPosition.getX() + dx;
       initialDriveToY = gearLiftPosition.getY() + dy;
       
       dx = 72 * Math.cos(Math.toRadians(angle));
       dy = 72 * Math.sin(Math.toRadians(angle));
-      splinePointX = gearLiftPosition.getX() + dx  + (alliance == Alliance.Red ? -6 : 6);
+      splinePointX = gearLiftPosition.getX() + dx;
       splinePointY = gearLiftPosition.getY() + dy;
       
       dx = 66 * Math.cos(Math.toRadians(angle));
@@ -392,7 +392,7 @@ public class FieldMap {
     }
     
     FieldPosition finalPoint =
-        new FieldPosition(alliance == Alliance.Red ? -205.977 : 205.977, -94.018);
+        new FieldPosition(alliance == Alliance.Red ? -225.977 : 225.977, -94.018);
     controlPoints.add(finalPoint);
    
     controlPoints.add(new FieldPosition(alliance == Alliance.Red ? -200 : 200, -94.018));
