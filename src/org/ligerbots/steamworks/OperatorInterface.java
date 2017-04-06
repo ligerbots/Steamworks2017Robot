@@ -34,7 +34,7 @@ import org.ligerbots.steamworks.commands.SlideCommandGroup;
 import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.commands.TurnPIDCommand;
 import org.ligerbots.steamworks.commands.TurnPIDTest;
-import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -98,10 +98,10 @@ public class OperatorInterface {
     xboxYButton.whenPressed(autoGearCommand);
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
-    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
+    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrainPID.ShiftType.DOWN));
 
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
-    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
+    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrainPID.ShiftType.UP));
 
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
     xboxMenuButton.whenPressed(new IntakeCommand());

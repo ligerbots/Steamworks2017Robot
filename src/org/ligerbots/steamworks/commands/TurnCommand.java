@@ -2,7 +2,7 @@ package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class TurnCommand extends AccessibleCommand {
    */
   public void setParameters(double offsetDegrees, double acceptableError, double turnConstant) {
     this.acceptableError = acceptableError;
-    offsetDegrees = DriveTrain.fixDegrees(offsetDegrees);
+    offsetDegrees = DriveTrainPID.fixDegrees(offsetDegrees);
     if (offsetDegrees > 180) {
       offsetDegrees = offsetDegrees - 360;
     }
@@ -94,13 +94,13 @@ public class TurnCommand extends AccessibleCommand {
   // Called just before this Command runs the first time
   protected void initialize() {
     startTime = System.nanoTime();
-    startingRotation = DriveTrain.fixDegrees(Robot.driveTrain.getYaw());
-    targetRotation = DriveTrain.fixDegrees(startingRotation + offsetDegrees);
+    startingRotation = DriveTrainPID.fixDegrees(Robot.driveTrain.getYaw());
+    targetRotation = DriveTrainPID.fixDegrees(startingRotation + offsetDegrees);
     logger.debug(String.format("Start %f, target %f", startingRotation, targetRotation));
     
     succeeded = false;
     ended = false;
-    Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
+    Robot.driveTrain.shift(DriveTrainPID.ShiftType.DOWN);
     isHighGear = false;
     
     autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_LOW;
@@ -110,7 +110,7 @@ public class TurnCommand extends AccessibleCommand {
   // Called repeatedly when this Command is scheduled to run
   protected void execute() {
     double localTargetRotation = targetRotation;
-    double currentRotation = DriveTrain.fixDegrees(Robot.driveTrain.getYaw());
+    double currentRotation = DriveTrainPID.fixDegrees(Robot.driveTrain.getYaw());
     
     if (localTargetRotation < currentRotation) {
       localTargetRotation += 360;

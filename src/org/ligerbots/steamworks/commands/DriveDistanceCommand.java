@@ -2,8 +2,8 @@ package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.subsystems.DriveTrain;
-import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.DriveTrainSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +68,7 @@ public class DriveDistanceCommand extends AccessibleCommand {
     ended = false;
     
     if (Math.abs(offsetInches) > RobotMap.AUTO_DRIVE_SHIFT_THRESHOLD) {
-      Robot.driveTrain.shift(DriveTrain.ShiftType.UP);
+      Robot.driveTrain.shift(DriveTrainPID.ShiftType.UP);
       isHighGear = true;
       autoDriveRampUpDist = RobotMap.AUTO_DRIVE_RAMP_UP_DIST_HIGH;
       autoDriveRampDownDist = RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST_HIGH;
@@ -77,7 +77,7 @@ public class DriveDistanceCommand extends AccessibleCommand {
       autoDriveMinSpeed = RobotMap.AUTO_DRIVE_MIN_SPEED_HIGH;
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_HIGH;
     } else {
-      Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
+      Robot.driveTrain.shift(DriveTrainPID.ShiftType.DOWN);
       isHighGear = false;
       autoDriveRampUpDist = RobotMap.AUTO_DRIVE_RAMP_UP_DIST_LOW;
       autoDriveRampDownDist = RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST_LOW;

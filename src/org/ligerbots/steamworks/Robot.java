@@ -25,6 +25,7 @@ import org.ligerbots.steamworks.commands.AutoGearAndShootCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
@@ -102,7 +103,7 @@ public class Robot extends IterativeRobot {
     }
   }
 
-  public static DriveTrain driveTrain;
+  public static DriveTrainPID driveTrain;
   public static Pneumatics pneumatics;
   public static Vision vision;
   public static Shooter shooter;
@@ -149,7 +150,7 @@ public class Robot extends IterativeRobot {
       deviceFinder = new CanDeviceFinder();
       deviceFinder.findDevices();
   
-      driveTrain = new DriveTrain();
+      driveTrain = new DriveTrainPID();
       vision = new Vision();
       shooter = new Shooter();
       feeder = new Feeder();
@@ -252,7 +253,7 @@ public class Robot extends IterativeRobot {
       logger.trace("disabledPeriodic()");
       vision.setVisionEnabled(false);
       
-      if (System.nanoTime() - autoModePrintNanos > 2_000_000_000) {
+      if (System.nanoTime() - autoModePrintNanos > 9_000_000_000L) {
         autoModePrintNanos = System.nanoTime();
         System.out.println("SELECTED AUTO PARAMETERS:");
         System.out.println("\tAuto mode: " + operatorInterface.getAutoMode().toString());

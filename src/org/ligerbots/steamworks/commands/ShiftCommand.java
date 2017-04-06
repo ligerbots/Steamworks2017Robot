@@ -2,8 +2,8 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
-import org.ligerbots.steamworks.subsystems.DriveTrain;
-import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.DriveTrainSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ public class ShiftCommand extends Command {
   private static final long NANOS_START_TO_SHIFT = 250000000;
   private static final long NANOS_TOTAL = 500000000;
 
-  DriveTrain.ShiftType shiftType;
+  DriveTrainPID.ShiftType shiftType;
   long startTime;
   double lastOutputLeft;
   double lastOutputRight;
@@ -28,7 +28,7 @@ public class ShiftCommand extends Command {
    * 
    * @param shiftType Whether to shift up, down, or toggle.
    */
-  public ShiftCommand(DriveTrain.ShiftType shiftType) {
+  public ShiftCommand(DriveTrainPID.ShiftType shiftType) {
     requires(Robot.driveTrain);
     this.shiftType = shiftType;
   }

@@ -47,6 +47,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   CANTalon leftSlave;
   CANTalon rightMaster;
   CANTalon rightSlave;
+  CANTalon climber;
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DoubleSolenoid climberSolenoid;
@@ -67,10 +68,10 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   long navxUpdateNanos;
   ITable swFieldDisplay;
   boolean pcmPresent;
-  
+
   boolean isHoldingPosition;
   boolean isClimberLocked;
-  
+
   PIDController turningController;
   double turningOutput, currentAngle = 0;
   double turnTolerance = 0.3;
@@ -84,9 +85,10 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     swFieldDisplay = NetworkTable.getTable("SmartDashboard/SwField");
 
 
+    climber = new CANTalon(RobotMap.CT_ID_CLIMBER);
     isHoldingPosition = false;
     isClimberLocked = false;
-    
+
     if (Robot.deviceFinder.isTalonAvailable(RobotMap.CT_ID_LEFT_1)) {
       leftMaster = new CANTalon(RobotMap.CT_ID_LEFT_1);
       configureMaster(leftMaster);
@@ -123,7 +125,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
           logger.warn("Attempt to drive forward while ratchet is engaged!");
           rightOutput = 0;
         }
-        
+
         super.setLeftRightMotorOutputs(leftOutput, rightOutput);
         lastOutputLeft = leftOutput;
         lastOutputRight = rightOutput;
@@ -154,24 +156,25 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
         (long systemTimestamp, long sensorTimestamp, AHRSUpdateBase sensorData, Object context) -> {
           updatePosition(sensorData.yaw);
         }, new Object());
-    
-    turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, 
-		  navX, output -> this.turningOutput = output);
+
+    turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, navX,
+        output -> this.turningOutput = output);
+    turningController.setContinuous(true);
     calibrateYaw();
   }
-  
-    public void enableTurningControl(double angle, double tolerance) {
-        turningController.setSetpoint(currentAngle + angle);
-        turningController.enable();
-    }
-    	
-    public void disableTurningControl() {
-        turningController.disable();
-    }
-    	
-    public void controlTurning() {
-        robotDrive.arcadeDrive(0, turningOutput);
-    }
+
+  public void enableTurningControl(double angle, double tolerance) {
+    turningController.setSetpoint(currentAngle + angle);
+    turningController.enable();
+  }
+
+  public void disableTurningControl() {
+    turningController.disable();
+  }
+
+  public void controlTurning() {
+    robotDrive.arcadeDrive(0, turningOutput);
+  }
 
   private void configureMaster(CANTalon talon) {
     logger.info("init master: " + talon.getDeviceID());
@@ -218,7 +221,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     if (isHoldingPosition) {
       return;
     }
-    
+
     if (!RobotMap.IS_ROADKILL) {
       throttle = -throttle;
       turn = -turn;
@@ -244,7 +247,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     if (isHoldingPosition) {
       return;
     }
-    
+
     if (!RobotMap.IS_ROADKILL) {
       throttle = -throttle;
       turn = -turn;
@@ -264,7 +267,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     if (isHoldingPosition) {
       return;
     }
-    
+
     robotDrive.setLeftRightMotorOutputs(left, right);
   }
 
@@ -316,17 +319,18 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
   /**
    * Enables or disables PID position holding for the climb.
+   * 
    * @param enabled Whether to enable or disable PID position holding.
    */
   public void setHoldPositionEnabled(boolean enabled) {
     if (isClimberLocked) {
       return;
     }
-    
+
     setBrakeOn(true);
-    
+
     isHoldingPosition = enabled;
-    
+
     if (!enabled) {
       leftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
       rightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
@@ -335,27 +339,32 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
       rawLeftRightDrive(0, 0);
     } else {
       robotDrive.setSafetyEnabled(false);
-      
+
       final double currentEncoderLeft = leftMaster.getPosition();
       final double currentEncoderRight = rightMaster.getPosition();
-      
+
       leftMaster.reverseSensor(false);
-      
+
       leftMaster.changeControlMode(CANTalon.TalonControlMode.Position);
       rightMaster.changeControlMode(CANTalon.TalonControlMode.Position);
       leftMaster.set(-currentEncoderLeft);
       rightMaster.set(currentEncoderRight);
     }
   }
-  
+
   /**
    * Checks whether the drivetrain is currently holding its position.
+   * 
    * @return True if holding position
    */
   public boolean isHoldPositionEnabled() {
     return isHoldingPosition;
   }
   
+  public void setClimberSpeed(double speed) {
+    climber.set(speed);
+  }
+
   /**
    * Locks the climber ratchet so we don't fall off after the match ends.
    */
@@ -456,7 +465,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
       SmartDashboard.putNumber("Right_Slave_Power",
           rightSlave.getOutputCurrent() * rightSlave.getOutputVoltage());
     }
-    
+
     // talon fault diagnostics
     // we don't care about under voltage because it's already clear when brownouts happen
     SmartDashboard.putBoolean("Left_Master_Present", leftMaster.isAlive());
@@ -491,7 +500,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
     // dead reckoning field display
     // tell the dashboard what this object is
-    swFieldDisplay.putBoolean("_swfield", true); 
+    swFieldDisplay.putBoolean("_swfield", true);
     // put in dead reckoning values
     swFieldDisplay.putNumber("x", positionX);
     swFieldDisplay.putNumber("y", positionY);
@@ -556,9 +565,8 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     navX.reset();
     navX.resetDisplacement();
 
-    FieldPosition currentPosition =
-        FieldMap.getAllianceMap().startingPositions[Robot.operatorInterface
-            .getStartingPosition().id];
+    FieldPosition currentPosition = FieldMap
+        .getAllianceMap().startingPositions[Robot.operatorInterface.getStartingPosition().id];
     setPosition(currentPosition);
 
     absoluteDistanceTraveled = 0;
@@ -568,6 +576,18 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
   public static double fixDegrees(double angle) {
     return ((angle % 360) + 360) % 360;
+  }
+
+  public void rawTankDrive(double left, double right) {
+    if (isHoldingPosition) {
+      return;
+    }
+    
+    logger.trace(
+        String.format("Tank drive raw %f / %f", left, right));
+    // something is reversed somewhere
+    robotDrive.tankDrive(right, left, false);
+    
   }
 }
 
