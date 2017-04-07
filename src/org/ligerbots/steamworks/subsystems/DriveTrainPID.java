@@ -164,6 +164,9 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   }
 
   public void enableTurningControl(double angle, double tolerance) {
+    logger.info(String.format("PID Turn current angle: %5.2f + %5.3f = %5.3f",
+                              currentAngle, angle, currentAngle + angle));
+    turnTolerance = tolerance;
     turningController.setSetpoint(currentAngle + angle);
     turningController.enable();
   }
@@ -172,9 +175,19 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     turningController.disable();
   }
 
-  public void controlTurning() {
+  // return True when turn is finished
+  public boolean controlTurning(boolean log) {
+    double error = turningController.getError();
+    if (Math.abs(error) <= Math.abs(turnTolerance)) {
+      logger.info(String.format("PID turn finished, error = %5.2f", error));
+      return true;
+    }
     robotDrive.arcadeDrive(0, turningOutput);
+    
+    if (log) logger.info(String.format("PID turningOutput: %5.2f ", turningOutput)); 
+    return false;
   }
+  
 
   private void configureMaster(CANTalon talon) {
     logger.info("init master: " + talon.getDeviceID());
