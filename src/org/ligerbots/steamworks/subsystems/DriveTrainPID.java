@@ -160,10 +160,14 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, navX,
         output -> this.turningOutput = output);
     turningController.setContinuous(true);
+    SmartDashboard.putData("turn PID", turningController);
     calibrateYaw();
   }
 
   public void enableTurningControl(double angle, double tolerance) {
+    currentAngle = this.getYaw();
+    logger.info(String.format("PID Control turn angle: %5.2f + %5.2f = %5.2f",
+        currentAngle, angle, currentAngle + angle));
     turningController.setSetpoint(currentAngle + angle);
     turningController.enable();
   }
@@ -174,6 +178,10 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
   public void controlTurning() {
     robotDrive.arcadeDrive(0, turningOutput);
+  }
+  
+  public double getRotation() {
+    return rotation;
   }
 
   private void configureMaster(CANTalon talon) {

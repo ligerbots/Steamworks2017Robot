@@ -164,9 +164,9 @@ public class RobotMap {
   @Preference
   public static double TURN_P = 0.05;
   @Preference
-  public static double TURN_I = 0.01;
+  public static double TURN_I = 0.0;
   @Preference
-  public static double TURN_D = 0.0;
+  public static double TURN_D = 5;
   
   @Preference
   public static double TURN_TEST_ANGLE = 1.0;

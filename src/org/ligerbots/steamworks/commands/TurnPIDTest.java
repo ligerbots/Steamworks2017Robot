@@ -1,7 +1,8 @@
 package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.RobotMap;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -9,6 +10,7 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class TurnPIDTest extends Command {
 
+  private static final Logger Logger = LoggerFactory.getLogger(TurnPIDTest.class);
   TurnPIDCommand turnCommand;
 
   public TurnPIDTest() {
@@ -20,6 +22,7 @@ public class TurnPIDTest extends Command {
   // Called just before this Command runs the first time
   protected void initialize() {
     turnCommand.setParameters(RobotMap.TURN_TEST_ANGLE, RobotMap.TURN_TEST_ERROR);
+    turnCommand.initialize();
   }
 
   // Called repeatedly when this Command is scheduled to run
