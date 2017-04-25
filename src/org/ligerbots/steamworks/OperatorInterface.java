@@ -28,6 +28,7 @@ import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand.Request
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
+import org.ligerbots.steamworks.commands.PushCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.SlideCommandGroup;
@@ -35,6 +36,7 @@ import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.commands.TurnPIDCommand;
 import org.ligerbots.steamworks.commands.TurnPIDTest;
 import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.PushType;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -142,6 +144,12 @@ public class OperatorInterface {
 
       JoystickButton intakeOff = new JoystickButton(farmController, 17);
       intakeOff.whenPressed(new IntakeCommand(false));
+      
+      JoystickButton gearOpen = new JoystickButton(farmController, 19);
+      gearOpen.whenPressed(new PushCommand(PushType.OPEN));
+      
+      JoystickButton gearClosed = new JoystickButton(farmController, 20);
+      gearClosed.whenPressed(new PushCommand(PushType.CLOSED));
 
       // GEARMECH
       JoystickButton gearmechClosed = new JoystickButton(farmController, 1);

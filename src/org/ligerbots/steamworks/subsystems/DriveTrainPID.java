@@ -19,6 +19,8 @@ import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.PushType;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.ShiftType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DoubleSolenoid climberSolenoid;
+  DoubleSolenoid gearSolenoid;
   AHRS navX;
 
   double positionX;
@@ -136,11 +139,12 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
     climberSolenoid =
-        new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
+        new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
+    gearSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.GEAR_PISTON_OPEN, RobotMap.GEAR_PISTON_CLOSE);
 
     // restore X and Y in case of crash
     if (SmartDashboard.containsKey("Robot_x")) {
@@ -182,6 +186,25 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   
   public double getRotation() {
     return rotation;
+  }
+  
+  public enum PushType{
+    OPEN, CLOSED, TOGGLE
+  }
+  public void gearPush(PushType pushType) {
+    if (pcmPresent) {
+      if (pushType == PushType.TOGGLE) {
+        if (gearSolenoid.get() == DoubleSolenoid.Value.kReverse) {
+          gearSolenoid.set(DoubleSolenoid.Value.kForward);
+        } else {
+          gearSolenoid.set(DoubleSolenoid.Value.kReverse);
+        }
+      } else if (pushType == pushType.OPEN) {
+        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+      } else {
+        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+      }
+    }
   }
 
   private void configureMaster(CANTalon talon) {
