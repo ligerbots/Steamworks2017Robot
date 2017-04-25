@@ -200,9 +200,9 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
           gearSolenoid.set(DoubleSolenoid.Value.kReverse);
         }
       } else if (pushType == pushType.OPEN) {
-        shiftingSolenoid.set(DoubleSolenoid.Value.kForward);
+        gearSolenoid.set(DoubleSolenoid.Value.kForward);
       } else {
-        shiftingSolenoid.set(DoubleSolenoid.Value.kReverse);
+        gearSolenoid.set(DoubleSolenoid.Value.kReverse);
       }
     }
   }
