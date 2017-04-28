@@ -177,7 +177,7 @@ public class OperatorInterface {
       
       // For testing turns
       JoystickButton turn5 = new JoystickButton(farmController, 12);
-      turn5.whenPressed(new TurnPIDCommand(45.0, 0.3));
+      turn5.whenPressed(new TurnPIDCommand(40.0, 0.3));
       
       JoystickButton turn2 = new JoystickButton(farmController, 14);
       turn2.whenPressed(new TurnPIDCommand(-2.0, 0.3));

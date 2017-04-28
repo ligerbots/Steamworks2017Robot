@@ -25,7 +25,7 @@ public class TurnPIDCommand extends Command {
     this.offsetDegrees = offsetDegrees;
     this.acceptableError = acceptableError;
     startDegrees = Robot.driveTrain.getYaw();
-   
+
   }
 
   /**
@@ -41,15 +41,18 @@ public class TurnPIDCommand extends Command {
     }
     this.offsetDegrees = offsetDegrees;
     this.acceptableError = acceptableError;
-    ticks = 5;
+    ticks = 2;
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
     double startingAngle = Robot.driveTrain.getYaw();
-    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, acceptableError %5.2f", 
-                               offsetDegrees, startingAngle, acceptableError));
+    if (startingAngle > 180) {
+      startingAngle = startingAngle - 360;
+    }
+    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, acceptableError %5.2f",
+        offsetDegrees, startingAngle, acceptableError));
     Robot.driveTrain.enableTurningControl(offsetDegrees, acceptableError);
   }
 
@@ -62,11 +65,19 @@ public class TurnPIDCommand extends Command {
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    double currentAngle = Robot.driveTrain.getYaw();
+    double currentAngle = Robot.driveTrain.getYawRotation();
+    if (currentAngle > 180) {
+      currentAngle = currentAngle - 360;
+    }
     double amountTurned = Math.abs((startDegrees - currentAngle));
-    boolean finished = Math.abs(Math.abs(offsetDegrees) - amountTurned) < acceptableError;
-    if (ticks--==0 || finished) {
-      logger.info(String.format("Current Angle: %5.2f, Amount Turned: %5.2f, Difference: %5.2f ", currentAngle, amountTurned, Math.abs(Math.abs(offsetDegrees) - amountTurned)));
+    if (amountTurned > 180) {
+      amountTurned = amountTurned - 360;
+    }
+    boolean finished = Math.abs(offsetDegrees - amountTurned)< acceptableError;
+    if (ticks-- == 0 || finished) {
+      logger.info(String.format("Current Angle: %5.2f, Amount Turned: %5.2f, Difference: %5.2f ",
+          currentAngle, amountTurned, Math.abs(offsetDegrees - amountTurned)));
+      ticks = 2;
     }
     return finished;
   }
