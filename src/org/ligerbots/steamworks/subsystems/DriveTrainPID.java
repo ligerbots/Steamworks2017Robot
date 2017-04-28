@@ -170,8 +170,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
   public void enableTurningControl(double angle, double tolerance) {
     currentAngle = this.getYaw();
-    double temp;
-    temp = currentAngle + angle;
+    double temp = currentAngle + angle;
     logger.info(String.format("PID Control turn angle: %5.2f + %5.2f = %5.2f",
         currentAngle, angle, currentAngle + angle));
     if (currentAngle + angle> 180) {
