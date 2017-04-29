@@ -76,7 +76,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   boolean isClimberLocked;
 
   PIDController turningController;
-  double turningOutput, currentAngle = 0;
+  double turningOutput, startAngle = 0;
   double turnTolerance = 0.3;
 
   /**
@@ -135,7 +135,6 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
       }
     };
     robotDrive.setMaxOutput(12.0);
-
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
     climberSolenoid =
@@ -153,7 +152,8 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     if (SmartDashboard.containsKey("Robot_y")) {
       positionY = SmartDashboard.getNumber("Robot_y", positionY);
     }
-
+    
+    
     // new firmware supports 200hz
     navX = new AHRS(SPI.Port.kMXP, (byte) 200);
     navX.registerCallback(
@@ -163,29 +163,54 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
     turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, navX,
         output -> this.turningOutput = output);
-    turningController.setContinuous(true);
     SmartDashboard.putData("turn PID", turningController);
     calibrateYaw();
   }
+  
+  public double getAvgError() {
+    return turningController.getAvgError();
+  }
+  
+
 
   public void enableTurningControl(double angle, double tolerance) {
-    currentAngle = this.getYaw();
-    double temp = currentAngle + angle;
+    startAngle = this.getYawRotation();
+    double temp = startAngle + angle;
     logger.info(String.format("PID Control turn angle: %5.2f + %5.2f = %5.2f",
-        currentAngle, angle, currentAngle + angle));
-    if (currentAngle + angle> 180) {
-      temp = temp - 360;
-    }
+        startAngle, angle, startAngle + angle));
+    temp = otherFixDegrees(temp);
     turningController.setSetpoint(temp);
     turningController.enable();
+    turningController.setInputRange(-180.0, 180.0);
+    turningController.setOutputRange(-1.0,1.0);
+    turningController.setAbsoluteTolerance(tolerance);
+    turningController.setToleranceBuffer(3);
+    turningController.setContinuous(true);
+    turningController.setSetpoint(temp);
   }
 
   public void disableTurningControl() {
     turningController.disable();
   }
+  
+  public static double otherFixDegrees(double input) {
+    if (input > 180) {
+      return input - 360;
+    }
+    else if (input < -180){
+      return input + 360;
+    }
+    else {
+      return input;
+    }
+  }
 
+  public boolean onTarget() {
+    return turningController.onTarget();
+  }
+  
   public void controlTurning() {
-    robotDrive.arcadeDrive(0, -turningOutput);
+    robotDrive.arcadeDrive(0, turningOutput);
   }
   
   public double getRotation() {

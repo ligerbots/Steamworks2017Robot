@@ -217,6 +217,10 @@ public class Robot extends IterativeRobot {
       ex.printStackTrace();
     }
   }
+  
+  public static double getNanoTime() {
+    return (System.nanoTime()/1_000_000_000.0);
+  }
 
   /**
    * Call {@link SmartDashboardLogger#sendDataToSmartDashboard()} but with exception handling.

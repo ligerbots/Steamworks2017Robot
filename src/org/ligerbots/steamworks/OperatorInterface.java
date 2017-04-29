@@ -183,7 +183,7 @@ public class OperatorInterface {
       turn2.whenPressed(new TurnPIDCommand(-2.0, 0.3));
       
       JoystickButton turn30 = new JoystickButton(farmController, 16);
-      turn30.whenPressed(new TurnPIDTest());
+      turn30.whenPressed(new TurnPIDCommand(200.0, 0.3));
 
       // duplicated controls
       JoystickButton manualShoot = new JoystickButton(farmController, 4);
