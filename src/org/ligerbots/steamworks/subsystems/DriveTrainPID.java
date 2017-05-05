@@ -19,6 +19,8 @@ import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.PushType;
+import org.ligerbots.steamworks.subsystems.DriveTrainPID.ShiftType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   RobotDrive robotDrive;
   DoubleSolenoid shiftingSolenoid;
   DoubleSolenoid climberSolenoid;
+  DoubleSolenoid gearSolenoid;
   AHRS navX;
 
   double positionX;
@@ -73,7 +76,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   boolean isClimberLocked;
 
   PIDController turningController;
-  double turningOutput, currentAngle = 0;
+  double turningOutput, startAngle = 0;
   double turnTolerance = 0.3;
 
   /**
@@ -132,15 +135,15 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
       }
     };
     robotDrive.setMaxOutput(12.0);
-
     shiftingSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_SHIFT_UP,
         RobotMap.SOLENOID_SHIFT_DOWN);
     climberSolenoid =
-        new DoubleSolenoid(RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
+        new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.SOLENOID_CLIMBER_LOCK, RobotMap.SOLENOID_CLIMBER_RETRACT);
     climberSolenoid.set(DoubleSolenoid.Value.kReverse);
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
+    gearSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.GEAR_PISTON_OPEN, RobotMap.GEAR_PISTON_CLOSE);
 
     // restore X and Y in case of crash
     if (SmartDashboard.containsKey("Robot_x")) {
@@ -149,7 +152,8 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     if (SmartDashboard.containsKey("Robot_y")) {
       positionY = SmartDashboard.getNumber("Robot_y", positionY);
     }
-
+    
+    
     // new firmware supports 200hz
     navX = new AHRS(SPI.Port.kMXP, (byte) 200);
     navX.registerCallback(
@@ -159,33 +163,78 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
 
     turningController = new PIDController(RobotMap.TURN_P, RobotMap.TURN_I, RobotMap.TURN_D, navX,
         output -> this.turningOutput = output);
-    turningController.setContinuous(true);
+    SmartDashboard.putData("turn PID", turningController);
     calibrateYaw();
   }
+  
+  public double getAvgError() {
+    return turningController.getAvgError();
+  }
+  
+
 
   public void enableTurningControl(double angle, double tolerance) {
-    logger.info(String.format("PID Turn current angle: %5.2f + %5.3f = %5.3f",
-                              currentAngle, angle, currentAngle + angle));
-    turnTolerance = tolerance;
-    turningController.setSetpoint(currentAngle + angle);
+    startAngle = this.getYawRotation();
+    double temp = startAngle + angle;
+    logger.info(String.format("PID Control turn angle: %5.2f + %5.2f = %5.2f",
+        startAngle, angle, startAngle + angle));
+    temp = otherFixDegrees(temp);
+    turningController.setSetpoint(temp);
     turningController.enable();
+    turningController.setInputRange(-180.0, 180.0);
+    turningController.setOutputRange(-1.0,1.0);
+    turningController.setAbsoluteTolerance(tolerance);
+    turningController.setToleranceBuffer(3);
+    turningController.setContinuous(true);
+    turningController.setSetpoint(temp);
   }
 
   public void disableTurningControl() {
     turningController.disable();
   }
-
-  // return True when turn is finished
-  public boolean controlTurning(boolean log) {
-    double error = turningController.getError();
-    if (Math.abs(error) <= Math.abs(turnTolerance)) {
-      logger.info(String.format("PID turn finished, error = %5.2f", error));
-      return true;
+  
+  public static double otherFixDegrees(double input) {
+    if (input > 180) {
+      return input - 360;
     }
+    else if (input < -180){
+      return input + 360;
+    }
+    else {
+      return input;
+    }
+  }
+
+  public boolean onTarget() {
+    return turningController.onTarget();
+  }
+  
+  public void controlTurning(boolean log) {
     robotDrive.arcadeDrive(0, turningOutput);
-    
-    if (log) logger.info(String.format("PID turningOutput: %5.2f ", turningOutput)); 
-    return false;
+    if (log) logger.info("TurnPID: %4.3f throttle", turningOutput);
+  }
+  
+  public double getRotation() {
+    return rotation;
+  }
+  
+  public enum PushType{
+    OPEN, CLOSED, TOGGLE
+  }
+  public void gearPush(PushType pushType) {
+    if (pcmPresent) {
+      if (pushType == PushType.TOGGLE) {
+        if (gearSolenoid.get() == DoubleSolenoid.Value.kReverse) {
+          gearSolenoid.set(DoubleSolenoid.Value.kForward);
+        } else {
+          gearSolenoid.set(DoubleSolenoid.Value.kReverse);
+        }
+      } else if (pushType == PushType.OPEN) {
+        gearSolenoid.set(DoubleSolenoid.Value.kForward);
+      } else {
+        gearSolenoid.set(DoubleSolenoid.Value.kReverse);
+      }
+    }
   }
   
 
@@ -527,6 +576,10 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   public void setPosition(FieldPosition fieldPos) {
     positionX = fieldPos.getX();
     positionY = fieldPos.getY();
+  }
+  
+  public float getYawRotation() {
+    return navX.getYaw();
   }
 
   /**
