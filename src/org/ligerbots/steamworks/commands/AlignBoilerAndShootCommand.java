@@ -99,7 +99,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             justStarted = false;
             logger.info(String.format("state=START_TURN, cy=%5.2f, angleToBoiler=%5.2f", cy,
                 angleToBoiler));
-          } else if (cx < 0.615 || cx > 0.625) {
+          } else if (cx < 0.508 || cx > 0.518) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
             logger.info(String.format("state=DRIVE_TO_RANGE, cx=%5.2f, distance=%5.2f", cx,
@@ -173,10 +173,10 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           VisionData data = Robot.vision.getBoilerVisionData();
           double cx = data.getCenterX();
           
-          if (cx > 0.625) {
-            Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW + 0.1, 0);
-          } else if (cx < 0.615) {
-            Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW - 0.1, 0);
+          if (cx > 0.518) {
+            Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
+          } else if (cx < 0.508) {
+            Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
           } else {
             currentState = State.WAIT_FOR_VISION;
             nanosStartOfWait = System.nanoTime();
