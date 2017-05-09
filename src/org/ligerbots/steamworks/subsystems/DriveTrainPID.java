@@ -176,6 +176,9 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   public void enableTurningControl(double angle, double tolerance) {
     startAngle = this.getYawRotation();
     double temp = startAngle + angle;
+    RobotMap.TURN_P = turningController.getP();
+    RobotMap.TURN_D = turningController.getD();
+    RobotMap.TURN_I = turningController.getI();
     logger.info(String.format("PID Control turn angle: %5.2f + %5.2f = %5.2f",
         startAngle, angle, startAngle + angle));
     temp = otherFixDegrees(temp);
@@ -211,7 +214,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
   
   public void controlTurning(boolean log) {
     robotDrive.arcadeDrive(0, turningOutput);
-    if (log) logger.info("TurnPID: %4.3f throttle", turningOutput);
+    if (log) logger.info(String.format("TurnPID: %4.3f throttle", turningOutput));
   }
   
   public double getRotation() {

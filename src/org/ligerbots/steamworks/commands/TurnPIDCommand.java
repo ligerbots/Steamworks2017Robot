@@ -46,20 +46,19 @@ public class TurnPIDCommand extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, acceptableError %5.2f",
-        offsetDegrees, startDegrees, acceptableError));
     Robot.driveTrain.enableTurningControl(offsetDegrees, acceptableError);
     ticks = 5;
     target = DriveTrainPID.otherFixDegrees(startDegrees + offsetDegrees);
+    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, targetAngle %52.f, acceptableError %5.2f",
+            offsetDegrees, startDegrees, target, acceptableError));    
     startTime = Robot.getNanoTime();
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    // tell controlTurning to output log message every 5 ticks
-    Robot.driveTrain.controlTurning(ticks-- == 0);
-    if (ticks <= 0) ticks = 5;
+    // tell controlTurning to output log message every N ticks
+    Robot.driveTrain.controlTurning(ticks-1 == 0); 
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -69,7 +68,7 @@ public class TurnPIDCommand extends Command {
     double currentAngle = Robot.driveTrain.getYawRotation();
     boolean onTarget = Robot.driveTrain.onTarget();
     if (ticks-- == 0 || onTarget) {
-      logger.info("Current Angle: %5.2f %s", currentAngle, onTarget ? " ON TARGET!" : "");
+      logger.info(String.format("Current Angle: %5.2f %s time %5.2f", currentAngle, onTarget ? " ON TARGET!" : "", totalTime));
       ticks = 2;
     }
 
