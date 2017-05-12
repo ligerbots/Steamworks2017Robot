@@ -15,20 +15,19 @@ public class TurnPIDCommand extends Command {
   private static final Logger logger = LoggerFactory.getLogger(TurnPIDCommand.class);
   double offsetDegrees;
   double acceptableError;
-  double startDegrees;
+  double startAngle;
   double currentDegrees;
-  double target;
   int ticks = 0;
   int reps = 0;
   double startTime;
   double totalTime;
+  double turningOutput;
 
   public TurnPIDCommand(double offsetDegrees, double acceptableError) {
     super("TurnCommand_" + offsetDegrees + "_" + acceptableError);
     requires(Robot.driveTrain);
     this.offsetDegrees = offsetDegrees;
     this.acceptableError = acceptableError;
-    startDegrees = Robot.driveTrain.getYawRotation();
   }
 
   /**
@@ -47,10 +46,11 @@ public class TurnPIDCommand extends Command {
   @Override
   protected void initialize() {
     Robot.driveTrain.enableTurningControl(offsetDegrees, acceptableError);
-    ticks = 5;
-    target = DriveTrainPID.otherFixDegrees(startDegrees + offsetDegrees);
-    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, targetAngle %52.f, acceptableError %5.2f",
-            offsetDegrees, startDegrees, target, acceptableError));    
+    ticks = 2;
+    double currentAngle = Robot.driveTrain.getYawRotation();
+    startAngle = currentAngle;
+    logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, targetAngle %5.2f, acceptableError %5.2f",
+            offsetDegrees, currentAngle, currentAngle + offsetDegrees, acceptableError));    
     startTime = Robot.getNanoTime();
   }
 
@@ -58,7 +58,7 @@ public class TurnPIDCommand extends Command {
   @Override
   protected void execute() {
     // tell controlTurning to output log message every N ticks
-    Robot.driveTrain.controlTurning(ticks-1 == 0); 
+    turningOutput = Robot.driveTrain.controlTurning(); 
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -68,7 +68,8 @@ public class TurnPIDCommand extends Command {
     double currentAngle = Robot.driveTrain.getYawRotation();
     boolean onTarget = Robot.driveTrain.onTarget();
     if (ticks-- == 0 || onTarget) {
-      logger.info(String.format("Current Angle: %5.2f %s time %5.2f", currentAngle, onTarget ? " ON TARGET!" : "", totalTime));
+      logger.info(String.format("CurAngle: %5.2f, Error: %5.2f Output: %5.2f %s time %5.2f", currentAngle, 
+          (startAngle + offsetDegrees) - currentAngle, turningOutput, onTarget ? " ON TARGET!" : "", totalTime));
       ticks = 2;
     }
 

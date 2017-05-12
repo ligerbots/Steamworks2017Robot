@@ -187,7 +187,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     turningController.setInputRange(-180.0, 180.0);
     turningController.setOutputRange(-1.0,1.0);
     turningController.setAbsoluteTolerance(tolerance);
-    turningController.setToleranceBuffer(3);
+    turningController.setToleranceBuffer(1);
     turningController.setContinuous(true);
     turningController.setSetpoint(temp);
   }
@@ -212,9 +212,9 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     return turningController.onTarget();
   }
   
-  public void controlTurning(boolean log) {
+  public double controlTurning() {
     robotDrive.arcadeDrive(0, turningOutput);
-    if (log) logger.info(String.format("TurnPID: %4.3f throttle", turningOutput));
+    return turningOutput;
   }
   
   public double getRotation() {
