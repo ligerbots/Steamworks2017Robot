@@ -93,6 +93,9 @@ public class RobotMap {
   
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
   
+  public static final int GEAR_HOLDER_FORWARD = 6;
+  public static final int GEAR_HOLDER_REVERSE = 7;
+  
   @Preference
   public static double GEAR_ALIGNMENT_OFFSET_WEDGE_DOWN = 2.25; // in
   @Preference
