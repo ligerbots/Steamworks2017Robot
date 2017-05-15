@@ -51,9 +51,6 @@ public class RobotMap {
   public static final int SOLENOID_SHIFT_DOWN = 1;
   public static final int SOLENOID_CLIMBER_LOCK = 2;
   public static final int SOLENOID_CLIMBER_RETRACT = 3;
-  
-  public static final int GEAR_PISTON_OPEN = 5;
-  public static final int GEAR_PISTON_CLOSE = 4;
 
   public static final int RELAY_LED_RING_0 = 0;
   public static final int RELAY_LED_RING_1 = 1;
@@ -95,6 +92,9 @@ public class RobotMap {
   public static final double SHOOTER_MAX_RPM = 6000;
   
   public static final double ROBOT_GEAR_CAM_TURN_CENTER_DIST = 17.0;
+  
+  public static final int GEAR_HOLDER_FORWARD = 6;
+  public static final int GEAR_HOLDER_REVERSE = 7;
   
   @Preference
   public static double GEAR_ALIGNMENT_OFFSET_WEDGE_DOWN = 2.25; // in
@@ -174,8 +174,9 @@ public class RobotMap {
   @Preference
   public static double TURN_TEST_ANGLE = 1.0;
   @Preference
+
   public static double TURN_TEST_ERROR = 0.3;
-    
+  
   @Preference
   public static double AUTO_DRIVE_TURN_P_HIGH = 0.02;
   @Preference

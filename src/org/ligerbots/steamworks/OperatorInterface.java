@@ -23,6 +23,7 @@ import org.ligerbots.steamworks.commands.DriveToFeederCommand;
 import org.ligerbots.steamworks.commands.DriveToGearCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
+import org.ligerbots.steamworks.commands.GearHolderCommand;
 import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand;
 import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand.RequestedFeed;
 import org.ligerbots.steamworks.commands.IntakeCommand;
@@ -166,14 +167,21 @@ public class OperatorInterface {
       driveToGearFeed.whenPressed(driveToFeeder);
 
       // LEDs
-      JoystickButton ledsOff = new JoystickButton(farmController, 11);
-      ledsOff.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.NONE));
-
-      JoystickButton ledsGear = new JoystickButton(farmController, 13);
-      ledsGear.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.GEAR));
-
-      JoystickButton ledsFuel = new JoystickButton(farmController, 15);
-      ledsFuel.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.FUEL));
+//      JoystickButton ledsOff = new JoystickButton(farmController, 11);
+//      ledsOff.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.NONE));
+//
+//      JoystickButton ledsGear = new JoystickButton(farmController, 13);
+//      ledsGear.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.GEAR));
+//
+//      JoystickButton ledsFuel = new JoystickButton(farmController, 15);
+//      ledsFuel.whenPressed(new HumanPlayerCommunicationCommand(RequestedFeed.FUEL));
+      
+      JoystickButton gearHolderOpen = new JoystickButton(farmController, 11);
+      gearHolderOpen.whenPressed(new GearHolderCommand(true));
+      
+      JoystickButton gearHolderClosed = new JoystickButton(farmController, 13);
+      gearHolderClosed.whenPressed(new GearHolderCommand(false));
+      
       
       // For testing turns
       JoystickButton turn5 = new JoystickButton(farmController, 12);
