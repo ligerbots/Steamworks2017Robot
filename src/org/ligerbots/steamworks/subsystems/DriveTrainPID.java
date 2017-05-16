@@ -143,8 +143,7 @@ public class DriveTrainPID extends Subsystem implements SmartDashboardLogger {
     SmartDashboard.putBoolean("Climber_Engaged", false);
     SmartDashboard.putBoolean("Drive_Shift", false);
     pcmPresent = Robot.deviceFinder.isPcmAvailable(RobotMap.PCM_CAN_ID);
-    gearSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.GEAR_HOLDER_FORWARD,
-            RobotMap.GEAR_HOLDER_REVERSE);
+    //gearSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.GEAR_HOLDER_FORWARD, RobotMap.GEAR_HOLDER_REVERSE);
     // gearSolenoid = new DoubleSolenoid(RobotMap.PCM_CAN_ID, RobotMap.GEAR_PISTON_OPEN, RobotMap.GEAR_PISTON_CLOSE);
 
     // restore X and Y in case of crash

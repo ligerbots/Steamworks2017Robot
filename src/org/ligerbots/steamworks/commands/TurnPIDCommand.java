@@ -36,7 +36,7 @@ public class TurnPIDCommand extends Command {
    * @param offsetDegrees The number of degrees to turn by. Clockwise is positive
    * @param acceptableError How many degrees off the turn is allowed to be.
    */
-  public void setParameters(double offsetDegrees, double acceptableError) {
+  public void setParameters(double offsetDegrees, double acceptableError, double turnConstant) {
     this.offsetDegrees = offsetDegrees;
     this.acceptableError = acceptableError;
     // ticks = 2;

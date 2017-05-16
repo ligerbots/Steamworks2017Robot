@@ -37,7 +37,7 @@ public class Stirrer extends Subsystem implements SmartDashboardLogger {
    */
   public void setStirrer(double value) {
 //    if (stirrerServo != null) {
-      logger.info(String.format("Setting stirrer, value %f", value));
+//      logger.info(String.format("Setting stirrer, value %f", value));
 
       stirrerServo.set(value);
 //    }

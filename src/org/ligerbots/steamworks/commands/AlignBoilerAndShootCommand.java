@@ -22,7 +22,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   }
 
   State currentState;
-  TurnCommand turnCommand;
+  TurnPIDCommand turnCommand;
   ShooterFeederCommand shooterFeederCommand;
 
   boolean justStarted;
@@ -38,7 +38,8 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     requires(Robot.driveTrain);
     requires(Robot.shooter);
     requires(Robot.feeder);
-    turnCommand = new TurnCommand(0.0); // fill in actual angle from Vision
+    //turnCommand = new TurnCommand(0.0); // fill in actual angle from Vision
+    turnCommand = new TurnPIDCommand(0.0, 0.3); // fill in actual angle from Vision
   }
 
   @Override

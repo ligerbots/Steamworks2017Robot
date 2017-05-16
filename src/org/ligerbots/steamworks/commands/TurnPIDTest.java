@@ -25,7 +25,7 @@ public class TurnPIDTest extends Command {
   // Called just before this Command runs the first time
   protected void initialize() {
     logger.info(String.format("TurnPIDTest started for %5.2f degrees", RobotMap.TURN_TEST_ANGLE));
-    turnCommand.setParameters(RobotMap.TURN_TEST_ANGLE, RobotMap.TURN_TEST_ERROR);
+    turnCommand.setParameters(RobotMap.TURN_TEST_ANGLE, RobotMap.TURN_TEST_ERROR, 0.25);
     turnCommand.initialize();
   }
 
