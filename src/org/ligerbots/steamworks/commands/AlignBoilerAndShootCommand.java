@@ -3,7 +3,7 @@ package org.ligerbots.steamworks.commands;
 import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID.ShiftType;
+import org.ligerbots.steamworks.subsystems.DriveTrain.ShiftType;
 import org.ligerbots.steamworks.subsystems.Vision.VisionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

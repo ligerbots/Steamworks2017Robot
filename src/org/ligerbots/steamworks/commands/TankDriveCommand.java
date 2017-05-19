@@ -2,7 +2,7 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID.DriveTrainSide;
+import org.ligerbots.steamworks.subsystems.DriveTrain.DriveTrainSide;
 
 /**
  * Tank drives the left or right side a certain distance.

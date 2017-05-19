@@ -82,6 +82,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
    * @param open Whether it should be open (release) or not
    */
   public void setGearHolder(boolean open) {
+    logger.info(String.format("Setting gear piston %b", open));
     gearHolder.set(open ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
   }
   

@@ -1,7 +1,7 @@
 package org.ligerbots.steamworks.commands;
 
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

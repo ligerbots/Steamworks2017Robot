@@ -25,7 +25,6 @@ import org.ligerbots.steamworks.commands.AutoGearAndShootCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
 import org.ligerbots.steamworks.subsystems.Intake;
@@ -103,7 +102,7 @@ public class Robot extends IterativeRobot {
     }
   }
 
-  public static DriveTrainPID driveTrain;
+  public static DriveTrain driveTrain;
   public static Pneumatics pneumatics;
   public static Vision vision;
   public static Shooter shooter;
@@ -150,7 +149,7 @@ public class Robot extends IterativeRobot {
       deviceFinder = new CanDeviceFinder();
       deviceFinder.findDevices();
   
-      driveTrain = new DriveTrainPID();
+      driveTrain = new DriveTrain();
       vision = new Vision();
       shooter = new Shooter();
       feeder = new Feeder();

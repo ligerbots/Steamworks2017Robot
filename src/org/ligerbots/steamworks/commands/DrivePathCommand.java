@@ -5,7 +5,7 @@ import org.ligerbots.steamworks.FieldPosition;
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
 import org.ligerbots.steamworks.RobotPosition;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class DrivePathCommand extends AccessibleCommand {
     logger.info(String.format("High gear: %b", isHighGear));
 
     if (isHighGear) {
-      Robot.driveTrain.shift(DriveTrainPID.ShiftType.UP);
+      Robot.driveTrain.shift(DriveTrain.ShiftType.UP);
       autoDriveRampUpDist = RobotMap.AUTO_DRIVE_RAMP_UP_DIST_HIGH;
       autoDriveRampDownDist = RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST_HIGH;
       autoDriveTurnP = RobotMap.AUTO_DRIVE_TURN_P_HIGH;
@@ -67,7 +67,7 @@ public class DrivePathCommand extends AccessibleCommand {
       autoDriveStartSpeed = RobotMap.AUTO_DRIVE_START_SPEED_HIGH;
       autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_HIGH;
     } else {
-      Robot.driveTrain.shift(DriveTrainPID.ShiftType.DOWN);
+      Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
       autoDriveRampUpDist = RobotMap.AUTO_DRIVE_RAMP_UP_DIST_LOW;
       autoDriveRampDownDist = RobotMap.AUTO_DRIVE_RAMP_DOWN_DIST_LOW;
       autoDriveTurnP = RobotMap.AUTO_DRIVE_TURN_P_LOW;

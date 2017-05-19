@@ -3,7 +3,8 @@ package org.ligerbots.steamworks.commands;
 import edu.wpi.first.wpilibj.command.Command;
 
 import org.ligerbots.steamworks.Robot;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,10 @@ public class TurnPIDCommand extends Command {
   double startTime;
   double totalTime;
   double turningOutput;
+  
+  public TurnPIDCommand(double offsetDegrees) {
+    this(offsetDegrees, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR);
+  }
 
   public TurnPIDCommand(double offsetDegrees, double acceptableError) {
     super("TurnCommand_" + offsetDegrees + "_" + acceptableError);

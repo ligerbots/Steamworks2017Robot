@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.command.Command;
 
 import org.ligerbots.steamworks.Robot;
 import org.ligerbots.steamworks.RobotMap;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID;
+import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class DriveUltrasonicCommand extends Command {
     ultrasonicValuesIndex = 0;
     ultrasonicValuesFilled = false;
     
-    Robot.driveTrain.shift(DriveTrainPID.ShiftType.DOWN);
+    Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
     startTime = System.nanoTime();
   }
 

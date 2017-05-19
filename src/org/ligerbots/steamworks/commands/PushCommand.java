@@ -2,8 +2,8 @@ package org.ligerbots.steamworks.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID.PushType;
-import org.ligerbots.steamworks.subsystems.DriveTrainPID.ShiftType;
+import org.ligerbots.steamworks.subsystems.DriveTrain.PushType;
+import org.ligerbots.steamworks.subsystems.DriveTrain.ShiftType;
 
 /**
  *
