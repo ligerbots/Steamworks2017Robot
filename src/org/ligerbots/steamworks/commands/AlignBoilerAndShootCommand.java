@@ -39,7 +39,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     requires(Robot.shooter);
     requires(Robot.feeder);
     //turnCommand = new TurnCommand(0.0); // fill in actual angle from Vision
-    turnCommand = new TurnPIDCommand(0.0, 0.3); // fill in actual angle from Vision
+    turnCommand = new TurnPIDCommand(0.0, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR); // fill in actual angle from Vision
   }
 
   @Override
@@ -100,7 +100,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
             justStarted = false;
             logger.info(String.format("state=START_TURN, cy=%5.2f, angleToBoiler=%5.2f", cy,
                 angleToBoiler));
-          } else if (cx < 0.508 || cx > 0.518) {
+          } else if (cx < RobotMap.BOILER_MIN_DIST || cx > RobotMap.BOILER_MAX_DIST) {
             currentState = State.DRIVE_TO_RANGE;
             justStarted = false;
             logger.info(String.format("state=DRIVE_TO_RANGE, cx=%5.2f, distance=%5.2f", cx,
@@ -128,7 +128,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         } else {
           // we got data from WAIT_FOR_VISION
 
-          turnCommand.setParameters(angleToBoiler, 0.3, 0.25);
+          turnCommand.setParameters(angleToBoiler, RobotMap.AUTO_TURN_ACCEPTABLE_ERROR, 0.25);
           turnCommand.initialize();
           
           currentState = State.TURNING;
@@ -174,9 +174,9 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           VisionData data = Robot.vision.getBoilerVisionData();
           double cx = data.getCenterX();
           
-          if (cx > 0.518) {
+          if (cx > RobotMap.BOILER_MAX_DIST) {
             Robot.driveTrain.rawThrottleTurnDrive(RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
-          } else if (cx < 0.508) {
+          } else if (cx < RobotMap.BOILER_MIN_DIST) {
             Robot.driveTrain.rawThrottleTurnDrive(-RobotMap.AUTO_DRIVE_MIN_SPEED_LOW, 0);
           } else {
             currentState = State.WAIT_FOR_VISION;

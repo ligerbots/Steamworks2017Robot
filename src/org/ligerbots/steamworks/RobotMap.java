@@ -154,7 +154,7 @@ public class RobotMap {
   @Preference
   public static double AUTO_TURN_RAMP_ZONE_LOW = 10.0;
   @Preference
-  public static double AUTO_TURN_ACCEPTABLE_ERROR = 1.5; // Degrees
+  public static double AUTO_TURN_ACCEPTABLE_ERROR = 0.3; // Degrees
   @Preference
   public static double SMARTDASHBOARD_UPDATE_RATE = 0.1; //Seconds per update
   @Preference
@@ -219,6 +219,12 @@ public class RobotMap {
 
   @Preference
   public static double JOYSTICK_DRIVE_DEAD_AREA = 0.05;
+  
+  @Preference
+  public static double BOILER_MIN_DIST = 0.515;
+  @Preference
+  public static double BOILER_MAX_DIST = 0.525;
+  
   
   /**
    * Sets up Preferences variables. Must be called first in robotInit().

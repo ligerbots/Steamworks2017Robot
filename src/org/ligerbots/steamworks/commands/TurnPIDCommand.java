@@ -51,7 +51,7 @@ public class TurnPIDCommand extends Command {
   @Override
   protected void initialize() {
     Robot.driveTrain.enableTurningControl(offsetDegrees, acceptableError);
-    ticks = 2;
+    ticks = 5;
     double currentAngle = Robot.driveTrain.getYawRotation();
     startAngle = currentAngle;
     logger.info(String.format("TurnPID for %5.2f, startingAngle %5.2f, targetAngle %5.2f, acceptableError %5.2f",
@@ -75,7 +75,7 @@ public class TurnPIDCommand extends Command {
     if (ticks-- == 0 || onTarget) {
       logger.info(String.format("CurAngle: %5.2f, Error: %5.2f Output: %5.2f %s time %5.2f", currentAngle, 
           (startAngle + offsetDegrees) - currentAngle, turningOutput, onTarget ? " ON TARGET!" : "", totalTime));
-      ticks = 2;
+      ticks = 5;
     }
 
     if (totalTime > 4.0) {
