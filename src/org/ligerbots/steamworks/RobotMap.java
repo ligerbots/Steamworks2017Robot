@@ -172,9 +172,11 @@ public class RobotMap {
   public static double TURN_D = 0.04;
   
   @Preference
+  public static double TURN_PID_SCALE = 0.88;
+  
+  @Preference
   public static double TURN_TEST_ANGLE = 1.0;
   @Preference
-
   public static double TURN_TEST_ERROR = 0.3;
   
   @Preference

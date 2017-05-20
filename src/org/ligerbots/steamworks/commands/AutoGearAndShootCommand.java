@@ -110,30 +110,38 @@ public class AutoGearAndShootCommand extends StatefulCommand {
         if (gearCommand.isFinished()) {
           gearCommand.end();
 
+//          if (doShoot) {
+//            FieldSide gearLiftPosition = Robot.operatorInterface.getGearLiftPosition();
+//            if (gearLiftPosition == FieldSide.FEEDER) {
+//              driveToBoiler =
+//                  FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
+//              driveToBoiler.initialize();
+//              logger.info("state=BOILER_NAVIGATION");
+//              currentState = State.BOILER_NAVIGATION;
+//            } else if (gearLiftPosition == FieldSide.CENTER) {
+//              // clear the dividers
+//              driveToBoiler = new DriveDistanceCommand(-24.0);
+//              driveToBoiler.initialize();
+//              logger.info("state=BOILER_NAVIGATION");
+//              currentState = State.BOILER_NAVIGATION;
+//            } else {
+//              generateBoilerAlign();
+//              boilerAlign.initialize();
+//              logger.info("state=BOILER_ALIGN");
+//              currentState = State.BOILER_ALIGN;
+//            }
+//          } else {
+//            logger.info("State=DONE");
+//            currentState = State.DONE;
+//          }
+          
+          // XXX: battlecry override ==============================================
           if (doShoot) {
-            FieldSide gearLiftPosition = Robot.operatorInterface.getGearLiftPosition();
-            if (gearLiftPosition == FieldSide.FEEDER) {
-              driveToBoiler =
-                  FieldMap.navigateFeederSideLiftToBoiler(Robot.driveTrain.getRobotPosition());
-              driveToBoiler.initialize();
-              logger.info("state=BOILER_NAVIGATION");
-              currentState = State.BOILER_NAVIGATION;
-            } else if (gearLiftPosition == FieldSide.CENTER) {
-              // clear the dividers
-              driveToBoiler = new DriveDistanceCommand(-24.0);
-              driveToBoiler.initialize();
-              logger.info("state=BOILER_NAVIGATION");
-              currentState = State.BOILER_NAVIGATION;
-            } else {
-              generateBoilerAlign();
-              boilerAlign.initialize();
-              logger.info("state=BOILER_ALIGN");
-              currentState = State.BOILER_ALIGN;
-            }
-          } else {
-            logger.info("State=DONE");
-            currentState = State.DONE;
+            logger.info("state=BOILER_SHOOT");
+            currentState = State.BOILER_SHOOT;
+            boilerCommand.initialize();
           }
+          // ======================================================================
         }
         break;
       case BOILER_NAVIGATION:

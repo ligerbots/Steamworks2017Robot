@@ -30,6 +30,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
   double currentAngle;
   double angleToBoiler;
   long startTime;
+  boolean correctDistance;
 
   /**
    * Creates a new AlignBoilerAndShootCommand.
@@ -55,6 +56,8 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
     
     justStarted = true;
     startTime = System.nanoTime();
+    
+    correctDistance = false;
   }
 
   @Override
@@ -94,7 +97,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           
           logger.info(String.format("distance %f", distanceToTarget));
           
-          if (Math.abs(cy - 0.5) >= 0.01) {
+          if (Math.abs(cy - 0.5) >= 0.02) {
             currentState = State.START_TURN;
             Robot.driveTrain.shift(ShiftType.DOWN);
             justStarted = false;
@@ -138,7 +141,20 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
         turnCommand.execute();
         if (turnCommand.isFinished()) {
           turnCommand.end();
-          currentState = State.WAIT_FOR_VISION;
+          if (correctDistance) {
+            // calculate shooter rpm
+            double calculatedRpm = RobotMap.SHOOTING_RPM;
+            logger.info(String.format("Shooter rpm: %f", calculatedRpm));
+            shooterFeederCommand.setRpm(calculatedRpm);
+            
+            shooterFeederCommand.setWithholdShooting(false);
+            currentState = State.SHOOT;
+            justStarted = false;
+            logger.info(String.format("state=SHOOT, time to prepare=%5.2f seconds", 
+                                      (System.nanoTime() - startTime) / RobotMap.NANOS_PER_SECOND));
+          } else {
+            currentState = State.WAIT_FOR_VISION;
+          }
         }
 
          
@@ -170,6 +186,7 @@ public class AlignBoilerAndShootCommand extends StatefulCommand {
           logger.info("Lost vision, state=WAIT_FOR_VISION");
           nanosStartOfWait = System.nanoTime();
           currentState = State.WAIT_FOR_VISION;
+          correctDistance = true;
         } else {
           VisionData data = Robot.vision.getBoilerVisionData();
           double cx = data.getCenterX();

@@ -211,7 +211,8 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   }
   
   public double controlTurning() {
-    robotDrive.arcadeDrive(0, turningOutput);
+    double base_offset = 1.0 - RobotMap.TURN_PID_SCALE;
+    robotDrive.arcadeDrive(0, base_offset + (RobotMap.TURN_PID_SCALE * turningOutput));
     return turningOutput;
   }
   
