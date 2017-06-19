@@ -1,6 +1,7 @@
 package org.ligerbots.steamworks.subsystems;
 
 import org.ligerbots.steamworks.RobotMap;
+import org.ligerbots.steamworks.commands.WaitCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
   private static final Logger logger = LoggerFactory.getLogger(GearManipulator.class);
 
   public enum Position {
-    DELIVER_GEAR, RECEIVE_GEAR, CLOSED
+    DELIVER_GEAR, RECEIVE_GEAR, CLOSED, DELIVER_WAIT
   }
   
   public enum GearOrientation {
@@ -100,7 +101,6 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
     double servoValue;
 
     if (position == Position.DELIVER_GEAR) {
-      setGearHolder(true);
       servoValue = RobotMap.GEARMECH_DELIVER;
     } else if (position == Position.RECEIVE_GEAR) {
       setGearHolder(true);

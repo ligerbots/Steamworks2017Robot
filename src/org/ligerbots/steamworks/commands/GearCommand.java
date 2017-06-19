@@ -55,7 +55,12 @@ public class GearCommand extends Command {
       Robot.gearManipulator
           .setPosition(Robot.gearManipulator.getPosition() == GearManipulator.Position.CLOSED
               ? GearManipulator.Position.DELIVER_GEAR : GearManipulator.Position.CLOSED);
-    } else {
+    } else if (position == GearManipulator.Position.DELIVER_GEAR) {
+      Robot.gearManipulator.setGearHolder(true);
+      WaitCommand waitCommand = new WaitCommand(1000000000);
+      Robot.gearManipulator.setPosition(position);
+    }
+    else {
       Robot.gearManipulator.setPosition(position);
     }
   }
