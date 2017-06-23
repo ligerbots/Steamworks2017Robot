@@ -18,7 +18,7 @@ public class TankTurnCommand extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        intialDegrees = Robot.driveTrain.fixDegrees(Robot.driveTrain.getYaw());
+        initialDegrees = Robot.driveTrain.fixDegrees(Robot.driveTrain.getYaw());
     }
 
     // Called repeatedly when this Command is scheduled to run
