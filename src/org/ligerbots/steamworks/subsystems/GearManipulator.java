@@ -103,6 +103,7 @@ public class GearManipulator extends Subsystem implements SmartDashboardLogger {
       setGearHolder(true);
       servoValue = RobotMap.GEARMECH_DELIVER;
     } else if (position == Position.RECEIVE_GEAR) {
+      setGearHolder(false);
       servoValue = RobotMap.GEARMECH_RECEIVE;
     } else if (position == Position.CLOSED) {
       servoValue = RobotMap.GEARMECH_CLOSED;

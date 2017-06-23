@@ -64,28 +64,28 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
    * Creates a new Lights subsystem.
    */
   public Lights() {
-    teensyCommunication = new SerialPort(9600, SerialPort.Port.kMXP);
-    teensyCommunication.enableTermination();
-    
-    Thread serialThread = new Thread(this::serialThread);
-    serialThread.setName("LED UART Thread");
-    serialThread.setDaemon(true);
-    serialThread.start();
-    
-    setLedLight(Type.SIGN_FUEL, Pulse.SOLID, Color.OFF);
-    setLedLight(Type.SIGN_GEAR, Pulse.SOLID, Color.OFF);
+//    teensyCommunication = new SerialPort(9600, SerialPort.Port.kMXP);
+//    teensyCommunication.enableTermination();
+//    
+//    Thread serialThread = new Thread(this::serialThread);
+//    serialThread.setName("LED UART Thread");
+//    serialThread.setDaemon(true);
+//    serialThread.start();
+//    
+//    setLedLight(Type.SIGN_FUEL, Pulse.SOLID, Color.OFF);
+//    setLedLight(Type.SIGN_GEAR, Pulse.SOLID, Color.OFF);
   }
   
   private void serialThread() {
-    while (true) {
-      //logger.debug(teensyCommunication.readString());
-      teensyCommunication.readString();
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException ex) {
-        ex.printStackTrace();
-      }
-    }
+//    while (true) {
+//      //logger.debug(teensyCommunication.readString());
+//      teensyCommunication.readString();
+//      try {
+//        Thread.sleep(100);
+//      } catch (InterruptedException ex) {
+//        ex.printStackTrace();
+//      }
+//    }
   }
   
   /**
@@ -95,14 +95,14 @@ public class Lights extends Subsystem implements SmartDashboardLogger {
    * @param color The color
    */
   public void setLedLight(Type type, Pulse pulse, Color color) {
-    logger.debug(String.format("Setting lights %s %s %s", type.toString(), pulse.toString(),
-        color.toString()));
-    byte[] command = new byte[] {type.code, pulse.code, color.red, color.green, color.blue};
-    int written = teensyCommunication.write(command, command.length);
-    if (written != command.length) {
-      logger.warn("Serial write failed!");
-    }
-    teensyCommunication.flush();
+//    logger.debug(String.format("Setting lights %s %s %s", type.toString(), pulse.toString(),
+//        color.toString()));
+//    byte[] command = new byte[] {type.code, pulse.code, color.red, color.green, color.blue};
+//    int written = teensyCommunication.write(command, command.length);
+//    if (written != command.length) {
+//      logger.warn("Serial write failed!");
+//    }
+//    teensyCommunication.flush();
   }
 
   @Override

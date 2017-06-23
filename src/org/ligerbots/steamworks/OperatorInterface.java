@@ -27,8 +27,10 @@ import org.ligerbots.steamworks.commands.GearHolderCommand;
 import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand;
 import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand.RequestedFeed;
 import org.ligerbots.steamworks.commands.IntakeCommand;
+import org.ligerbots.steamworks.commands.LigerSlideCommandGroup;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
+import org.ligerbots.steamworks.commands.SecondGearCommand;
 import org.ligerbots.steamworks.commands.ShiftCommand;
 import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.SlideCommandGroup;
@@ -85,7 +87,7 @@ public class OperatorInterface {
 
     // Xbox main controls
     JoystickButton xboxAButton = new JoystickButton(xboxController, 1);
-    xboxAButton.whenPressed(autoShootCommand);
+    xboxAButton.whenPressed(new SecondGearCommand());
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
     xboxBButton.whenPressed(driveToFeeder);
@@ -103,10 +105,10 @@ public class OperatorInterface {
     xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
 
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
-    xboxMenuButton.whenPressed(new IntakeCommand());
+    xboxMenuButton.whenPressed(new LigerSlideCommandGroup(true));
 
     JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
-    xboxStartButton.whenPressed(new ClimberEngageRatchetCommand());
+    xboxStartButton.whenPressed(new LigerSlideCommandGroup(false));
     
     JoystickPov povTriggerRight = new JoystickPov(xboxController, Direction.EAST);
     povTriggerRight.whenPressed(new SlideCommandGroup(2.0, true));
@@ -299,6 +301,10 @@ public class OperatorInterface {
     }
     return getThrottle() > 0.5 || getThrottle() < -0.5
         || xboxController.getStickButton(GenericHID.Hand.kLeft) || farmController.getRawButton(28);
+  }
+  
+  public boolean isSlideCancelled() {
+    return xboxController.getTriggerAxis(GenericHID.Hand.kRight) == 0;
   }
 
   public boolean isQuickTurn() {

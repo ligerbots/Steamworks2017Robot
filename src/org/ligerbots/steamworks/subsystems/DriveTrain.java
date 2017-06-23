@@ -69,6 +69,7 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   
   boolean isHoldingPosition;
   boolean isClimberLocked;
+  boolean isDoneLigerSliding;
   
   double limitedThrottle = 0;
 
@@ -600,5 +601,32 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   public static double fixDegrees(double angle) {
     return ((angle % 360) + 360) % 360;
   }
+  
+  public boolean getIsDoneSliding() {
+    return isDoneLigerSliding;
+  }
+  
+  public void setIsDoneLigerSliding(boolean done) {
+    isDoneLigerSliding = done;
+  }
+  
+  public void resetDisplacement() {
+    navX.resetDisplacement();
+    xDisplacement = 0;
+  }
+  
+  public float getNavXDisplacement() {
+    return navX.getDisplacementX();
+  }
+  
+  float xDisplacement = 0;
+  public void addDisplacement(float disp) {
+    xDisplacement += disp;
+  }
+  
+  public float getXDisplacement() {
+    return xDisplacement;
+  }
+  
 }
 

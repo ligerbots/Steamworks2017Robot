@@ -150,7 +150,7 @@ public class TurnCommand extends AccessibleCommand {
     if (onTarget) {
       succeeded = true;
     }
-    ended = outOfTime || onTarget || Robot.operatorInterface.isCancelled();
+    ended = outOfTime || onTarget;
     return ended;
   }
 
