@@ -23,7 +23,7 @@ public class DriveForeverCommand extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-      Robot.driveTrain.rawThrottleTurnDrive(forward ? 1 : -1, 0);
+      Robot.driveTrain.rawThrottleTurnDrive(forward ? Robot.operatorInterface.rightTrigger() : -Robot.operatorInterface.rightTrigger(), 0);
     }
 
     // Make this return true when this Command no longer needs to run execute()

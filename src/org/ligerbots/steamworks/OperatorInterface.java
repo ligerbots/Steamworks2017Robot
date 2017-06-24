@@ -90,25 +90,26 @@ public class OperatorInterface {
     xboxAButton.whenPressed(new SecondGearCommand());
 
     JoystickButton xboxBButton = new JoystickButton(xboxController, 2);
-    xboxBButton.whenPressed(driveToFeeder);
+    xboxBButton.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
 
     JoystickButton xboxXButton = new JoystickButton(xboxController, 3);
     xboxXButton.whileHeld(manualShootCommand);
 
     JoystickButton xboxYButton = new JoystickButton(xboxController, 4);
-    xboxYButton.whenPressed(autoGearCommand);
+    xboxYButton.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
 
     JoystickButton xboxLeftBumper = new JoystickButton(xboxController, 5);
-    xboxLeftBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.DOWN));
+    xboxLeftBumper.whenPressed(driveToFeeder);
 
     JoystickButton xboxRightBumper = new JoystickButton(xboxController, 6);
-    xboxRightBumper.whenPressed(new ShiftCommand(DriveTrain.ShiftType.UP));
+    xboxRightBumper.whenPressed(autoGearCommand);
 
     JoystickButton xboxMenuButton = new JoystickButton(xboxController, 7);
-    xboxMenuButton.whenPressed(new LigerSlideCommandGroup(true));
+  //  xboxMenuButton.whenPressed(new LigerSlideCommandGroup(true));
+    
 
     JoystickButton xboxStartButton = new JoystickButton(xboxController, 8);
-    xboxStartButton.whenPressed(new LigerSlideCommandGroup(false));
+   // xboxStartButton.whenPressed(new LigerSlideCommandGroup(false));
     
     JoystickPov povTriggerRight = new JoystickPov(xboxController, Direction.EAST);
     povTriggerRight.whenPressed(new SlideCommandGroup(2.0, true));
@@ -171,9 +172,10 @@ public class OperatorInterface {
       JoystickButton gearHolderOpen = new JoystickButton(farmController, 11);
       gearHolderOpen.whenPressed(new GearHolderCommand(true));
       
+      
+      
       JoystickButton gearHolderClosed = new JoystickButton(farmController, 13);
       gearHolderClosed.whenPressed(new GearHolderCommand(false));
-      
       
       // For testing turns
       JoystickButton turn5 = new JoystickButton(farmController, 12);
@@ -325,6 +327,10 @@ public class OperatorInterface {
 
   public double getTriggerValue() {
     return xboxController.getTriggerAxis(Hand.kRight) - xboxController.getTriggerAxis(Hand.kLeft);
+  }
+  
+  public double rightTrigger() {
+      return xboxController.getTriggerAxis(Hand.kRight);
   }
 
   /**

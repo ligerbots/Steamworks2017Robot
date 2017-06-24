@@ -10,13 +10,13 @@ import org.slf4j.LoggerFactory;
  */
 public class LigerSlideCommandGroup extends CommandGroup {
   float xDisp = 0;
-
   public LigerSlideCommandGroup(boolean right) {
     if (right) {
-        addSequential(new TurnCommand(-45, 2), 3);
+        addSequential(new TurnCommand(-45, 2));
     } else {
-        addSequential(new TurnCommand(45, 2), 3);
+        addSequential(new TurnCommand(45, 2));
     }
+    addParallel(new RecordDistanceCommand());
     addSequential(new DriveForeverCommand(10000000, false));
     
     if (right) {
@@ -26,9 +26,10 @@ public class LigerSlideCommandGroup extends CommandGroup {
       addSequential(new TurnCommand(-45, 2));
     }
     xDisp = Robot.driveTrain.getXDisplacement();
-    Robot.driveTrain.resetDisplacement();
-    addParallel(new RecordDistanceCommand());
-    addSequential(new DriveForeverCommand(Math.sin(45) * xDisp, true));
+    addSequential(new DriveForeverCommand(xDisp/Math.sqrt(2), true));
+ 
   }
-
+  
 }
+
+

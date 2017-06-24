@@ -88,7 +88,7 @@ public class TurnCommand extends AccessibleCommand {
     }
     isClockwise = offsetDegrees > 0;
     
-    autoTurnMinSpeed = turnConstant;
+    autoTurnMinSpeed = 0.1;
   }
   
   // Called just before this Command runs the first time
@@ -103,8 +103,8 @@ public class TurnCommand extends AccessibleCommand {
     Robot.driveTrain.shift(DriveTrain.ShiftType.DOWN);
     isHighGear = false;
     
-    autoTurnRampZone = RobotMap.AUTO_TURN_RAMP_ZONE_LOW;
-    autoTurnMaxSpeed = RobotMap.AUTO_TURN_MAX_SPEED_LOW;
+    autoTurnRampZone = 0.15;
+    autoTurnMaxSpeed = 0.3;
   }
   
   // Called repeatedly when this Command is scheduled to run

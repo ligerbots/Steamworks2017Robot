@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.CommandGroup;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
@@ -24,6 +25,7 @@ import java.util.List;
 import org.ligerbots.steamworks.commands.AutoGearAndShootCommand;
 import org.ligerbots.steamworks.commands.DriveDistanceCommand;
 import org.ligerbots.steamworks.commands.DriveJoystickCommand;
+import org.ligerbots.steamworks.commands.LigerSlideCommandGroup;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
 import org.ligerbots.steamworks.subsystems.Feeder;
 import org.ligerbots.steamworks.subsystems.GearManipulator;
@@ -131,7 +133,6 @@ public class Robot extends IterativeRobot {
   long autoModePrintNanos;
   
   Command autoCommand;
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
