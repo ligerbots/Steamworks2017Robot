@@ -1,19 +1,12 @@
 package org.ligerbots.steamworks;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
-import edu.wpi.first.wpilibj.command.InstantCommand;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.Arrays;
 import java.util.List;
+
 import org.ligerbots.steamworks.FieldMap.FieldSide;
 import org.ligerbots.steamworks.Robot.AutoMode;
 import org.ligerbots.steamworks.commands.AlignBoilerAndShootCommand;
+import org.ligerbots.steamworks.commands.BeltCommand;
 import org.ligerbots.steamworks.commands.CameraFeedCommand;
 import org.ligerbots.steamworks.commands.ClimberEngageRatchetCommand;
 import org.ligerbots.steamworks.commands.CompressorCommand;
@@ -24,8 +17,6 @@ import org.ligerbots.steamworks.commands.DriveToGearCommand;
 import org.ligerbots.steamworks.commands.FeederBackOutCommand;
 import org.ligerbots.steamworks.commands.GearCommand;
 import org.ligerbots.steamworks.commands.GearHolderCommand;
-import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand;
-import org.ligerbots.steamworks.commands.HumanPlayerCommunicationCommand.RequestedFeed;
 import org.ligerbots.steamworks.commands.IntakeCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand;
 import org.ligerbots.steamworks.commands.ManualControlWithTriggerCommand.ManualControlType;
@@ -41,6 +32,16 @@ import org.ligerbots.steamworks.subsystems.Vision.StreamType;
 import org.ligerbots.steamworks.triggers.JoystickPov;
 import org.ligerbots.steamworks.triggers.JoystickPov.Direction;
 import org.slf4j.LoggerFactory;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.InstantCommand;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This class is the glue that binds the controls on the physical operator interface to the commands
@@ -174,11 +175,18 @@ public class OperatorInterface {
       
       
       // For testing turns
-      JoystickButton turn5 = new JoystickButton(farmController, 12);
-      turn5.whenPressed(new TurnCommand(1.0, 0.5));
       
-      JoystickButton turn2 = new JoystickButton(farmController, 14);
-      turn2.whenPressed(new TurnCommand(2.0, 0.5));
+      JoystickButton feederLow = new JoystickButton(farmController, 19);
+      feederLow.whenPressed(new BeltCommand(0.25));
+      
+      JoystickButton feederMidLow = new JoystickButton(farmController, 20);
+      feederLow.whenPressed(new BeltCommand(0.5));
+      
+      JoystickButton feederMidHigh = new JoystickButton(farmController, 14);
+      feederLow.whenPressed(new BeltCommand(0.75));
+      
+      JoystickButton feederHigh = new JoystickButton(farmController, 12);
+      feederLow.whenPressed(new BeltCommand(1.0));
       
       JoystickButton turn30 = new JoystickButton(farmController, 16);
       turn30.whenPressed(new TurnCommand(30.0, 3.0));
