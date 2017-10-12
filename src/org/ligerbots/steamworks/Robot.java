@@ -8,6 +8,12 @@ import ch.qos.logback.classic.net.server.ServerSocketAppender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.FilterReply;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -171,6 +177,23 @@ public class Robot extends IterativeRobot {
       // save phone battery
       // needs to be on a separate thread because robotPeriodic() will stop running when the DS is
       // disconnected
+      new Thread(() -> {
+          UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+          camera.setResolution(RobotMap.CAMX, RobotMap.CAMY);
+          
+          CvSink cvSink = CameraServer.getInstance().getVideo();
+          CvSource outputStream = CameraServer.getInstance().putVideo("VIDSTREAM", RobotMap.CAMX, RobotMap.CAMY);
+          
+          Mat source = new Mat();
+          Mat output = new Mat();
+          
+          while(!Thread.interrupted()) {
+              cvSink.grabFrame(source);
+              Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2GRAY);
+              outputStream.putFrame(output);
+          }
+      }).start();
+      
       Thread driverStationDisconnectChecker = new Thread(() -> {
         while (true) {
           try {

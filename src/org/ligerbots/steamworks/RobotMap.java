@@ -18,6 +18,9 @@ public class RobotMap {
   protected static @interface Preference {
   }
   
+  public static final int CAMX = 640;
+  public static final int CAMY = 480;
+  
   public static final boolean IS_ROADKILL = new File("/home/lvuser/roadkill").exists();
   public static final boolean IS_SECOND_ROBOT = new File("/home/lvuser/eviltwin").exists();
   
