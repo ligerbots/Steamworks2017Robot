@@ -33,6 +33,7 @@ import org.ligerbots.steamworks.commands.ShooterFeederCommand;
 import org.ligerbots.steamworks.commands.SlideCommandGroup;
 import org.ligerbots.steamworks.commands.TurnCommand;
 import org.ligerbots.steamworks.subsystems.DriveTrain;
+import org.ligerbots.steamworks.subsystems.DriveTrain.DriveType;
 import org.ligerbots.steamworks.subsystems.GearManipulator.Position;
 import org.ligerbots.steamworks.subsystems.Pneumatics.CompressorState;
 import org.ligerbots.steamworks.subsystems.Vision;
@@ -46,6 +47,9 @@ import org.slf4j.LoggerFactory;
  * and command groups that allow control of the robot.
  */
 public class OperatorInterface {
+	/* Why is the indentation 2 spaces? */
+	private DriveType ACTIVE_DRIVE_TYPE = RobotMap.DEFAULT_DRIVE_TYPE;
+	
   public static final int AUTO_MODE_GEAR_SHOOT = 0;
   public static final int AUTO_MODE_HOPPER_SHOOT = 1;
   public static final int AUTO_MODE_NONE = 2;
@@ -56,7 +60,7 @@ public class OperatorInterface {
   SendableChooser<AutoMode> autoMode;
   SendableChooser<FieldSide> startingPosition;
   SendableChooser<FieldSide> gearLiftPosition;
-
+  
   /**
    * This is where we set up the operator interface.
    */
@@ -311,6 +315,14 @@ public class OperatorInterface {
 
   public double getTriggerValue() {
     return xboxController.getTriggerAxis(Hand.kRight) - xboxController.getTriggerAxis(Hand.kLeft);
+  }
+  
+  public DriveType getDriveType(){
+	  return ACTIVE_DRIVE_TYPE;
+  }
+  
+  public void setDriveType(DriveType NewDriveType){
+	  ACTIVE_DRIVE_TYPE = NewDriveType;
   }
 
   /**

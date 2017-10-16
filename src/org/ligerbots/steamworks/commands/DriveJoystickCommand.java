@@ -1,7 +1,10 @@
 package org.ligerbots.steamworks.commands;
 
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Command;
 import org.ligerbots.steamworks.Robot;
+import org.ligerbots.steamworks.subsystems.DriveTrain.DriveType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +26,18 @@ public class DriveJoystickCommand extends Command {
   }
 
   protected void execute() {
-    Robot.driveTrain.joystickDrive(Robot.operatorInterface.getThrottle(),
-        Robot.operatorInterface.getTurn(), Robot.operatorInterface.isQuickTurn());
-    
-    Robot.driveTrain.setClimberSpeed(Robot.operatorInterface.getTriggerValue());
+	  DriveType ActiveType = Robot.operatorInterface.getDriveType();
+      if (ActiveType == DriveType.ARCADE_DRIVE){
+    	  Robot.driveTrain.joystickDrive(
+    			  Robot.operatorInterface.getThrottle(),
+    			  Robot.operatorInterface.getTurn(), 
+    			  Robot.operatorInterface.isQuickTurn());
+      }else if (ActiveType == DriveType.TANK_DRIVE){
+    	  XboxController XBX = Robot.operatorInterface.xboxController;
+    	  Robot.driveTrain.rawTankDrive(XBX.getY(GenericHID.Hand.kLeft),XBX.getY(GenericHID.Hand.kRight));
+      }
+      
+	  Robot.driveTrain.setClimberSpeed(Robot.operatorInterface.getTriggerValue());
   }
 
   protected boolean isFinished() {

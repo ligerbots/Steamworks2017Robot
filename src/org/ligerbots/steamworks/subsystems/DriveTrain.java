@@ -71,6 +71,14 @@ public class DriveTrain extends Subsystem implements SmartDashboardLogger {
   boolean isClimberLocked;
   
   double limitedThrottle = 0;
+  
+  /**
+   * Drive control types.
+   */
+  
+  public enum DriveType{
+	  TANK_DRIVE,ARCADE_DRIVE
+  }
 
   /**
    * Creates a new drive train instance.

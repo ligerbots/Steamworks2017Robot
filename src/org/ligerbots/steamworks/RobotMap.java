@@ -8,6 +8,8 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
+
+import org.ligerbots.steamworks.subsystems.DriveTrain.DriveType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,8 @@ public class RobotMap {
   @Retention(RetentionPolicy.RUNTIME)
   protected static @interface Preference {
   }
+  
+  public static final DriveType DEFAULT_DRIVE_TYPE = DriveType.TANK_DRIVE;
   
   public static final boolean IS_ROADKILL = new File("/home/lvuser/roadkill").exists();
   public static final boolean IS_SECOND_ROBOT = new File("/home/lvuser/eviltwin").exists();
